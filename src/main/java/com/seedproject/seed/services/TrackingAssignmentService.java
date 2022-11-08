@@ -5,6 +5,7 @@ import com.seedproject.seed.models.entities.Contributor;
 import com.seedproject.seed.models.entities.TrackingAssignment;
 import com.seedproject.seed.models.enums.ColorCode;
 import com.seedproject.seed.models.enums.ContributionType;
+import com.seedproject.seed.models.filters.ContributorFilter;
 import com.seedproject.seed.repositories.ContributorRepository;
 import com.seedproject.seed.repositories.TrackingAssignmentRepository;
 import org.springframework.stereotype.Service;
@@ -20,10 +21,22 @@ public class TrackingAssignmentService {
     TrackingAssignmentRepository trackingAssignmentRepository;
     @Inject
     ContributorRepository contributorRepository;
-    public Table findtrackingSeeds(Long id){
+    public Table getVolunterTrackingSeeds(Long id){
         List<TrackingAssignment> contributors = trackingAssignmentRepository.findByVolunterId(id);
         Table resultTable = this.getContributtorsInFormat(contributors);
         return resultTable;
+    }
+
+    public Table getAllTrackingSeeds(ContributorFilter contributorFilter){
+        List<Contributor> contributors = contributorRepository.findAll();
+        if (contributorFilter.getState() != null){
+            contributors.removeIf(contributor -> contributor.getContributorState()!= contributorFilter.getState());
+        }
+        if (contributorFilter.getName() != null){
+
+        }
+        //Table resultTable = new Table(new TableRow());
+        return null;
     }
 
     private Table getContributtorsInFormat(List<TrackingAssignment> trackingAssignments){
