@@ -3,6 +3,7 @@ package com.seedproject.seed.controllers;
 import com.seedproject.seed.models.dto.ExitPost;
 import com.seedproject.seed.models.dto.Table;
 import com.seedproject.seed.models.dto.VolunterDTO;
+import com.seedproject.seed.models.entities.ExitMessage;
 import com.seedproject.seed.models.entities.Role;
 import com.seedproject.seed.models.entities.Volunter;
 import com.seedproject.seed.models.filters.VolunterFilter;
@@ -73,7 +74,19 @@ public class VolunterController {
     @PostMapping(value = "/exitVolunter")
     @ResponseStatus(HttpStatus.CREATED)
     public void exitVolunterById(@RequestBody ExitPost exitPost) {
-        volunterService.exitVolunter(exitPost.getId());
+        volunterService.exitVolunter(exitPost);
+    }
+
+    @PostMapping(value = "/activateVolunter")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void activateVolunter(@RequestBody ExitPost exitPost) {
+        volunterService.activateVolunteer(exitPost);
+    }
+
+    @GetMapping(path = {"/getExitMessages"})
+    public List<ExitPost> getExitMessages(@RequestParam(required = true) Long volunterId) {
+        List<ExitPost> exitMessageList = volunterService.getExitMessages(volunterId);
+        return exitMessageList;
     }
 
     @PutMapping(value = "return/{id}")

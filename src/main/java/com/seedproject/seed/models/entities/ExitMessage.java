@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -22,4 +23,8 @@ public class ExitMessage {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "volunter_id")
     private Volunter volunter;
+
+    @Column
+    private Date registerDate;
+
 }

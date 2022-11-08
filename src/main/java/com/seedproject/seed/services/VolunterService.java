@@ -1,6 +1,7 @@
 package com.seedproject.seed.services;
 
 import com.seedproject.seed.models.dto.*;
+import com.seedproject.seed.models.entities.ExitMessage;
 import com.seedproject.seed.models.entities.Role;
 import com.seedproject.seed.models.entities.User;
 import com.seedproject.seed.models.entities.Volunter;
@@ -8,6 +9,7 @@ import com.seedproject.seed.models.enums.ColorCode;
 import com.seedproject.seed.models.enums.RoleName;
 import com.seedproject.seed.models.enums.Status;
 import com.seedproject.seed.models.filters.VolunterFilter;
+import com.seedproject.seed.repositories.ExitMessageRepository;
 import com.seedproject.seed.repositories.UserRepository;
 import com.seedproject.seed.repositories.VolunterRepository;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,10 @@ public class VolunterService {
 
     @Inject
     UserRepository userRepository;
+
+    @Inject
+    ExitMessageRepository exitMessageRepository;
+
 
     public Table findAllVolunter(){
         Table resultTable = this.getVoluntersInformat(volunterRepository.findAll(), false);
@@ -252,11 +258,37 @@ public class VolunterService {
         volunterRepository.deleteById(id);
     }
 
-    public void exitVolunter(Long id){
-        Volunter volunter=volunterRepository.getById(id);
-        volunter.setStatus(Status.INACTIVO);
-        volunter.setExitDate(new Date());
-        volunterRepository.save(volunter);
+    public void exitVolunter(ExitPost exitPost){
+        Volunter volunter=volunterRepository.getById(exitPost.getVolunteerId());
+        ExitMessage exitMessage =  new ExitMessage();
+        exitMessage.setMessage(exitPost.getMessage());
+        exitMessage.setVolunter(volunter);
+        exitMessage.setRegisterDate(new Date());
+        exitMessage.setMessage_id(exitPost.getMessage_id() != null ? exitPost.getMessage_id() :  null);
+        try {
+            exitMessageRepository.save(exitMessage);
+            volunter.setStatus(Status.INACTIVO);
+            volunter.setExitDate(new Date());
+            try {
+                volunterRepository.save(volunter);
+            } catch (Exception exc){
+                System.out.println("exc " + exc);
+            }
+        }catch (Exception e){
+            System.out.println("Exception " + e);
+        }
+
+    }
+
+    public void activateVolunteer(ExitPost exitPost){
+        Volunter volunter=volunterRepository.getById(exitPost.getVolunteerId());
+        try {
+            volunter.setStatus(Status.ACTIVO);
+            volunterRepository.save(volunter);
+        }catch (Exception e){
+            System.out.println("Exception " + e);
+        }
+
     }
 
     public Volunter getVolunterById(Long id){
@@ -275,5 +307,15 @@ public class VolunterService {
         Optional<Volunter> volunter=volunterRepository.findById(2123123L);
 
         return volunter.get();
+    }
+
+    public List<ExitPost> getExitMessages(Long volunterId){
+        Volunter volunter = volunterRepository.getById(volunterId);
+        List<ExitMessage> exitMessageList = exitMessageRepository.findByVolunter(volunter);
+        List<ExitPost> finalList = new ArrayList<>();
+        for (ExitMessage exitMessage: exitMessageList){
+            finalList.add(new ExitPost(exitMessage));
+        }
+        return finalList;
     }
 }
