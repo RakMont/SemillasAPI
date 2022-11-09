@@ -2,6 +2,7 @@ package com.seedproject.seed.controllers;
 
 import com.seedproject.seed.models.dto.ContributionConfigDTO;
 import com.seedproject.seed.models.dto.ContributionRecordDao;
+import com.seedproject.seed.models.dto.Table;
 import com.seedproject.seed.models.dto.UniqueAplicantHolder;
 import com.seedproject.seed.models.entities.ResponseMessage;
 import com.seedproject.seed.services.ConstantContributionService;
@@ -33,4 +34,10 @@ public class ContributionController {
     public void createUniqueApplicant(@RequestBody ContributionRecordDao contributionRecordDao) {
          contributionRecordService.saveContributionRecord(contributionRecordDao);
     }
+
+    @GetMapping(path = {"/getRecords"})
+    public Table getAceptedSeeds(@RequestParam(required = false) String id){
+        return contributionRecordService.getSeedContributionRecords(id);
+    }
+
 }
