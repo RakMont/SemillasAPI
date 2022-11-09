@@ -7,10 +7,7 @@ import com.seedproject.seed.models.enums.ColorCode;
 import com.seedproject.seed.models.enums.ContributionType;
 import com.seedproject.seed.models.enums.ContributorState;
 import com.seedproject.seed.models.enums.PaymentDate;
-import com.seedproject.seed.repositories.ConstantContributionRepository;
-import com.seedproject.seed.repositories.ContributorRepository;
-import com.seedproject.seed.repositories.ProcessedContributorRepository;
-import com.seedproject.seed.repositories.RejectedApplicantRepository;
+import com.seedproject.seed.repositories.*;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -27,6 +24,8 @@ public class ContributorService {
     @Inject
     ContributionConfigService contributionConfigService;
     @Inject
+    VolunterRepository volunterRepository;
+    @Inject
     VolunterService volunterService;
     @Inject
     ConstantContributionRepository constantContributionRepository;
@@ -42,13 +41,16 @@ public class ContributorService {
                 constantAplicantHolder.getSend_news(),
                 constantAplicantHolder.getSendNewsType()
         ));
+
         ContributionConfig contributionConfig=contributionConfigService.saveConstantContributionConfig(constantContribution);
         //System.out.println("salvo la configuracion" + contributionConfig.getContribution_key());
+        Volunter volunter = volunterRepository.getById(Long.parseLong("1"));
         Contributor contributor = constantAplicantHolder.getContributor();
         contributor.setSend_date(new Date());
         contributor.setRegister_date(new Date());
         contributor.setContributorState(ContributorState.PENDIENTE.value);
         contributor.setContributionConfig(contributionConfig);
+        contributor.setRegisterVolunter(volunter);
         ResponseMessage response;
         try {
             Contributor resp = contributorRepository.save(contributor);
@@ -81,10 +83,12 @@ public class ContributorService {
         System.out.println("salvo la configuracion " + contributionConfig.getContribution_key());
         Contributor contributor = uniqueAplicantHolder.getContributor();
         //Contributor contributor = new Contributor();
+        Volunter volunter = volunterRepository.getById(Long.parseLong("1"));
         contributor.setSend_date(new Date());
         contributor.setRegister_date(new Date());
         contributor.setContributorState(ContributorState.PENDIENTE.value);
         contributor.setContributionConfig(contributionConfig);
+        contributor.setRegisterVolunter(volunter);
         ResponseMessage response;
         try {
             Contributor resp = contributorRepository.save(contributor);
@@ -139,7 +143,7 @@ public class ContributorService {
     }
 
     public ResponseMessage acceptApplicant(ProcessSeedDTO processSeedDTO) {
-        Contributor contributor = contributorRepository.getById(processSeedDTO.getContributor_id());
+        Contributor contributor = contributorRepository.findById(processSeedDTO.getContributor_id()).get();
         contributor.setContributorState(processSeedDTO.getState());
         ProcessedContributor processedContributor = new ProcessedContributor();
         processedContributor.setProcessed_date(new Date());
@@ -154,36 +158,24 @@ public class ContributorService {
             constantContribution.setContributionEndDate(processSeedDTO.getContributionEndDate());
             constantContributionRepository.save(constantContribution);
         }
-        processedContributorRepository.save(processedContributor);
-        Contributor res = contributorRepository.save(contributor);
         ResponseMessage response;
-        System.out.println("res" + res);
-        if(res != null){
-            if(processedContributorRepository.save(processedContributor) != null){
-                response=new ResponseMessage(
-                        "Created",
-                        "El aplicante fue procesado",
-                        200
-                );
-                return response;
-            }
-            else{
-                response=new ResponseMessage(
-                        "Error",
-                        "Error al procesar",
-                        400
-                );
-                return response;
-            }
-        }
-        else{
-            response=new ResponseMessage(
-                    "Error",
-                    "Error al procesar",
-                    400
-            );
-            return response;
-        }
+       try {
+           processedContributorRepository.save(processedContributor);
+           contributorRepository.save(contributor);
+           response=new ResponseMessage(
+                   "Created",
+                   "El aplicante fue procesado",
+                   200
+           );
+           return response;
+       }catch (Exception exception){
+           response=new ResponseMessage(
+                   "Error",
+                   "Error al procesar",
+                   400
+           );
+           return response;
+       }
     }
 
     public List<ContributorDTO> findAcceptedApplicants(){

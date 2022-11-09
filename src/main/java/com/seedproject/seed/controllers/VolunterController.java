@@ -9,7 +9,9 @@ import com.seedproject.seed.models.entities.Volunter;
 import com.seedproject.seed.models.filters.VolunterFilter;
 import com.seedproject.seed.services.RoleService;
 import com.seedproject.seed.services.VolunterService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;

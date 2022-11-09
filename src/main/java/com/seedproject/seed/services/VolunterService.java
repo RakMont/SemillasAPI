@@ -1,5 +1,6 @@
 package com.seedproject.seed.services;
 
+import com.seedproject.seed.exceptions.VolunteerFoundException;
 import com.seedproject.seed.models.dto.*;
 import com.seedproject.seed.models.entities.ExitMessage;
 import com.seedproject.seed.models.entities.Role;
@@ -12,6 +13,8 @@ import com.seedproject.seed.models.filters.VolunterFilter;
 import com.seedproject.seed.repositories.ExitMessageRepository;
 import com.seedproject.seed.repositories.UserRepository;
 import com.seedproject.seed.repositories.VolunterRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -25,6 +28,9 @@ public class VolunterService {
 
     @Inject
     UserRepository userRepository;
+
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Inject
     ExitMessageRepository exitMessageRepository;
@@ -236,13 +242,15 @@ public class VolunterService {
 
     public Volunter saveVolunter (Volunter volunter) throws Exception{
         Volunter duplicateVol = volunterRepository.getByUsername(volunter.getUsername());
+
         if (duplicateVol != null){
-            throw new Exception("El username ya existe");
+            throw new VolunteerFoundException("El username ya existe");
         }
         else {
             userRepository.save(volunter.getUser());
             volunter.setStatus(Status.ACTIVO);
             volunter.setEntryDate(new Date());
+            volunter.setPassword(this.bCryptPasswordEncoder.encode(volunter.getPassword()));
         }
         return volunterRepository.save(volunter);
     }
