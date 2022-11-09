@@ -198,10 +198,32 @@ public class ContributionRecordService {
     }
 
     public  void updateContributionRecord(ContributionRecordDao contributionRecordDao){
-        ContributionRecord contributionRecord = new ContributionRecord();
-        contributionRecord.setContribution_record_id
-                (contributionRecordDao.getContribution_record_id() != null ?
-                        Long.parseLong(encripttionService.decrypt(contributionRecordDao.getContribution_record_id()))
-                        : null);
+        contributionRecordDao.setContribution_record_id(encripttionService.decrypt(contributionRecordDao.getContribution_record_id()));
+        ContributionRecord contributionRecord = contributionRecordRepository.findById(Long.parseLong(contributionRecordDao.getContribution_record_id())).get();
+
+        contributionRecord.setPayment_date(contributionRecordDao.getPayment_date());
+        contributionRecord.setExpected_payment_date(contributionRecordDao.getExpected_payment_date());
+        contributionRecord.setPaymentMethod(contributionRecordDao.getPaymentMethod());
+        contributionRecord.setContribution_ammount(contributionRecordDao.getContribution_ammount());
+        contributionRecord.setReceipt_number(contributionRecordDao.getReceipt_number());
+        contributionRecord.setReceipt_code(contributionRecordDao.getReceipt_code());
+        contributionRecord.setExtra_income_ammount(contributionRecordDao.getExtra_income_ammount());
+        contributionRecord.setContribution_obtained(contributionRecordDao.getContribution_obtained());
+        contributionRecord.setSent_payment_proof(contributionRecordDao.getSent_payment_proof());
+        try {
+            contributionRecordRepository.save(contributionRecord);
+        }catch (Exception exception){
+            System.out.println("exception.getMessage();" + exception.getMessage());
+        }
+    }
+
+
+    public void deleteContributionRecord(String id){
+        id = encripttionService.decrypt(id);
+        try {
+            contributionRecordRepository.deleteById(Long.parseLong(id));
+        }catch (Exception exception){
+            System.out.println("dasdasdasdaerror" + exception);
+        }
     }
 }

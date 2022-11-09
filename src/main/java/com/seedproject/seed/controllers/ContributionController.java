@@ -8,6 +8,7 @@ import com.seedproject.seed.models.entities.ResponseMessage;
 import com.seedproject.seed.services.ConstantContributionService;
 import com.seedproject.seed.services.ContributionConfigService;
 import com.seedproject.seed.services.ContributionRecordService;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
@@ -35,9 +36,20 @@ public class ContributionController {
          contributionRecordService.saveContributionRecord(contributionRecordDao);
     }
 
+    @PostMapping(value = "/updateContributionRecord")
+    public void updateContributionRecord(@RequestBody ContributionRecordDao contributionRecordDao) {
+        contributionRecordService.updateContributionRecord(contributionRecordDao);
+    }
+
     @GetMapping(path = {"/getRecords"})
     public Table getAceptedSeeds(@RequestParam(required = false) String id){
         return contributionRecordService.getSeedContributionRecords(id);
+    }
+
+    @PostMapping(value = "/deleteContributionRecord")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteContributionRecord(@RequestBody String id) {
+        contributionRecordService.deleteContributionRecord(id);
     }
 
 }
