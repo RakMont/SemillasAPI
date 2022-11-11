@@ -1,7 +1,7 @@
 package com.seedproject.seed.models.enums;
 
 public enum ResponseStatus {
-    SUCEES,
+    SUCCESS,
     ERROR,
     WARNING,
     INFORMATION

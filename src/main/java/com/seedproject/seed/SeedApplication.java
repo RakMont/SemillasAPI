@@ -15,6 +15,8 @@ public class SeedApplication implements CommandLineRunner {
 	@Autowired
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
 
+	@Inject EncripttionService encripttionService;
+
 	public static void main(String[] args) {
 		SpringApplication.run(SeedApplication.class, args);
 	}
@@ -23,5 +25,7 @@ public class SeedApplication implements CommandLineRunner {
 	public void run(String... args) throws Exception {
 		System.out.println("encrypted " + this.bCryptPasswordEncoder.encode("8815992"));
 		System.out.println("encrypted " + this.bCryptPasswordEncoder.encode("denis"));
+
+		System.out.println("ids" +  this.encripttionService.encrypt("3"));
 	}
 }

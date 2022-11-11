@@ -244,7 +244,11 @@ public class VolunterService {
 
     public Volunter findOneVolunter(String volunter_id){
         volunter_id = encripttionService.decrypt(volunter_id);
-        return volunterRepository.getById(Long.parseLong(volunter_id));
+        try {
+            return volunterRepository.getById(Long.parseLong(volunter_id));
+        } catch (Exception e){
+            throw  e;
+        }
     }
 
     public ResponseEntity<RequestResponseMessage> saveVolunter (Volunter volunter) throws Exception{
@@ -261,11 +265,11 @@ public class VolunterService {
                 volunter.setPassword(this.bCryptPasswordEncoder.encode(volunter.getPassword()));
                  volunterRepository.save(volunter);
                 return new ResponseEntity<>(new RequestResponseMessage(
-                        "El voluntario fue creado", ResponseStatus.SUCEES),HttpStatus.CREATED);
+                        "El voluntario fue creado", ResponseStatus.SUCCESS),HttpStatus.CREATED);
 
             }catch (Exception exception){
                 return new ResponseEntity<>(new RequestResponseMessage(
-                        "Error creando", ResponseStatus.SUCEES),HttpStatus.BAD_REQUEST);
+                        "Error creando", ResponseStatus.SUCCESS),HttpStatus.BAD_REQUEST);
             }
         }
     }
@@ -297,7 +301,7 @@ public class VolunterService {
                 volunterRepository.save(volunter);
 
                 return new ResponseEntity<>(new RequestResponseMessage(
-                        "El voluntario fue desactivado", ResponseStatus.SUCEES),HttpStatus.CREATED);
+                        "El voluntario fue desactivado", ResponseStatus.SUCCESS),HttpStatus.CREATED);
             } catch (Exception exc){
                 return new ResponseEntity<>(new RequestResponseMessage(
                         "Error al desactivar al voluntario", ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
