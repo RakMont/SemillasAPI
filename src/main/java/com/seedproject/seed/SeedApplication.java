@@ -22,5 +22,6 @@ public class SeedApplication implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 		System.out.println("encrypted " + this.bCryptPasswordEncoder.encode("8815992"));
+		System.out.println("encrypted " + this.bCryptPasswordEncoder.encode("denis"));
 	}
 }

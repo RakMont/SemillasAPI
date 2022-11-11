@@ -7,6 +7,7 @@ import com.seedproject.seed.models.entities.Role;
 import com.seedproject.seed.models.entities.User;
 import com.seedproject.seed.models.entities.Volunter;
 import com.seedproject.seed.models.enums.ColorCode;
+import com.seedproject.seed.models.enums.ResponseStatus;
 import com.seedproject.seed.models.enums.RoleName;
 import com.seedproject.seed.models.enums.Status;
 import com.seedproject.seed.models.filters.VolunterFilter;
@@ -14,6 +15,8 @@ import com.seedproject.seed.repositories.ExitMessageRepository;
 import com.seedproject.seed.repositories.UserRepository;
 import com.seedproject.seed.repositories.VolunterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +34,9 @@ public class VolunterService {
 
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    @Autowired
+    private EncripttionService encripttionService;
 
     @Inject
     ExitMessageRepository exitMessageRepository;
@@ -200,14 +206,14 @@ public class VolunterService {
                     "group", ColorCode.VIEW_ASSIGNED_SEEDS.value, true,
                     "ViewAssignedSeeds","Ver semillas asignadas", null,
                     new ArrayList<CellParam>(Arrays.asList(
-                            new CellParam("volunterId",volunter.getVolunterId().toString())
+                            new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))
                     ))
             ));
             contents.add(new CellContent("iconAccion",
                     "group_add", ColorCode.ASSIGN_SEED.value, true,
                     "AssignSeed","Asignar semilla", null,
                     new ArrayList<CellParam>(Arrays.asList(
-                            new CellParam("volunterId",volunter.getVolunterId().toString())
+                            new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))
                     ))
             ));
         }
@@ -216,19 +222,19 @@ public class VolunterService {
                     "edit", ColorCode.EDIT.value, true,
                     "editVolunter","Editar", null,
                     new ArrayList<CellParam>(Arrays.asList(
-                            new CellParam("volunterId",volunter.getVolunterId().toString())
+                            new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))
                     ))));
             contents.add(new CellContent("iconAccion",
                     "delete",ColorCode.DELETE.value, true,
                     "deleteVolunter","Eliminar", null,
                     new ArrayList<CellParam>(Arrays.asList(
-                            new CellParam("volunterId",volunter.getVolunterId().toString())
+                            new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))
                     ))));
             contents.add(new CellContent("iconAccion",
                     "remove_red_eye",ColorCode.VIEW.value, true,
                     "seeVolunter","Ver Info", null,
                     new ArrayList<CellParam>(Arrays.asList(
-                            new CellParam("volunterId",volunter.getVolunterId().toString())
+                            new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))
                     ))));
         }
 
@@ -236,23 +242,32 @@ public class VolunterService {
     }
 
 
-    public Volunter findOneVolunter(Long volunter_id){
-        return volunterRepository.getById(volunter_id);
+    public Volunter findOneVolunter(String volunter_id){
+        volunter_id = encripttionService.decrypt(volunter_id);
+        return volunterRepository.getById(Long.parseLong(volunter_id));
     }
 
-    public Volunter saveVolunter (Volunter volunter) throws Exception{
+    public ResponseEntity<RequestResponseMessage> saveVolunter (Volunter volunter) throws Exception{
         Volunter duplicateVol = volunterRepository.getByUsername(volunter.getUsername());
 
         if (duplicateVol != null){
             throw new VolunteerFoundException("El username ya existe");
         }
         else {
-            userRepository.save(volunter.getUser());
-            volunter.setStatus(Status.ACTIVO);
-            volunter.setEntryDate(new Date());
-            volunter.setPassword(this.bCryptPasswordEncoder.encode(volunter.getPassword()));
+            try {
+               // User user =  userRepository.save(volunter.getUser());
+                volunter.setStatus(Status.ACTIVO);
+                volunter.setEntryDate(new Date());
+                volunter.setPassword(this.bCryptPasswordEncoder.encode(volunter.getPassword()));
+                 volunterRepository.save(volunter);
+                return new ResponseEntity<>(new RequestResponseMessage(
+                        "El voluntario fue creado", ResponseStatus.SUCEES),HttpStatus.CREATED);
+
+            }catch (Exception exception){
+                return new ResponseEntity<>(new RequestResponseMessage(
+                        "Error creando", ResponseStatus.SUCEES),HttpStatus.BAD_REQUEST);
+            }
         }
-        return volunterRepository.save(volunter);
     }
 
     public Volunter updateVolunter (Volunter volunter){
@@ -266,8 +281,9 @@ public class VolunterService {
         volunterRepository.deleteById(id);
     }
 
-    public void exitVolunter(ExitPost exitPost){
-        Volunter volunter=volunterRepository.getById(exitPost.getVolunteerId());
+    public  ResponseEntity<RequestResponseMessage> exitVolunter(ExitPost exitPost){
+        exitPost.setVolunteerId(encripttionService.decrypt(exitPost.getVolunteerId()));
+        Volunter volunter=volunterRepository.getById(Long.parseLong(exitPost.getVolunteerId()));
         ExitMessage exitMessage =  new ExitMessage();
         exitMessage.setMessage(exitPost.getMessage());
         exitMessage.setVolunter(volunter);
@@ -279,17 +295,23 @@ public class VolunterService {
             volunter.setExitDate(new Date());
             try {
                 volunterRepository.save(volunter);
+
+                return new ResponseEntity<>(new RequestResponseMessage(
+                        "El voluntario fue desactivado", ResponseStatus.SUCEES),HttpStatus.CREATED);
             } catch (Exception exc){
-                System.out.println("exc " + exc);
+                return new ResponseEntity<>(new RequestResponseMessage(
+                        "Error al desactivar al voluntario", ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
             }
         }catch (Exception e){
-            System.out.println("Exception " + e);
+            return new ResponseEntity<>(new RequestResponseMessage(
+                    "Error al desactivar al voluntario", ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
         }
 
     }
 
     public void activateVolunteer(ExitPost exitPost){
-        Volunter volunter=volunterRepository.getById(exitPost.getVolunteerId());
+        exitPost.setVolunteerId(encripttionService.decrypt(exitPost.getVolunteerId()));
+        Volunter volunter=volunterRepository.getById(Long.parseLong(exitPost.getVolunteerId()));
         try {
             volunter.setStatus(Status.ACTIVO);
             volunterRepository.save(volunter);
