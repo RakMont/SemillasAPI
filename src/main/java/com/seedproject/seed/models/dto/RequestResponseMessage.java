@@ -14,6 +14,9 @@ public class RequestResponseMessage {
         this.message = message;
         this.status = status;
     }
+
+    public RequestResponseMessage() {
+    }
 }
 
 

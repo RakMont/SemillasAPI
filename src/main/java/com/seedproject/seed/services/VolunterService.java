@@ -1,6 +1,5 @@
 package com.seedproject.seed.services;
 
-import com.seedproject.seed.exceptions.VolunteerFoundException;
 import com.seedproject.seed.models.dto.*;
 import com.seedproject.seed.models.entities.ExitMessage;
 import com.seedproject.seed.models.entities.Role;
@@ -12,6 +11,7 @@ import com.seedproject.seed.models.enums.RoleName;
 import com.seedproject.seed.models.enums.Status;
 import com.seedproject.seed.models.filters.VolunterFilter;
 import com.seedproject.seed.repositories.ExitMessageRepository;
+import com.seedproject.seed.repositories.RoleRepository;
 import com.seedproject.seed.repositories.UserRepository;
 import com.seedproject.seed.repositories.VolunterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,21 +41,24 @@ public class VolunterService {
     @Inject
     ExitMessageRepository exitMessageRepository;
 
-
+    @Inject
+    RoleRepository roleRepository;
     public Table findAllVolunter(){
-        Table resultTable = this.getVoluntersInformat(volunterRepository.findAll(), false);
+        List<Volunter> volunters = volunterRepository.findAll();
+        volunters.forEach((volunter -> volunter.setRoles(roleRepository.getVolunterRoles(volunter.getVolunterId()))));
+        Table resultTable = this.getVoluntersInformat(volunters, false);
         return resultTable;
     }
 
     public Table findVoluntersByFilter(VolunterFilter volunterFilter){
         List<Volunter> volunters = volunterRepository.findAll();
-        if (volunterFilter.getStatus() != null){
+        if (volunterFilter!= null && volunterFilter.getStatus() != null){
             volunters.removeIf(v -> v.getStatus()!= volunterFilter.getStatus());
-        }
-        if (volunterFilter.getRoleId() != null){
+        } else if (volunterFilter != null && volunterFilter.getRoleId() != null) {
             volunters.removeIf(v -> !this.gotTheRol(volunterFilter.getRoleId(),v.getRoles()));
         }
-        Table resultTable = this.getVoluntersInformat(volunters, false);
+        volunters.forEach((volunter -> volunter.setRoles(roleRepository.getVolunterRoles(volunter.getVolunterId()))));
+        Table resultTable = this.getInactiveVoluntersInformat(volunters);
         return resultTable;
     }
 
@@ -252,15 +255,22 @@ public class VolunterService {
     }
 
     public ResponseEntity<RequestResponseMessage> saveVolunter (Volunter volunter) throws Exception{
-        Volunter duplicateVol = volunterRepository.getByUsername(volunter.getUsername());
 
+        Volunter duplicateVol = volunterRepository.getByUsername(volunter.getUsername());
         if (duplicateVol != null){
-            throw new VolunteerFoundException("El username ya existe");
-        }
-        else {
+            //throw new VolunteerFoundException("El username ya existe");
+            return new ResponseEntity<>(new RequestResponseMessage(
+                    "El username ya existe", ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+        } else if (userRepository.getByEmail(volunter.getUser().getEmail()) != null) {
+            return new ResponseEntity<>(new RequestResponseMessage(
+                    "El correo ya existe", ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+        } else if (volunter.getRoles().isEmpty()) {
+            return new ResponseEntity<>(new RequestResponseMessage(
+                    "El voluntario debe tener al menos un rol", ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+        } else {
             try {
                // User user =  userRepository.save(volunter.getUser());
-                volunter.setStatus(Status.ACTIVO);
+                volunter.setStatus(Status.ACTIVE);
                 volunter.setEntryDate(new Date());
                 volunter.setPassword(this.bCryptPasswordEncoder.encode(volunter.getPassword()));
                  volunterRepository.save(volunter);
@@ -295,7 +305,7 @@ public class VolunterService {
         exitMessage.setMessage_id(exitPost.getMessage_id() != null ? exitPost.getMessage_id() :  null);
         try {
             exitMessageRepository.save(exitMessage);
-            volunter.setStatus(Status.INACTIVO);
+            volunter.setStatus(Status.INACTIVE);
             volunter.setExitDate(new Date());
             try {
                 volunterRepository.save(volunter);
@@ -317,7 +327,7 @@ public class VolunterService {
         exitPost.setVolunteerId(encripttionService.decrypt(exitPost.getVolunteerId()));
         Volunter volunter=volunterRepository.getById(Long.parseLong(exitPost.getVolunteerId()));
         try {
-            volunter.setStatus(Status.ACTIVO);
+            volunter.setStatus(Status.ACTIVE);
             volunterRepository.save(volunter);
         }catch (Exception e){
             System.out.println("Exception " + e);
@@ -352,4 +362,94 @@ public class VolunterService {
         }
         return finalList;
     }
+
+    private Table getInactiveVoluntersInformat(List<Volunter> volunters){
+        List<TableRow> resultList = new ArrayList<TableRow>();
+        int index=1;
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+        for (Volunter volunter: volunters){
+            List<Cell> cells = new ArrayList<Cell>();
+            cells.add(new Cell(
+                    new CellHeader("No",0,"Integer",false,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",null,null,false,null,null,String.valueOf(index),null)
+                            )
+                    )
+            ));
+            cells.add(new Cell(
+                    new CellHeader("Nombre",0,"String",true,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",
+                                            null,null,false,
+                                            null,null,
+                                            volunter.getUser().getName() + ' '+volunter.getUser().getLastname(),
+                                            null)
+                            )
+                    )
+            ));
+            cells.add(new Cell(
+                    new CellHeader("Correo",0,"String",true,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",
+                                            null,null,false,
+                                            null,null, volunter.getUser().getEmail(),
+                                            null)
+                            )
+                    )
+            ));
+            cells.add(new Cell(
+                    new CellHeader("CI",0,"String",true,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",
+                                            null,null,false,
+                                            null,null, volunter.getUser().getDni(),
+                                            null)
+                            )
+                    )
+            ));
+            cells.add(new Cell(
+                    new CellHeader("Responsabilidades",0,"String",false,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(this.getVolunterRoles(volunter.getRoles()))
+            ));
+            cells.add(new Cell(
+                    new CellHeader("Opciones",0,"String",false,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("iconAccion",
+                                            "brightness_5", ColorCode.EDIT.value, true,
+                                            "activateVolunter","Reactivar", null,
+                                            new ArrayList<CellParam>(Arrays.asList(
+                                             new CellParam("volunterId",volunter.getVolunterId().toString())
+                                            ))),
+                                    new CellContent("iconAccion",
+                                            "delete",ColorCode.DELETE.value, true,
+                                            "deleteVolunter","Eliminar", null,
+                                            new ArrayList<CellParam>(Arrays.asList(
+                                                    new CellParam("volunterId",volunter.getVolunterId().toString())
+                                            ))),
+                                    new CellContent("iconAccion",
+                                            "remove_red_eye",ColorCode.VIEW.value, true,
+                                            "seeVolunter","Ver Info", null,
+                                            new ArrayList<CellParam>(Arrays.asList(
+                                                    new CellParam("volunterId",volunter.getVolunterId().toString())
+                                            )))
+                            )
+                    )
+            ));
+            resultList.add(new TableRow(cells));
+            index++;
+        }
+        return new Table(resultList);
+    }
+
 }

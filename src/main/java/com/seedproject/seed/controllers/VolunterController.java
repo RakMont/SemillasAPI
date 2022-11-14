@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,7 +55,7 @@ public class VolunterController {
     }
 
     @GetMapping(path = {"/exitvolunters"})
-    public Table findAllExitvolunters(@RequestParam(required = false) VolunterFilter volunterFilter) {
+    public Table findAllExitvolunters(@Valid VolunterFilter volunterFilter) {
         Table voluntersDTOS = volunterService.findVoluntersByFilter(volunterFilter);
         return voluntersDTOS;
     }
