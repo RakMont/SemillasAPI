@@ -64,13 +64,16 @@ public class VolunterService {
 
     public Table findAlltrackingVolunters(){
         List<Volunter> volunters =  volunterRepository.findAll();
+        volunters.forEach((volunter -> volunter.setRoles(roleRepository.getVolunterRoles(volunter.getVolunterId()))));
         volunters.removeIf(v -> !this.gotTheRol(RoleName.R_SEGUIMIENTOS,v.getRoles()));
         Table resultTable = this.getVoluntersInformat(volunters, true);
         return resultTable;
     }
     public boolean gotTheRol(RoleName roleName, List<Role> roles){
-        roles.removeIf(r -> !(r.getRole_name().equals(roleName)));
-        return roles.size() > 0;
+        //roles.removeIf(r -> !(r.getRole_name().equals(roleName)));
+        //return roles.size() > 0;
+        Role res = roles.stream().filter( r-> roleName.equals(r.getRole_name())).findAny().orElse(null);
+        return res != null;
     }
     private Table getVoluntersInformat(List<Volunter> volunters, Boolean isTracking){
         List<TableRow> resultList = new ArrayList<TableRow>();
@@ -108,6 +111,18 @@ public class VolunterService {
                                     new CellContent("text",
                                             null,null,false,
                                             null,null, volunter.getUser().getEmail(),
+                                            null)
+                            )
+                    )
+            ));
+            cells.add(new Cell(
+                    new CellHeader("CI",0,"String",true,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",
+                                            null,null,false,
+                                            null,null, volunter.getUser().getDni(),
                                             null)
                             )
                     )
@@ -228,8 +243,8 @@ public class VolunterService {
                             new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))
                     ))));
             contents.add(new CellContent("iconAccion",
-                    "delete",ColorCode.DELETE.value, true,
-                    "deleteVolunter","Eliminar", null,
+                    "clear",ColorCode.DELETE.value, true,
+                    "deleteVolunter","Desactivar", null,
                     new ArrayList<CellParam>(Arrays.asList(
                             new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))
                     ))));
@@ -291,8 +306,17 @@ public class VolunterService {
         return volunterRepository.save(saveVolunter);
     }
 
-    public void deleteVolunter(Long id){
-        volunterRepository.deleteById(id);
+    public ResponseEntity<RequestResponseMessage> deleteVolunter(String id){
+        id = encripttionService.decrypt(id);
+        try {
+            volunterRepository.deleteById(Long.parseLong(id));
+            return new ResponseEntity<>(new RequestResponseMessage(
+                    "El voluntario fue eliminado", ResponseStatus.SUCCESS),HttpStatus.CREATED);
+        } catch (Exception exception){
+            //throw exception;
+            return new ResponseEntity<>(new RequestResponseMessage(
+                    "rror", ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+        }
     }
 
     public  ResponseEntity<RequestResponseMessage> exitVolunter(ExitPost exitPost){
@@ -429,19 +453,19 @@ public class VolunterService {
                                             "brightness_5", ColorCode.EDIT.value, true,
                                             "activateVolunter","Reactivar", null,
                                             new ArrayList<CellParam>(Arrays.asList(
-                                             new CellParam("volunterId",volunter.getVolunterId().toString())
+                                             new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))
                                             ))),
                                     new CellContent("iconAccion",
                                             "delete",ColorCode.DELETE.value, true,
                                             "deleteVolunter","Eliminar", null,
                                             new ArrayList<CellParam>(Arrays.asList(
-                                                    new CellParam("volunterId",volunter.getVolunterId().toString())
+                                                    new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))
                                             ))),
                                     new CellContent("iconAccion",
                                             "remove_red_eye",ColorCode.VIEW.value, true,
                                             "seeVolunter","Ver Info", null,
                                             new ArrayList<CellParam>(Arrays.asList(
-                                                    new CellParam("volunterId",volunter.getVolunterId().toString())
+                                                    new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))
                                             )))
                             )
                     )

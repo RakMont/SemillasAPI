@@ -49,7 +49,7 @@ public class Volunter implements Serializable, UserDetails {
     private Set<ExitMessage> exitMessages = new HashSet<>();
 
     //@JsonIgnore
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
     @NotNull(message = "The list of roles may not be empty")
     @JoinTable(name = "volunter_role",
             joinColumns = @JoinColumn(name = "volunter_id", referencedColumnName = "volunter_id"),

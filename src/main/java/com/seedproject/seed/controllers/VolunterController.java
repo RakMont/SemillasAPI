@@ -68,8 +68,8 @@ public class VolunterController {
 
     @PostMapping(value = "/deleteVolunter")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteVolunterById(@RequestBody Long id) {
-        volunterService.deleteVolunter(id);
+    public ResponseEntity<RequestResponseMessage> deleteVolunterById(@RequestBody String id) {
+        return volunterService.deleteVolunter(id);
     }
 
     @PostMapping(value = "/exitVolunter")
@@ -95,7 +95,7 @@ public class VolunterController {
         volunterService.getVolunterById(id);
     }
 
-    @GetMapping(path = {"/trackingVolunters"})
+    @GetMapping(path = {"/trackingVolunteers"})
     public Table gettrackingVolunters(){
         return volunterService.findAlltrackingVolunters();
     }
