@@ -20,9 +20,12 @@ public class TrackingAssignmentService {
     @Inject
     TrackingAssignmentRepository trackingAssignmentRepository;
     @Inject
+    EncripttionService encripttionService;
+    @Inject
     ContributorRepository contributorRepository;
-    public Table getVolunterTrackingSeeds(Long id){
-        List<TrackingAssignment> contributors = trackingAssignmentRepository.findByVolunterId(id);
+    public Table getVolunterTrackingSeeds(String id){
+        id = encripttionService.decrypt(id);
+        List<TrackingAssignment> contributors = trackingAssignmentRepository.findByVolunterId(Long.parseLong(id));
         Table resultTable = this.getContributtorsInFormat(contributors);
         return resultTable;
     }
@@ -142,8 +145,24 @@ public class TrackingAssignmentService {
         return new Table(resultList);
     }
 
-    public void saveTrackingAssignment(TrackingAssignment trackingAssignment){
-        TrackingAssignment result = this.trackingAssignmentRepository.save(trackingAssignment);
-        Long res = result.getTracking_assignment_id();
+    public void saveTrackingAssignment(TrackingAssignmentDao trackingAssignment){
+        trackingAssignment.setTracking_assignment_id(encripttionService.decrypt(trackingAssignment.getTracking_assignment_id()));
+        trackingAssignment.setVolunter_id(encripttionService.decrypt(trackingAssignment.getVolunter_id()));
+        trackingAssignment.setContributor_id(encripttionService.decrypt(trackingAssignment.getContributor_id()));
+        TrackingAssignment payload = new TrackingAssignment();
+
+        payload.setTracking_assignment_id(trackingAssignment.getTracking_assignment_id() != null ?
+                Long.parseLong(trackingAssignment.getTracking_assignment_id()): null);
+        payload.setVolunter_id(Long.parseLong(trackingAssignment.getVolunter_id()));
+        payload.setContributor_id(Long.parseLong(trackingAssignment.getContributor_id()));
+        payload.setStatus(trackingAssignment.getStatus());
+        payload.setStart_date(trackingAssignment.getStart_date());
+        payload.setEnd_date(trackingAssignment.getEnd_date());
+
+        try {
+            TrackingAssignment result = this.trackingAssignmentRepository.save(payload);
+        }catch (Exception exception){
+            throw exception;
+        }
     }
 }

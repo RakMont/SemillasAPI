@@ -2,6 +2,7 @@ package com.seedproject.seed.controllers;
 
 
 import com.seedproject.seed.models.dto.Table;
+import com.seedproject.seed.models.dto.TrackingAssignmentDao;
 import com.seedproject.seed.models.entities.TrackingAssignment;
 import com.seedproject.seed.models.filters.ContributorFilter;
 import com.seedproject.seed.services.TrackingAssignmentService;
@@ -18,7 +19,7 @@ public class TrackingController {
     TrackingAssignmentService trackingAssignmentService;
 
     @GetMapping(path = {"/trackingSeeds"})
-    public Table getVolunterTrackingSeeds(@RequestParam(required = true) Long id){
+    public Table getVolunterTrackingSeeds(@RequestParam(required = true) String id){
         return trackingAssignmentService.getVolunterTrackingSeeds(id);
     }
 
@@ -29,7 +30,7 @@ public class TrackingController {
 
     @PostMapping(path = {"/createAssinment"})
     @ResponseStatus(HttpStatus.CREATED)
-    public void createUniqueApplicant(@RequestBody TrackingAssignment trackingAssignment) {
+    public void createUniqueApplicant(@RequestBody TrackingAssignmentDao trackingAssignment) {
         trackingAssignmentService.saveTrackingAssignment(trackingAssignment);
     }
 }

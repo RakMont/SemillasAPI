@@ -450,7 +450,7 @@ public class VolunterService {
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("iconAccion",
-                                            "brightness_5", ColorCode.EDIT.value, true,
+                                            "how_to_reg", ColorCode.EDIT.value, true,
                                             "activateVolunter","Reactivar", null,
                                             new ArrayList<CellParam>(Arrays.asList(
                                              new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))

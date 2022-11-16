@@ -29,7 +29,8 @@ public class ContributorService {
     VolunterService volunterService;
     @Inject
     ConstantContributionRepository constantContributionRepository;
-
+    @Inject
+    EncripttionService encripttionService;
     public ResponseMessage saveConstantContributtor(ConstantAplicantHolder constantAplicantHolder){
         ConstantContribution constantContribution = new ConstantContribution();
         constantContribution.setStart_month(constantAplicantHolder.getBeginMonth());
@@ -384,7 +385,8 @@ public class ContributorService {
         contributors.removeIf(p -> !(p.getContributorState() == ContributorState.ACEPTADO.value));
         List<ComboSeed> activecontr= new ArrayList<>();
         for (Contributor contributor:contributors){
-            activecontr.add(new ComboSeed(contributor.getContributor_id()
+            activecontr.add(new ComboSeed(
+                    encripttionService.encrypt( contributor.getContributor_id().toString())
                     ,contributor.getUser().getName(),contributor.getUser().getLastname(),
                     contributor.getUser().getName()+ ' ' + contributor.getUser().getLastname(),
                     contributor.getUser().getEmail(),
