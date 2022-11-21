@@ -396,8 +396,9 @@ public class ContributorService {
         return activecontr;
     }
 
-    public ContributorDTO getSeedById(Long id){
-        Optional<Contributor> contributor = contributorRepository.findById(id);
+    public ContributorDTO getSeedById(String id){
+        id = encripttionService.decrypt(id);
+        Optional<Contributor> contributor = contributorRepository.findById(Long.parseLong(id));
         ContributorDTO contributorDTO = new ContributorDTO(contributor.get());
         ContributionConfigDTO contributionConfigDTO = new ContributionConfigDTO(contributor.get().getContributionConfig());
         if (contributor.get().getContributionConfig().getContribution_key().equals(ContributionType.APORTE_CONSTANTE)){

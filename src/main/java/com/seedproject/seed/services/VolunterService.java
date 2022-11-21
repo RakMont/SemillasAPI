@@ -43,14 +43,17 @@ public class VolunterService {
 
     @Inject
     RoleRepository roleRepository;
-    public Table findAllVolunter(){
+    public Table findAllVolunter( VolunterFilter volunterFilter){
         List<Volunter> volunters = volunterRepository.findAll();
+        if (volunterFilter!= null && volunterFilter.getStatus() != null){
+            volunters.removeIf(v -> v.getStatus()!= volunterFilter.getStatus());
+        }
         volunters.forEach((volunter -> volunter.setRoles(roleRepository.getVolunterRoles(volunter.getVolunterId()))));
         Table resultTable = this.getVoluntersInformat(volunters, false);
         return resultTable;
     }
 
-    public Table findVoluntersByFilter(VolunterFilter volunterFilter){
+   /* public Table findVoluntersByFilter(VolunterFilter volunterFilter){
         List<Volunter> volunters = volunterRepository.findAll();
         if (volunterFilter!= null && volunterFilter.getStatus() != null){
             volunters.removeIf(v -> v.getStatus()!= volunterFilter.getStatus());
@@ -61,12 +64,15 @@ public class VolunterService {
         Table resultTable = this.getInactiveVoluntersInformat(volunters);
         return resultTable;
     }
-
+*/
     public Table findAlltrackingVolunters(){
         List<Volunter> volunters =  volunterRepository.findAll();
         volunters.forEach((volunter -> volunter.setRoles(roleRepository.getVolunterRoles(volunter.getVolunterId()))));
         volunters.removeIf(v -> !this.gotTheRol(RoleName.R_SEGUIMIENTOS,v.getRoles()));
-        Table resultTable = this.getVoluntersInformat(volunters, true);
+        volunters.removeIf(v -> !v.getStatus().equals(Status.ACTIVE));
+
+        //Table resultTable = this.getVoluntersInformat(volunters, true);
+        Table resultTable = this.getTrackingVoluntersInformat(volunters);
         return resultTable;
     }
     public boolean gotTheRol(RoleName roleName, List<Role> roles){
@@ -133,9 +139,25 @@ public class VolunterService {
                     new ArrayList<CellContent>(this.getVolunterRoles(volunter.getRoles()))
             ));
             cells.add(new Cell(
-                    new CellHeader("Ingreso",0,"Date",true,null),
+                    new CellHeader("Estado",0,"String",false,null),
                     new CellProperty(null,false,null,null),
                     new ArrayList<CellContent>(
+                            Arrays.asList( volunter.getStatus().equals(Status.ACTIVE) ?
+                                    new CellContent(
+                                            "chipContent",
+                                            null, ColorCode.STATE_ACEPTED.value,false,
+                                            null,null, "Activo",
+                                            null
+                                    )
+                                    : new CellContent(
+                                            "chipContent",
+                                            null, ColorCode.STATE_REJECTED.value,false,
+                                            null,null, "Inactivo",
+                                            null
+                                    )
+                            )
+                    )
+                    /*new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("text",
                                             null,null,false,
@@ -144,33 +166,12 @@ public class VolunterService {
                                                     formatter.format(volunter.getEntryDate()) : " ",
                                             null)
                             )
-                    )
+                    )*/
             ));
             cells.add(new Cell(
                     new CellHeader("Opciones",0,"String",false,null),
                     new CellProperty(null,false,null,null),
-                    new ArrayList<CellContent>(this.getSeedActions(volunter,isTracking)
-                            /*Arrays.asList(
-                                    new CellContent("iconAccion",
-                                            "edit", ColorCode.EDIT.value, true,
-                                            "editVolunter","Editar", null,
-                                            new ArrayList<CellParam>(Arrays.asList(
-                                             new CellParam("volunterId",volunter.getVolunter_id().toString())
-                                            ))),
-                                    new CellContent("iconAccion",
-                                            "delete",ColorCode.DELETE.value, true,
-                                            "deleteVolunter","Eliminar", null,
-                                            new ArrayList<CellParam>(Arrays.asList(
-                                                    new CellParam("volunterId",volunter.getVolunter_id().toString())
-                                            ))),
-                                    new CellContent("iconAccion",
-                                            "remove_red_eye",ColorCode.VIEW.value, true,
-                                            "seeVolunter","Ver Info", null,
-                                            new ArrayList<CellParam>(Arrays.asList(
-                                                    new CellParam("volunterId",volunter.getVolunter_id().toString())
-                                            )))
-                            )*/
-                    )
+                    new ArrayList<CellContent>(this.getSeedActions(volunter,isTracking))
             ));
             resultList.add(new TableRow(cells));
             index++;
@@ -236,24 +237,46 @@ public class VolunterService {
             ));
         }
         else {
-            contents.add(new CellContent("iconAccion",
-                    "edit", ColorCode.EDIT.value, true,
-                    "editVolunter","Editar", null,
-                    new ArrayList<CellParam>(Arrays.asList(
-                            new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))
-                    ))));
-            contents.add(new CellContent("iconAccion",
-                    "clear",ColorCode.DELETE.value, true,
-                    "deleteVolunter","Desactivar", null,
-                    new ArrayList<CellParam>(Arrays.asList(
-                            new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))
-                    ))));
-            contents.add(new CellContent("iconAccion",
-                    "remove_red_eye",ColorCode.VIEW.value, true,
-                    "seeVolunter","Ver Info", null,
-                    new ArrayList<CellParam>(Arrays.asList(
-                            new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))
-                    ))));
+            if (volunter.getStatus().equals(Status.ACTIVE)){
+                contents.add(new CellContent("iconAccion",
+                        "edit", ColorCode.EDIT.value, true,
+                        "editVolunter","Editar", null,
+                        new ArrayList<CellParam>(Arrays.asList(
+                                new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))
+                        ))));
+                contents.add(new CellContent("iconAccion",
+                        "clear",ColorCode.DELETE.value, true,
+                        "inactiveVolunter","Desactivar", null,
+                        new ArrayList<CellParam>(Arrays.asList(
+                                new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))
+                        ))));
+                contents.add(new CellContent("iconAccion",
+                        "remove_red_eye",ColorCode.VIEW.value, true,
+                        "seeVolunter","Ver Info", null,
+                        new ArrayList<CellParam>(Arrays.asList(
+                                new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))
+                        ))));
+            }
+            else {
+                contents.add(new CellContent("iconAccion",
+                        "how_to_reg", ColorCode.EDIT.value, true,
+                        "activateVolunter","Reactivar", null,
+                        new ArrayList<CellParam>(Arrays.asList(
+                                new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))
+                        ))));
+                contents.add(new CellContent("iconAccion",
+                        "delete",ColorCode.DELETE.value, true,
+                        "deleteVolunter","Eliminar", null,
+                        new ArrayList<CellParam>(Arrays.asList(
+                                new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))
+                        ))));
+                contents.add(new CellContent("iconAccion",
+                        "remove_red_eye",ColorCode.VIEW.value, true,
+                        "seeVolunter","Ver Info", null,
+                        new ArrayList<CellParam>(Arrays.asList(
+                                new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))
+                        ))));
+            }
         }
 
         return contents;
@@ -387,7 +410,7 @@ public class VolunterService {
         return finalList;
     }
 
-    private Table getInactiveVoluntersInformat(List<Volunter> volunters){
+    private Table getTrackingVoluntersInformat(List<Volunter> volunters){
         List<TableRow> resultList = new ArrayList<TableRow>();
         int index=1;
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
@@ -440,6 +463,18 @@ public class VolunterService {
                     )
             ));
             cells.add(new Cell(
+                    new CellHeader("Celular",0,"String",true,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",
+                                            null,null,false,
+                                            null,null, volunter.getUser().getPhone(),
+                                            null)
+                            )
+                    )
+            ));
+            cells.add(new Cell(
                     new CellHeader("Responsabilidades",0,"String",false,null),
                     new CellProperty(null,false,null,null),
                     new ArrayList<CellContent>(this.getVolunterRoles(volunter.getRoles()))
@@ -447,28 +482,7 @@ public class VolunterService {
             cells.add(new Cell(
                     new CellHeader("Opciones",0,"String",false,null),
                     new CellProperty(null,false,null,null),
-                    new ArrayList<CellContent>(
-                            Arrays.asList(
-                                    new CellContent("iconAccion",
-                                            "how_to_reg", ColorCode.EDIT.value, true,
-                                            "activateVolunter","Reactivar", null,
-                                            new ArrayList<CellParam>(Arrays.asList(
-                                             new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))
-                                            ))),
-                                    new CellContent("iconAccion",
-                                            "delete",ColorCode.DELETE.value, true,
-                                            "deleteVolunter","Eliminar", null,
-                                            new ArrayList<CellParam>(Arrays.asList(
-                                                    new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))
-                                            ))),
-                                    new CellContent("iconAccion",
-                                            "remove_red_eye",ColorCode.VIEW.value, true,
-                                            "seeVolunter","Ver Info", null,
-                                            new ArrayList<CellParam>(Arrays.asList(
-                                                    new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))
-                                            )))
-                            )
-                    )
+                    this.getSeedActions(volunter, true)
             ));
             resultList.add(new TableRow(cells));
             index++;

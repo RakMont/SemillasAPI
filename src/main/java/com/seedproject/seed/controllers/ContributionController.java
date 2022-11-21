@@ -1,14 +1,12 @@
 package com.seedproject.seed.controllers;
 
-import com.seedproject.seed.models.dto.ContributionConfigDTO;
-import com.seedproject.seed.models.dto.ContributionRecordDao;
-import com.seedproject.seed.models.dto.Table;
-import com.seedproject.seed.models.dto.UniqueAplicantHolder;
+import com.seedproject.seed.models.dto.*;
 import com.seedproject.seed.models.entities.ResponseMessage;
 import com.seedproject.seed.services.ConstantContributionService;
 import com.seedproject.seed.services.ContributionConfigService;
 import com.seedproject.seed.services.ContributionRecordService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
@@ -26,14 +24,14 @@ public class ContributionController {
     ContributionRecordService contributionRecordService;
 
     @GetMapping(path = {"/getContributionConfigById"})
-    public ContributionConfigDTO findContributionConfigById(@RequestParam(required = true) Long id){
+    public ContributionConfigDTO findContributionConfigById(@RequestParam(required = true) String id){
         ContributionConfigDTO contributionConfig=contributionConfigService.getContributionConfigById(id);
         return contributionConfig;
     }
 
     @PostMapping(value = "/createContributionRecord")
-    public void createUniqueApplicant(@RequestBody ContributionRecordDao contributionRecordDao) {
-         contributionRecordService.saveContributionRecord(contributionRecordDao);
+    public ResponseEntity<RequestResponseMessage> createUniqueApplicant(@RequestBody ContributionRecordDao contributionRecordDao) {
+        return contributionRecordService.saveContributionRecord(contributionRecordDao);
     }
 
     @PostMapping(value = "/updateContributionRecord")
@@ -43,6 +41,11 @@ public class ContributionController {
 
     @GetMapping(path = {"/getRecords"})
     public Table getAceptedSeeds(@RequestParam(required = false) String id){
+        return contributionRecordService.getSeedContributionRecords(id);
+    }
+
+    @GetMapping(path = {"/getExportRecords"})
+    public Table getExportRecords(@RequestParam(required = false) String id){
         return contributionRecordService.getSeedContributionRecords(id);
     }
 

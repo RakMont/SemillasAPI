@@ -1,12 +1,14 @@
 package com.seedproject.seed.controllers;
 
 
+import com.seedproject.seed.models.dto.RequestResponseMessage;
 import com.seedproject.seed.models.dto.Table;
 import com.seedproject.seed.models.dto.TrackingAssignmentDao;
 import com.seedproject.seed.models.entities.TrackingAssignment;
 import com.seedproject.seed.models.filters.ContributorFilter;
 import com.seedproject.seed.services.TrackingAssignmentService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
@@ -30,7 +32,7 @@ public class TrackingController {
 
     @PostMapping(path = {"/createAssinment"})
     @ResponseStatus(HttpStatus.CREATED)
-    public void createUniqueApplicant(@RequestBody TrackingAssignmentDao trackingAssignment) {
-        trackingAssignmentService.saveTrackingAssignment(trackingAssignment);
+    public ResponseEntity<RequestResponseMessage> createAssignment(@RequestBody TrackingAssignmentDao trackingAssignment) {
+       return trackingAssignmentService.saveTrackingAssignment(trackingAssignment);
     }
 }

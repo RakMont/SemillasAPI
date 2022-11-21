@@ -41,9 +41,15 @@ public class VolunterController {
     }
 
     @GetMapping(path = {"/all"})
-    public Table findAllVolunters() {
-        return volunterService.findAllVolunter();
+    public Table findAllVolunters(@Valid VolunterFilter volunterFilter) {
+        return volunterService.findAllVolunter(volunterFilter);
     }
+
+   /* @GetMapping(path = {"/exitvolunters"})
+    public Table findAllExitvolunters(@Valid VolunterFilter volunterFilter) {
+        Table voluntersDTOS = volunterService.findVoluntersByFilter(volunterFilter);
+        return voluntersDTOS;
+    }*/
 
     @GetMapping(path = {"/getRoles"})
     public List<Role> findVolunterRoles(@RequestBody String email) {
@@ -54,11 +60,6 @@ public class VolunterController {
         return roles;
     }
 
-    @GetMapping(path = {"/exitvolunters"})
-    public Table findAllExitvolunters(@Valid VolunterFilter volunterFilter) {
-        Table voluntersDTOS = volunterService.findVoluntersByFilter(volunterFilter);
-        return voluntersDTOS;
-    }
 
     @GetMapping(path = {"/getVolunter"})
     public VolunterDTO listarId(@RequestParam(required = true) String id) {

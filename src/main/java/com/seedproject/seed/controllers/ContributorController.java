@@ -60,7 +60,7 @@ public class ContributorController {
     }
 
     @GetMapping(path = {"/getSeedById"})
-    public ContributorDTO getSeedById(@RequestParam(required = true) Long id) {
+    public ContributorDTO getSeedById(@RequestParam(required = true) String id) {
         ContributorDTO contributor = contributorService.getSeedById(id);
         return contributor;
     }
