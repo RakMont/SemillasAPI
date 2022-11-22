@@ -3,8 +3,7 @@ package com.seedproject.seed.controllers;
 
 import com.seedproject.seed.models.dto.RequestResponseMessage;
 import com.seedproject.seed.models.dto.Table;
-import com.seedproject.seed.models.dto.TrackingAssignmentDao;
-import com.seedproject.seed.models.entities.TrackingAssignment;
+import com.seedproject.seed.models.dao.TrackingAssignmentDao;
 import com.seedproject.seed.models.filters.ContributorFilter;
 import com.seedproject.seed.services.TrackingAssignmentService;
 import org.springframework.http.HttpStatus;

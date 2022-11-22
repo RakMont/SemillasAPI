@@ -1,6 +1,5 @@
 package com.seedproject.seed.controllers;
 
-import com.seedproject.seed.models.dto.UniqueAplicantHolder;
 import com.seedproject.seed.models.entities.ResponseMessage;
 import com.seedproject.seed.services.EmailSenderService;
 import org.springframework.web.bind.annotation.*;

@@ -1,6 +1,7 @@
 package com.seedproject.seed.services;
 
 
+import com.seedproject.seed.models.dao.UniqueAplicantHolderDao;
 import com.seedproject.seed.models.dto.*;
 import com.seedproject.seed.models.entities.*;
 import com.seedproject.seed.models.enums.ColorCode;
@@ -71,18 +72,18 @@ public class ContributorService {
             return response;
         }
     }
-    public ResponseMessage savUniqueContributtor(UniqueAplicantHolder uniqueAplicantHolder){
+    public ResponseMessage savUniqueContributtor(UniqueAplicantHolderDao uniqueAplicantHolderDao){
         UniqueContribution uniqueContribution = new UniqueContribution();
-        uniqueContribution.setDate_contribution(uniqueAplicantHolder.getDate_contribution());
+        uniqueContribution.setDate_contribution(uniqueAplicantHolderDao.getDate_contribution());
         uniqueContribution.setContribution(new Contribution(
-                uniqueAplicantHolder.getContribution_amount(),
-                uniqueAplicantHolder.getPaymentMethod(),
-                uniqueAplicantHolder.getSend_news(),
-                uniqueAplicantHolder.getSendNewsType()
+                uniqueAplicantHolderDao.getContribution_amount(),
+                uniqueAplicantHolderDao.getPaymentMethod(),
+                uniqueAplicantHolderDao.getSend_news(),
+                uniqueAplicantHolderDao.getSendNewsType()
         ));
         ContributionConfig contributionConfig=contributionConfigService.saveUniqueContributionConfig(uniqueContribution);
         System.out.println("salvo la configuracion " + contributionConfig.getContribution_key());
-        Contributor contributor = uniqueAplicantHolder.getContributor();
+        Contributor contributor = uniqueAplicantHolderDao.getContributor();
         //Contributor contributor = new Contributor();
         Volunter volunter = volunterRepository.getById(Long.parseLong("1"));
         contributor.setSend_date(new Date());

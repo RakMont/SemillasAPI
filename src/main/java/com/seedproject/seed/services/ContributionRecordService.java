@@ -1,5 +1,6 @@
 package com.seedproject.seed.services;
 
+import com.seedproject.seed.models.dao.ContributionRecordDao;
 import com.seedproject.seed.models.dto.*;
 import com.seedproject.seed.models.entities.*;
 import com.seedproject.seed.models.enums.ColorCode;
@@ -38,6 +39,10 @@ public class ContributionRecordService {
         return this.getContributionsInformat(contributionRecords);
     }
 
+    public Table getReportRecord(String seedId){
+        List<ContributionRecord> contributionRecords = contributionRecordRepository.findAll();
+        return this.getContributionsInformat(contributionRecords);
+    }
     public Table getContributionsInformat(List<ContributionRecord> contributionRecords){
         List<TableRow> resultList = new ArrayList<TableRow>();
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");

@@ -1,5 +1,6 @@
 package com.seedproject.seed.controllers;
 
+import com.seedproject.seed.models.dao.UniqueAplicantHolderDao;
 import com.seedproject.seed.models.dto.*;
 import com.seedproject.seed.models.entities.ResponseMessage;
 import com.seedproject.seed.models.filters.ContributorFilter;
@@ -18,8 +19,8 @@ public class ContributorController {
     ContributorService contributorService;
 
     @PostMapping(value = "/unique", consumes = "application/json", produces = "application/json")
-    public ResponseMessage createUniqueApplicant(@RequestBody UniqueAplicantHolder uniqueAplicantHolder) {
-        return contributorService.savUniqueContributtor(uniqueAplicantHolder);
+    public ResponseMessage createUniqueApplicant(@RequestBody UniqueAplicantHolderDao uniqueAplicantHolderDao) {
+        return contributorService.savUniqueContributtor(uniqueAplicantHolderDao);
     }
 
     @PostMapping(value = "/constant", consumes = "application/json", produces = "application/json")

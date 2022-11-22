@@ -1,6 +1,6 @@
 package com.seedproject.seed.controllers;
 
-import com.seedproject.seed.config.JwtUtil;
+import com.seedproject.seed.security.JwtUtil;
 import com.seedproject.seed.exceptions.VolunteerNotFoundException;
 import com.seedproject.seed.models.dto.JwtRequest;
 import com.seedproject.seed.models.dto.JwtResponse;

@@ -1,4 +1,4 @@
-package com.seedproject.seed.models.dto;
+package com.seedproject.seed.models.dao;
 
 import com.seedproject.seed.models.enums.Status;
 import lombok.Getter;

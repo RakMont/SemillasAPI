@@ -1,7 +1,7 @@
 package com.seedproject.seed.controllers;
 
+import com.seedproject.seed.models.dao.ContributionRecordDao;
 import com.seedproject.seed.models.dto.*;
-import com.seedproject.seed.models.entities.ResponseMessage;
 import com.seedproject.seed.services.ConstantContributionService;
 import com.seedproject.seed.services.ContributionConfigService;
 import com.seedproject.seed.services.ContributionRecordService;
@@ -46,7 +46,7 @@ public class ContributionController {
 
     @GetMapping(path = {"/getExportRecords"})
     public Table getExportRecords(@RequestParam(required = false) String id){
-        return contributionRecordService.getSeedContributionRecords(id);
+        return contributionRecordService.getReportRecord(id);
     }
 
     @PostMapping(value = "/deleteContributionRecord")

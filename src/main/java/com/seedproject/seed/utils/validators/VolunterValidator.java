@@ -1,4 +1,4 @@
-package com.seedproject.seed.validators;
+package com.seedproject.seed.utils.validators;
 
 import com.seedproject.seed.models.dto.RequestResponseMessage;
 import com.seedproject.seed.models.entities.User;
