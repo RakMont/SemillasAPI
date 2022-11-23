@@ -37,7 +37,6 @@ public class ProcessedContributor {
 
     @JsonIgnore
     @OneToMany
-    @NotNull(message = "The list of comments may not be empty")
     @JoinTable(name = "process_contributor_comment",
             joinColumns = @JoinColumn(name = "processed_contributor_id", referencedColumnName = "processed_contributor_id"),
             inverseJoinColumns = @JoinColumn(name = "comment_contributor_id"))

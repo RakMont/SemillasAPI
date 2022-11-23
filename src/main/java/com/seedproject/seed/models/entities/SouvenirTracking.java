@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -27,16 +27,14 @@ public class SouvenirTracking {
     @Column(name = "tracking_status")
     private TrackingStatus trackingStatus;
 
-    @NotNull(message = "The benefited collaborator must not be null")
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "benefited_collaborator_id", referencedColumnName = "benefited_collaborator_id")
     private BenefitedCollaborator benefitedCollaborator;
 
     @JsonIgnore
-    @ManyToMany /*podria ser many to many*/
-    @NotNull(message = "The list of comments may not be empty")
-    @JoinTable(name = "tracking_comment",
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "souvenir_tracking_comment",
             joinColumns = @JoinColumn(name = "souvenir_tracking_id", referencedColumnName = "souvenir_tracking_id"),
             inverseJoinColumns = @JoinColumn(name = "comment_record_id"))
-    private List<CommentRecord> trackingComments = new ArrayList<>();
+    private List<CommentRecord> souvenirTrackingComments = new ArrayList<>();
 }

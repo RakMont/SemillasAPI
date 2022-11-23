@@ -32,7 +32,6 @@ public class ContributionRecord {
     @JoinColumn(name = "contribution_config_id", referencedColumnName = "contribution_config_id")
     private ContributionConfig contributionConfig;
 
-
     @Column(name = "contributor_id")
     private Long contributor_id;
 

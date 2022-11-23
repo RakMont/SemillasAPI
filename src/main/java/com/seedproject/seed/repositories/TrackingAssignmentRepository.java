@@ -11,6 +11,11 @@ import java.util.List;
 @Repository
 public interface TrackingAssignmentRepository extends JpaRepository<TrackingAssignment, Long> {
     @Query(value="select ta.tracking_assignment_id, ta.volunter_id, ta.contributor_id" +
-            ",ta.start_date, ta.end_date from tracking_assignment ta where ta.volunter_id=:volunter_id",nativeQuery = true)
+            ",ta.start_date, ta.end_date, ta.status from tracking_assignment ta where ta.volunter_id=:volunter_id",nativeQuery = true)
     List<TrackingAssignment> findByVolunterId(@Param("volunter_id")Long volunter_id);
+
+    @Query(value="select ta.tracking_assignment_id, ta.volunter_id, ta.contributor_id" +
+            ",ta.start_date, ta.end_date, ta.status from tracking_assignment ta " +
+            "where ta.contributor_id=:contributor_id and ta.status = 'ACTIVE' ",nativeQuery = true)
+    List<TrackingAssignment> findByContributorId(@Param("contributor_id")Long contributor_id);
 }

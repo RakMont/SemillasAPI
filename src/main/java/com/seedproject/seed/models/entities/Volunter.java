@@ -1,5 +1,6 @@
 package com.seedproject.seed.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.seedproject.seed.models.enums.Status;
 import lombok.Getter;
 import lombok.Setter;
@@ -43,7 +44,7 @@ public class Volunter implements Serializable, UserDetails {
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")
     private User user;
 
-    //@JsonIgnore
+    @JsonIgnore
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "volunter")
     private Set<ExitMessage> exitMessages = new HashSet<>();
 
@@ -81,7 +82,7 @@ public class Volunter implements Serializable, UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return status.equals(Status.ACTIVO);
+        return status.equals(Status.ACTIVE);
     }
 
 }

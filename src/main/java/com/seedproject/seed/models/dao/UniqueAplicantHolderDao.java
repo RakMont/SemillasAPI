@@ -1,4 +1,4 @@
-package com.seedproject.seed.models.dto;
+package com.seedproject.seed.models.dao;
 
 
 import com.seedproject.seed.models.entities.Contributor;
@@ -11,7 +11,7 @@ import java.util.Date;
 
 @Getter
 @Setter
-public class UniqueAplicantHolder {
+public class UniqueAplicantHolderDao {
     private Contributor contributor;
     private Long contribution_amount;
     private PaymentMethod paymentMethod;

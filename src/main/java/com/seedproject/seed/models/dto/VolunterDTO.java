@@ -15,9 +15,9 @@ import java.util.List;
 @Setter
 public class VolunterDTO {
 
-    private Long volunterId;
+    private String volunterId;
 
-    private Long userId;
+    private String userId;
 
     private String name;
 
@@ -42,7 +42,7 @@ public class VolunterDTO {
 
     public VolunterDTO(Volunter volunter) {
 
-        volunterId =volunter.getVolunterId();
+        volunterId =volunter.getVolunterId().toString();
         entry_date=volunter.getEntryDate();
         exit_date=volunter.getExitDate();
         status=volunter.getStatus();
@@ -53,6 +53,6 @@ public class VolunterDTO {
         dni=volunter.getUser().getDni();
         birthdate=volunter.getUser().getBirthdate();
         roles=volunter.getRoles();
-        userId =volunter.getUser().getUserId();
+        userId =volunter.getUser().getUserId().toString();
     }
 }

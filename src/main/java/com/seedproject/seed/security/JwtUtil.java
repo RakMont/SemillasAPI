@@ -1,4 +1,4 @@
-package com.seedproject.seed.config;
+package com.seedproject.seed.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

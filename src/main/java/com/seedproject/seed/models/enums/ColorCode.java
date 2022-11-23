@@ -9,17 +9,18 @@ public enum ColorCode {
     R_SEGUIMIENTOS_COLOR( "#4b597b"),
     R_SOUVENIRS_COLOR( "#4b597b"),
     R_REGISTROS_COLOR("#4b597b"),
-    STATE_PENDING("#e7d042"),
+    STATE_PENDING("#f6ae2d"),
     STATE_ACEPTED("#6db669"),
     STATE_REJECTED("#bd5533"),
     ACCEPT_CONTR("#5c9254"),
     REJECT_CONTR("#db504a"),
-    VIEW_CONTR("#ffe599"),
+    VIEW_CONTR("#084c61"),
     VIEW_ASSIGNED_SEEDS("#88cc77"),
     ASSIGN_SEED("#dead22"),
     VIEW_TRACKING_SEEDS("#665916"),
     UNIQUE_CONTRIBUTION("#4f6485"),
-    CONSTANT_CONTRIBUTION("#325132");
+    CONSTANT_CONTRIBUTION("#325132"),
+    PAYMENT_METHODS("#0c4b33");
     public String value;
     private ColorCode(String value){
         this.value=value;

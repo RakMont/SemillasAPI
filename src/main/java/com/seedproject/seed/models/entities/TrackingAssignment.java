@@ -1,5 +1,6 @@
 package com.seedproject.seed.models.entities;
 
+import com.seedproject.seed.models.enums.Status;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,4 +28,8 @@ public class TrackingAssignment {
 
     @Column(name = "end_date")
     private Date end_date;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private Status status;
 }

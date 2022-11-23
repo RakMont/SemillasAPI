@@ -1,11 +1,28 @@
 package com.seedproject.seed.models.dto;
 
 
+import com.seedproject.seed.models.entities.ExitMessage;
 import lombok.Getter;
+import lombok.Setter;
+
+import java.util.Date;
 
 @Getter
+@Setter
 public class ExitPost {
-    Long id;
-    String reason;
+    Long message_id;
+    String message;
+    String volunteerId;
+    Date registerDate;
+
+    public ExitPost() {
+    }
+
+    public ExitPost(ExitMessage exitMessage) {
+        this.message_id = exitMessage.getMessage_id();
+        this.message = exitMessage.getMessage();
+        this.volunteerId = exitMessage.getVolunter().getVolunterId().toString();
+        this.registerDate = exitMessage.getRegisterDate();
+    }
 }
 

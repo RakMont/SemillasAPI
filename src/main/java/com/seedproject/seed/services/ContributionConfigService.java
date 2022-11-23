@@ -26,7 +26,8 @@ public class ContributionConfigService {
     UniqueContributionRepository uniqueContributionRepository;
     @Inject
     UniqueContributionService uniqueContributionService;
-
+    @Inject
+    EncripttionService encripttionService;
     public ContributionConfig saveUniqueContributionConfig(UniqueContribution uniqueContribution){
         UniqueContribution contribution=uniqueContributionService.saveUniqueContribution(uniqueContribution);
         ContributionConfig contributionConfig=new ContributionConfig();
@@ -45,8 +46,9 @@ public class ContributionConfigService {
         return contributionConfigRepository.save(contributionConfig);
     }
 
-    public ContributionConfigDTO getContributionConfigById(Long id){
-        Optional<ContributionConfig> contributionConfig = contributionConfigRepository.findById(id);
+    public ContributionConfigDTO getContributionConfigById(String id){
+        id = encripttionService.decrypt(id);
+        Optional<ContributionConfig> contributionConfig = contributionConfigRepository.findById(Long.parseLong(id));
 
         ContributionConfigDTO contributionConfigDTO = new ContributionConfigDTO(contributionConfig.get());
 
