@@ -11,16 +11,13 @@ import java.util.Date;
 @Setter
 public class ProcessSeedDTO {
 
-    private Long processed_contributor_id;
+    private String processed_contributor_id;
 
-    private Long contributor_id;
-
-    /*@JsonFormat(pattern="dd-MM-yyyy")
-    private Date processed_date;*/
+    private String contributor_id;
 
     private String process_reason;
 
-    private Long processVolunterId;
+    private String processVolunterId;
 
     private int state;
 
@@ -32,7 +29,7 @@ public class ProcessSeedDTO {
     //@JsonFormat(pattern="dd-MM-yyyy")
     private Date contributionEndDate;
 
-    public ProcessSeedDTO(Long processed_contributor_id, Long contributor_id, Date processed_date, String process_reason, Long processVolunterId, int state) {
+    public ProcessSeedDTO(String processed_contributor_id, String contributor_id, Date processed_date, String process_reason, String processVolunterId, int state) {
         this.processed_contributor_id = processed_contributor_id;
         this.contributor_id = contributor_id;
         //this.processed_date = processed_date;

@@ -31,8 +31,8 @@ public class BenefitedCollaborator {
     @JoinColumn(name = "contributor_id", referencedColumnName = "contributor_id")
     private Contributor contributor;
 
-    @NotNull(message = "The volunter in charge must not be null")
+    @NotNull(message = "The volunter  must not be null")
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "volunter_in_charge_id", referencedColumnName = "volunter_id")
-    private Volunter volunter_in_charge;
+    @JoinColumn(name = "register_volunteer_id", referencedColumnName = "volunter_id")
+    private Volunter registerVolunteer;
 }
