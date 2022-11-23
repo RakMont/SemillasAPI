@@ -1,16 +1,21 @@
 package com.seedproject.seed.services;
 
 import com.seedproject.seed.models.dao.SouvenirTrackingDao;
-import com.seedproject.seed.models.dto.RequestResponseMessage;
+import com.seedproject.seed.models.dto.*;
 import com.seedproject.seed.models.entities.*;
+import com.seedproject.seed.models.enums.ColorCode;
 import com.seedproject.seed.models.enums.ResponseStatus;
+import com.seedproject.seed.models.enums.Status;
+import com.seedproject.seed.models.filters.SouvenirTrackingFilter;
 import com.seedproject.seed.repositories.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -113,4 +118,102 @@ public class SouvenirService {
         }
     }
 
+    public Table getAllBenefitedSeeds(SouvenirTrackingFilter souvenirTrackingFilter){
+        try {
+            List<BenefitedCollaborator> benefitedCollaborators = benefitedCollaboratorRepository.findAll();
+            //benefitedCollaborators.removeIf(ta -> ta.getStatus() == null || !ta.getStatus().equals(Status.ACTIVE));
+            return this.getBenefitedSeedsInFormat(benefitedCollaborators);
+        } catch (Exception exception){
+            exception.printStackTrace();
+            return null;
+        }
+    }
+
+    public Table getBenefitedSeedsInFormat(List<BenefitedCollaborator> benefitedCollaborators){
+        List<TableRow> resultList = new ArrayList<TableRow>();
+        int index=1;
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+        for (BenefitedCollaborator benefitedCollaborator: benefitedCollaborators){
+            List<Cell> cells = new ArrayList<Cell>();
+            cells.add(new Cell(
+                    new CellHeader("No",0,"Integer",false,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",null,null,false,null,null,String.valueOf(index),null)
+                            )
+                    )
+            ));
+            cells.add(new Cell(
+                    new CellHeader("Semilla beneficiada",0,"String",true,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",
+                                            null,null,false,
+                                            null,null,
+                                            benefitedCollaborator.getContributor().getUser().getName() + ' '+benefitedCollaborator.getContributor().getUser().getLastname(),
+                                            null)
+                            )
+                    )
+            ));
+            cells.add(new Cell(
+                    new CellHeader("Ciudad",0,"String",true,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",
+                                            null,null,false,
+                                            null,null, benefitedCollaborator.getCity(),
+                                            null)
+                            )
+                    )
+            ));
+            cells.add(new Cell(
+                    new CellHeader("Fecha seleccionado",0,"String",true,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",
+                                            null,null,false,
+                                            null,null,formatter.format(benefitedCollaborator.getSelected_date()) ,
+                                            null)
+                            )
+                    )
+            ));
+
+            cells.add(new Cell(
+                    new CellHeader("Opciones",0,"String",false,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(this.getActions(benefitedCollaborator))
+            ));
+            resultList.add(new TableRow(cells));
+            index++;
+        }
+        return new Table(resultList);
+    }
+
+    private List<CellContent> getActions(BenefitedCollaborator benefitedCollaborator){
+        List<CellContent> contents = new ArrayList<>();
+                contents.add(new CellContent("iconAccion",
+                        "edit", ColorCode.EDIT.value, true,
+                        "editVolunter","Editar", null,
+                        new ArrayList<CellParam>(Arrays.asList(
+                                new CellParam("benefitedCollaboratorId",
+                                        encripttionService.encrypt(benefitedCollaborator.getBenefited_collaborator_id().toString()))))));
+                contents.add(new CellContent("iconAccion",
+                        "clear",ColorCode.DELETE.value, true,
+                        "inactiveVolunter","Desactivar", null,
+                        new ArrayList<CellParam>(Arrays.asList(
+                                new CellParam("benefitedCollaboratorId",
+                                        encripttionService.encrypt(benefitedCollaborator.getBenefited_collaborator_id().toString()))))));
+                contents.add(new CellContent("iconAccion",
+                        "remove_red_eye",ColorCode.VIEW.value, true,
+                        "seeVolunter","Ver Info", null,
+                        new ArrayList<CellParam>(Arrays.asList(
+                                new CellParam("benefitedCollaboratorId",
+                                        encripttionService.encrypt(benefitedCollaborator.getBenefited_collaborator_id().toString()))))));
+
+        return contents;
+    }
 }
