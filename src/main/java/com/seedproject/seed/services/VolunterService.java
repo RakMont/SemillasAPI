@@ -317,7 +317,7 @@ public class VolunterService {
 
             }catch (Exception exception){
                 return new ResponseEntity<>(new RequestResponseMessage(
-                        "Error creando", ResponseStatus.SUCCESS),HttpStatus.BAD_REQUEST);
+                        "Error creando", ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
             }
         }
     }

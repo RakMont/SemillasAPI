@@ -7,6 +7,7 @@ import com.seedproject.seed.models.dto.JwtResponse;
 import com.seedproject.seed.models.dto.VolunterDTO;
 import com.seedproject.seed.models.entities.Role;
 import com.seedproject.seed.models.entities.Volunter;
+import com.seedproject.seed.services.ContributorService;
 import com.seedproject.seed.services.RoleService;
 import com.seedproject.seed.services.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,8 @@ import java.util.List;
 @RequestMapping("/oauth")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class OauthController {
+    @Inject
+    ContributorService contributorService;
     @Autowired
     AuthenticationManager authenticationManager;
 
@@ -71,7 +74,7 @@ public class OauthController {
     }
     @GetMapping("/actual-usuario")
     public VolunterDTO getCurrentVolunter(Principal principal){
-        VolunterDTO volunterDTO = new VolunterDTO((Volunter) this.userDetailsService.loadUserByUsername(principal.getName()));
-        return volunterDTO;
+        //VolunterDTO volunterDTO = new VolunterDTO((Volunter) this.userDetailsService.loadUserByUsername(principal.getName()));
+        return contributorService.getCurrentVolunter(principal);
     }
 }

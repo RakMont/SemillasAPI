@@ -30,9 +30,15 @@ public class TrackingAssignmentService {
     ContributorRepository contributorRepository;
     public Table getVolunterTrackingSeeds(String id){
         id = encripttionService.decrypt(id);
-        List<TrackingAssignment> trackingAssignments = trackingAssignmentRepository.findByVolunterId(Long.parseLong(id));
-        trackingAssignments.removeIf(ta -> ta.getStatus() == null || !ta.getStatus().equals(Status.ACTIVE));
-        return this.getContributtorsInFormat(trackingAssignments);
+        try {
+            List<TrackingAssignment> trackingAssignments = trackingAssignmentRepository.findByVolunterId(Long.parseLong(id));
+            trackingAssignments.removeIf(ta -> ta.getStatus() == null || !ta.getStatus().equals(Status.ACTIVE));
+            return this.getContributtorsInFormat(trackingAssignments);
+        } catch (Exception exception){
+            exception.printStackTrace();
+            return null;
+        }
+
     }
 
     public Table getAllTrackingSeeds(ContributorFilter contributorFilter){

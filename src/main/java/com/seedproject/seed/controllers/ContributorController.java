@@ -6,6 +6,7 @@ import com.seedproject.seed.models.entities.ResponseMessage;
 import com.seedproject.seed.models.filters.ContributorFilter;
 import com.seedproject.seed.services.ContributorService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
@@ -19,18 +20,18 @@ public class ContributorController {
     ContributorService contributorService;
 
     @PostMapping(value = "/unique", consumes = "application/json", produces = "application/json")
-    public ResponseMessage createUniqueApplicant(@RequestBody UniqueAplicantHolderDao uniqueAplicantHolderDao) {
+    public ResponseEntity<RequestResponseMessage> createUniqueApplicant(@RequestBody UniqueAplicantHolderDao uniqueAplicantHolderDao) {
         return contributorService.savUniqueContributtor(uniqueAplicantHolderDao);
     }
 
     @PostMapping(value = "/constant", consumes = "application/json", produces = "application/json")
-    public ResponseMessage createConstantApplicant(@RequestBody ConstantAplicantHolder constantAplicantHolder) {
+    public ResponseEntity<RequestResponseMessage> createConstantApplicant(@RequestBody ConstantAplicantHolder constantAplicantHolder) {
         return contributorService.saveConstantContributtor(constantAplicantHolder);
     }
 
     @PostMapping(value = "/processSeed", consumes = "application/json", produces = "application/json")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public ResponseMessage processAplicant(@RequestBody ProcessSeedDTO processSeedDTO) {
+    public ResponseEntity<RequestResponseMessage> processAplicant(@RequestBody ProcessSeedDTO processSeedDTO) {
         return contributorService.acceptApplicant(processSeedDTO);
     }
 
