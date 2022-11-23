@@ -1,5 +1,6 @@
 package com.seedproject.seed.models.dao;
 
+import com.seedproject.seed.models.entities.CommentRecord;
 import lombok.Getter;
 import lombok.Setter;
 

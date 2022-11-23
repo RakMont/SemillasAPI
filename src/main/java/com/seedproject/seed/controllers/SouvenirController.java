@@ -24,6 +24,18 @@ public class SouvenirController {
         return souvenirService.createBenefitedCollaborator(souvenirTrackingDao);
     }
 
+    @PostMapping(value = "/deleteBenefitedSeedById")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity<RequestResponseMessage> deleteBenefitedCollaboratorById(@RequestBody String id) {
+        return souvenirService.deleteBenefitedCollaboratorById(id);
+    }
+
+    @PostMapping(value = "/deleteSouvenirTrackById")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity<RequestResponseMessage> deleteSouvenirTrackById(@RequestBody String id) {
+        return souvenirService.deleteSouvenirTrackingById(id);
+    }
+
     @PostMapping(value = "/createSouvenirTracking", consumes = "application/json", produces = "application/json")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public ResponseEntity<RequestResponseMessage> createSouvenirTracking(@RequestBody SouvenirTrackingDao souvenirTrackingDao) {
