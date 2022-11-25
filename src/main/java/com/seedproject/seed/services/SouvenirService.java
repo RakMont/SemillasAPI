@@ -170,7 +170,7 @@ public class SouvenirService {
                     )
             ));
             cells.add(new Cell(
-                    new CellHeader("Fecha seleccionado",0,"String",true,null),
+                    new CellHeader("Fecha de selección",0,"String",true,null),
                     new CellProperty(null,false,null,null),
                     new ArrayList<CellContent>(
                             Arrays.asList(
@@ -181,7 +181,19 @@ public class SouvenirService {
                             )
                     )
             ));
-
+            cells.add(new Cell(
+                    new CellHeader("Responsable de registro",0,"String",true,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",
+                                            null,null,false,
+                                            null,null,
+                                            benefitedCollaborator.getRegisterVolunteer().getUser().getName() + ' '+benefitedCollaborator.getRegisterVolunteer().getUser().getLastname(),
+                                            null)
+                            )
+                    )
+            ));
             cells.add(new Cell(
                     new CellHeader("Opciones",0,"String",false,null),
                     new CellProperty(null,false,null,null),
@@ -202,14 +214,8 @@ public class SouvenirService {
                                 new CellParam("benefitedCollaboratorId",
                                         encripttionService.encrypt(benefitedCollaborator.getBenefited_collaborator_id().toString()))))));
                 contents.add(new CellContent("iconAccion",
-                        "clear",ColorCode.DELETE.value, true,
-                        "inactiveVolunter","Desactivar", null,
-                        new ArrayList<CellParam>(Arrays.asList(
-                                new CellParam("benefitedCollaboratorId",
-                                        encripttionService.encrypt(benefitedCollaborator.getBenefited_collaborator_id().toString()))))));
-                contents.add(new CellContent("iconAccion",
-                        "remove_red_eye",ColorCode.VIEW.value, true,
-                        "seeVolunter","Ver Info", null,
+                        "delete",ColorCode.DELETE.value, true,
+                        "delete","Desactivar", null,
                         new ArrayList<CellParam>(Arrays.asList(
                                 new CellParam("benefitedCollaboratorId",
                                         encripttionService.encrypt(benefitedCollaborator.getBenefited_collaborator_id().toString()))))));
