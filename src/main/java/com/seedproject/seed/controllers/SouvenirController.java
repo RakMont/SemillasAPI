@@ -1,10 +1,9 @@
 package com.seedproject.seed.controllers;
 
 import com.seedproject.seed.models.dao.SouvenirTrackingDao;
-import com.seedproject.seed.models.dto.ProcessSeedDTO;
+import com.seedproject.seed.models.dto.ComboSeed;
 import com.seedproject.seed.models.dto.RequestResponseMessage;
 import com.seedproject.seed.models.dto.Table;
-import com.seedproject.seed.models.filters.ContributorFilter;
 import com.seedproject.seed.models.filters.SouvenirTrackingFilter;
 import com.seedproject.seed.services.SouvenirService;
 import org.springframework.http.HttpStatus;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
+import java.util.List;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -51,4 +51,9 @@ public class SouvenirController {
         return souvenirService.getAllBenefitedSeeds(souvenirTrackingFilter);
     }
 
+
+    @GetMapping(path = {"/activeBenefitedSeeds"})
+    public List<ComboSeed> findActiveSeeds(){
+        return souvenirService.findBenefitedSeeds();
+    }
 }

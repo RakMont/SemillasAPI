@@ -5,7 +5,6 @@ import com.seedproject.seed.models.dto.*;
 import com.seedproject.seed.models.entities.*;
 import com.seedproject.seed.models.enums.ColorCode;
 import com.seedproject.seed.models.enums.ResponseStatus;
-import com.seedproject.seed.models.enums.Status;
 import com.seedproject.seed.models.filters.SouvenirTrackingFilter;
 import com.seedproject.seed.repositories.*;
 import org.springframework.http.HttpStatus;
@@ -81,6 +80,7 @@ public class SouvenirService {
             });
             souvenirTracking.setSouvenirTrackingComments(souvenirTrackingComments);
         }
+        souvenirTracking.setSpentAmount(souvenirTrackingDao.getSpentAmount());
         souvenirTracking.setSouvenir_send_date(souvenirTrackingDao.getSouvenir_send_date());
         souvenirTracking.setTrackingStatus(souvenirTrackingDao.getTrackingStatus());
         souvenirTracking.setBenefitedCollaborator(benefitedCollaborator);
@@ -221,5 +221,20 @@ public class SouvenirService {
                                         encripttionService.encrypt(benefitedCollaborator.getBenefited_collaborator_id().toString()))))));
 
         return contents;
+    }
+
+    public List<ComboSeed> findBenefitedSeeds(){
+        List<BenefitedCollaborator> contributors = benefitedCollaboratorRepository.findAll();
+        List<ComboSeed> activecontr= new ArrayList<>();
+        for (BenefitedCollaborator contributor:contributors){
+            activecontr.add(new ComboSeed(
+                    encripttionService.encrypt( contributor.getBenefited_collaborator_id().toString())
+                    ,contributor.getContributor().getUser().getName(),contributor.getContributor().getUser().getLastname(),
+                    contributor.getContributor().getUser().getName()+ ' ' + contributor.getContributor().getUser().getLastname(),
+                    contributor.getContributor().getUser().getEmail(),
+                    contributor.getContributor().getUser().getPhone(),
+                    contributor.getContributor().getUser().getDni()));
+        }
+        return activecontr;
     }
 }

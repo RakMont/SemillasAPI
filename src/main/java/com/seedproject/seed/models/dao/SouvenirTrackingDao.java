@@ -23,7 +23,7 @@ public class SouvenirTrackingDao {
     private Date souvenir_send_date;
     private TrackingStatus trackingStatus;
     private String benefitedCollaboratorId;
-
+    private int spentAmount;
     /* *********************Tracking coments**********************************************/
     List<CommentRecordDao> souvenirTrackingComments;
 }

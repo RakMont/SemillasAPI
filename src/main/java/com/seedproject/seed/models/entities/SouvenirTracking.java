@@ -26,6 +26,9 @@ public class SouvenirTracking {
     @Column(name = "tracking_status")
     private TrackingStatus trackingStatus;
 
+    @Column(name = "spent_amount")
+    private int spentAmount;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "benefited_collaborator_id", referencedColumnName = "benefited_collaborator_id")
     private BenefitedCollaborator benefitedCollaborator;
