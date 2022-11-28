@@ -51,6 +51,10 @@ public class SouvenirController {
         return souvenirService.getAllBenefitedSeeds(souvenirTrackingFilter);
     }
 
+    @GetMapping(path = {"/getAllSouvenirTracking"})
+    public Table getAllSouvenirTracking(@Valid SouvenirTrackingFilter souvenirTrackingFilter){
+        return souvenirService.getAllSouvenirTracking(souvenirTrackingFilter);
+    }
 
     @GetMapping(path = {"/activeBenefitedSeeds"})
     public List<ComboSeed> findActiveSeeds(){

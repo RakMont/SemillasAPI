@@ -118,6 +118,18 @@ public class SouvenirService {
         }
     }
 
+
+    public Table getAllSouvenirTracking(SouvenirTrackingFilter souvenirTrackingFilter){
+        try {
+            List<BenefitedCollaborator> benefitedCollaborators = benefitedCollaboratorRepository.findAll();
+            //benefitedCollaborators.removeIf(ta -> ta.getStatus() == null || !ta.getStatus().equals(Status.ACTIVE));
+            return this.getBenefitedSeedsInFormat(benefitedCollaborators);
+        } catch (Exception exception){
+            exception.printStackTrace();
+            return null;
+        }
+    }
+
     public Table getAllBenefitedSeeds(SouvenirTrackingFilter souvenirTrackingFilter){
         try {
             List<BenefitedCollaborator> benefitedCollaborators = benefitedCollaboratorRepository.findAll();
