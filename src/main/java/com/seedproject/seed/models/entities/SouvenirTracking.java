@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -27,12 +26,15 @@ public class SouvenirTracking {
     @Column(name = "tracking_status")
     private TrackingStatus trackingStatus;
 
+    @Column(name = "spent_amount")
+    private int spentAmount;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "benefited_collaborator_id", referencedColumnName = "benefited_collaborator_id")
     private BenefitedCollaborator benefitedCollaborator;
 
     @JsonIgnore
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(name = "souvenir_tracking_comment",
             joinColumns = @JoinColumn(name = "souvenir_tracking_id", referencedColumnName = "souvenir_tracking_id"),
             inverseJoinColumns = @JoinColumn(name = "comment_record_id"))

@@ -32,8 +32,10 @@ public class ContributionRecord {
     @JoinColumn(name = "contribution_config_id", referencedColumnName = "contribution_config_id")
     private ContributionConfig contributionConfig;
 
-    @Column(name = "contributor_id")
-    private Long contributor_id;
+   // @Column(name = "contributor_id")
+   @ManyToOne(cascade = CascadeType.ALL)
+   @JoinColumn(name = "contributor_id", referencedColumnName = "contributor_id")
+   private Contributor contributor;
 
     @Column(name = "payment_date")
     private Date payment_date;
