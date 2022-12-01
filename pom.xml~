@@ -90,7 +90,6 @@
 				</configuration>
 			</plugin>
 		</plugins>
-		<finalName>seeds-backend</finalName>
 	</build>
 
 </project>
