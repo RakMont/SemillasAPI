@@ -12,22 +12,22 @@ import java.util.Date;
 @Setter
 public class ContributionUniqDTO implements ContributionDTO{
     public Long contribution_id;
-    public Long contribution_amount;
+    public Long contributionAmount;
     public PaymentMethod paymentMethod;
-    public Boolean send_news;
+    public Boolean sendNews;
     public SendNewsType sendNewsType;
 
     public String unique_contribution_id;
-    public Date date_contribution;
+    public Date dateContribution;
 
     public ContributionUniqDTO(UniqueContribution uniqueContribution) {
         this.contribution_id = uniqueContribution.getContribution().getContribution_id();
-        this.contribution_amount = uniqueContribution.getContribution().getContribution_amount();
+        this.contributionAmount = uniqueContribution.getContribution().getContribution_amount();
         this.paymentMethod = uniqueContribution.getContribution().getPaymentMethod();
-        this.send_news = uniqueContribution.getContribution().getSend_news();
+        this.sendNews = uniqueContribution.getContribution().getSend_news();
         this.sendNewsType = uniqueContribution.getContribution().getSendNewsType();
 
         this.unique_contribution_id = uniqueContribution.getUnique_contribution_id().toString();
-        this.date_contribution = uniqueContribution.getDate_contribution();
+        this.dateContribution = uniqueContribution.getDate_contribution();
     }
 }

@@ -12,6 +12,7 @@ import java.util.Date;
 @Getter
 @Setter
 public class UniqueAplicantHolderDao {
+    private String ContributorId;
     private Contributor contributor;
     private Long contribution_amount;
     private PaymentMethod paymentMethod;

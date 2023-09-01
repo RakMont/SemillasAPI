@@ -37,8 +37,8 @@ public class ContributionController {
     }
 
     @PostMapping(value = "/updateContributionRecord")
-    public void updateContributionRecord(@RequestBody ContributionRecordDao contributionRecordDao) {
-        contributionRecordService.updateContributionRecord(contributionRecordDao);
+    public ResponseEntity<RequestResponseMessage> updateContributionRecord(@RequestBody ContributionRecordDao contributionRecordDao) {
+        return contributionRecordService.updateContributionRecord(contributionRecordDao);
     }
 
     @GetMapping(path = {"/getRecords"})
