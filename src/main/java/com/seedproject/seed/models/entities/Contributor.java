@@ -42,6 +42,9 @@ public class Contributor implements Serializable {
     @Column(name = "register_date")
     private Date register_date;
 
+    @Column(name = "register_exist")
+    private Boolean register_exist;
+
     @NotNull(message = "The person must not be null")
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")
