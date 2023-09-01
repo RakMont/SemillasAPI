@@ -19,18 +19,21 @@ public class ContributorDTO implements Serializable {
     private String email;
     private String phone;
     private String dni;
-    @JsonFormat(pattern="yyyy-MM-dd")
+    //@JsonFormat(pattern="yyyy-MM-dd")
     private Date birthdate;
     private String address;
     private String country;
     private String city;
+    //@JsonFormat(pattern="yyyy-MM-dd")
     private Date send_date;
     private int contributorState;
+
+    private String registerVolunteer;
     private ContributionConfigDTO contributionConfig;
     private String contributionType;
     private Long contribution_id;
-    @JsonFormat(pattern="yyyy-MM-dd")
-    private Date acepted_date;
+    //@JsonFormat(pattern="yyyy-MM-dd")
+    private Date acceptedDate;
 
     public ContributorDTO(Contributor applicant) {
         seedId=applicant.getContributor_id();
@@ -49,7 +52,7 @@ public class ContributorDTO implements Serializable {
         //contribution_id=applicant.getContributor().getContributionConfig().getContribution_id();
         //acepted_date=applicant.getAcepted_date();
     }
-    public void saveContributtionConfig(ContributionConfigDTO contributionConfigDTO){
+    public void saveContributionConfig(ContributionConfigDTO contributionConfigDTO){
         contributionConfig=contributionConfigDTO;
     }
 

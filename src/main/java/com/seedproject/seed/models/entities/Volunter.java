@@ -34,10 +34,12 @@ public class Volunter implements Serializable, UserDetails {
 
     @Column(name = "password")
     private String password;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private Status status;
+
+    @Column(name = "register_exist")
+    private Boolean register_exist;
 
     @NotNull(message = "The user must not be null")
     @OneToOne(cascade = CascadeType.ALL)

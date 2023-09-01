@@ -1,9 +1,6 @@
 package com.seedproject.seed.controllers;
 
-import com.seedproject.seed.models.dto.ExitPost;
-import com.seedproject.seed.models.dto.RequestResponseMessage;
-import com.seedproject.seed.models.dto.Table;
-import com.seedproject.seed.models.dto.VolunterDTO;
+import com.seedproject.seed.models.dto.*;
 import com.seedproject.seed.models.entities.Role;
 import com.seedproject.seed.models.entities.Volunter;
 import com.seedproject.seed.models.filters.VolunterFilter;
@@ -15,12 +12,13 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping(value = "/seeds/volunters")
+@RequestMapping(value = "/seeds/volunteers")
 public class VolunterController {
     @Inject
     VolunterService volunterService;
@@ -30,19 +28,26 @@ public class VolunterController {
 
     @PostMapping(path = {"/create"})
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<RequestResponseMessage> createVolunter(@RequestBody Volunter volunter)throws Exception {
+    public ResponseEntity<RequestResponseMessage> createVolunteer(@RequestBody Volunter volunter)throws Exception {
         return volunterService.saveVolunter(volunter);
     }
 
     @PutMapping(path = {"/updateVolunter"})
     @ResponseStatus(HttpStatus.CREATED)
-    public void updateVolunter(@RequestBody Volunter volunter) {
-        volunterService.updateVolunter(volunter);
+    public ResponseEntity<RequestResponseMessage> updateVolunter(@RequestBody Volunter volunter)throws Exception {
+        return volunterService.updateVolunter(volunter);
+    }
+
+    @PostMapping(path = {"/updateVolunteerPassword"})
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<RequestResponseMessage> updateVolunteerPassword(Principal principal,
+                                                                          @RequestBody VolunteerPasswordDTO volunteerPasswordDTO)throws Exception {
+        return volunterService.updateVolunteerPassword(principal,volunteerPasswordDTO);
     }
 
     @GetMapping(path = {"/all"})
-    public Table findAllVolunters(@Valid VolunterFilter volunterFilter) {
-        return volunterService.findAllVolunter(volunterFilter);
+    public Table findAllVolunteers(@Valid VolunterFilter volunterFilter) {
+        return volunterService.findAllVolunteer(volunterFilter);
     }
 
    /* @GetMapping(path = {"/exitvolunters"})
@@ -63,13 +68,13 @@ public class VolunterController {
 
     @GetMapping(path = {"/getVolunter"})
     public VolunterDTO listarId(@RequestParam(required = true) String id) {
-        VolunterDTO volunterDTO = new VolunterDTO(volunterService.findOneVolunter(id));
+        VolunterDTO volunterDTO = volunterService.findOneVolunter(id);
         return volunterDTO;
     }
 
     @PostMapping(value = "/deleteVolunter")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<RequestResponseMessage> deleteVolunterById(@RequestBody String id) {
+    public ResponseEntity<RequestResponseMessage> deleteVolunteerById(@RequestBody String id) {
         return volunterService.deleteVolunter(id);
     }
 
@@ -80,12 +85,12 @@ public class VolunterController {
 
     @PostMapping(value = "/activateVolunter")
     @ResponseStatus(HttpStatus.CREATED)
-    public void activateVolunter(@RequestBody ExitPost exitPost) {
-        volunterService.activateVolunteer(exitPost);
+    public ResponseEntity<RequestResponseMessage> activateVolunter(@RequestBody ExitPost exitPost) {
+        return volunterService.activateVolunteer(exitPost);
     }
 
     @GetMapping(path = {"/getExitMessages"})
-    public List<ExitPost> getExitMessages(@RequestParam(required = true) Long volunterId) {
+    public List<ExitPost> getExitMessages(@RequestParam(required = true) String volunterId) {
         List<ExitPost> exitMessageList = volunterService.getExitMessages(volunterId);
         return exitMessageList;
     }
