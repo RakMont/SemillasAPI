@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.inject.Inject;
 import java.security.Principal;
@@ -26,6 +27,8 @@ public class ContributorService {
     ProcessedContributorRepository processedContributorRepository;
     @Inject
     ContributionConfigService contributionConfigService;
+    @Inject
+    DeactivatedContributorRepository deactivatedContributorRepository;
     @Inject
     VolunterRepository volunterRepository;
     @Inject
@@ -610,8 +613,39 @@ public class ContributorService {
         catch (Exception e){
             return new ResponseEntity<>(
                     new RequestResponseMessage(
-                            "Ocurrió un erro actualizando los datos, porfavor intente mas tarde",
+                            "Ocurrió un error actualizando los datos, porfavor intente mas tarde",
                             ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    public ResponseEntity<RequestResponseMessage> deactivateContributor(
+            Principal principal, DeactivateContributorDTO deactivateContributorDTO){
+        Volunter volunteer = (Volunter) this.userDetailsService.loadUserByUsername(principal.getName());
+        Long id = Long.parseLong(this.encripttionService.decrypt(deactivateContributorDTO.getContributorId()));
+        Contributor contributor = this.contributorRepository.getById(id);
+        //contributor.setContributorState();
+        DeactivatedContributor deactivateContributor = new DeactivatedContributor();
+        deactivateContributor.setContributor(contributor);
+        deactivateContributor.setRegVolunter(volunteer);
+        deactivateContributor.setReactivationDate(deactivateContributorDTO.getReactivationDate());
+        deactivateContributor.setDeactivationDate(deactivateContributorDTO.getDeactivationDate());
+        deactivateContributor.setDeactivationReason(deactivateContributorDTO.getDeactivationReason());
+        try{
+            this.deactivatedContributorRepository.save(deactivateContributor);
+            this.contributorRepository.updateContributorState(id,deactivateContributorDTO.getContributorState().value);
+            return new ResponseEntity<>(
+                    new RequestResponseMessage(
+                            deactivateContributorDTO.getContributorState().equals(ContributorState.PAUSED) ?
+                                    "El estado de la semilla fue cambiado a en pausa." :
+                            "El estado de la semilla fue cambiado a desertante",
+                            ResponseStatus.SUCCESS), HttpStatus.ACCEPTED);
+
+        }catch (Exception exception){
+            return new ResponseEntity<>(
+                    new RequestResponseMessage(
+                            "Ocurrió un error realizando esta acción",
+                            ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+
         }
     }
 }

@@ -64,6 +64,9 @@ public class ContributionRecord {
     @Column(name = "sent_payment_proof")
     private Boolean sent_payment_proof;
 
+    @Column(name = "register_exist")
+    private Boolean register_exist;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "extra_expense_id", referencedColumnName = "extra_expense_id")
     private ExtraExpense extraExpense;

@@ -36,6 +36,11 @@ public class ContributorController {
     public ResponseEntity<RequestResponseMessage> processAplicant(@RequestBody ProcessSeedDTO processSeedDTO) {
         return contributorService.acceptApplicant(processSeedDTO);
     }
+    @PostMapping(value = "/deactivateContributor", consumes = "application/json", produces = "application/json")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public ResponseEntity<RequestResponseMessage> deactivateContributor(Principal principal, @RequestBody DeactivateContributorDTO deactivateContributorDTO) {
+        return contributorService.deactivateContributor(principal, deactivateContributorDTO);
+    }
 
     @GetMapping(path = {"/contributorSeeds/{contributorFilter}"})
     public List<ContributorDTO> findContributorSeeds(@PathVariable ContributorFilter contributorFilter){
