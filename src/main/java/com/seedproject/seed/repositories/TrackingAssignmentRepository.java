@@ -1,5 +1,6 @@
 package com.seedproject.seed.repositories;
 
+import com.seedproject.seed.models.dto.TrackingSeedDTO;
 import com.seedproject.seed.models.entities.TrackingAssignment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,4 +19,18 @@ public interface TrackingAssignmentRepository extends JpaRepository<TrackingAssi
             ",ta.start_date, ta.end_date, ta.status from tracking_assignment ta " +
             "where ta.contributor_id=:contributor_id and ta.status = 'ACTIVE' ",nativeQuery = true)
     List<TrackingAssignment> findByContributorId(@Param("contributor_id")Long contributor_id);
+
+    @Query(value="SELECT ta.tracking_assignment_id, ta.volunter_id, ta.contributor_id\n" +
+            "            ,ta.start_date, ta.end_date, ta.status, su.name, su.lastname, su.phone, su.dni," +
+            "\t\t\tsu.email,cc.contribution_config_id, cc.contribution_key, co.contributor_state" +
+            "\t\t\tfrom \n" +
+            "\t\t\ttracking_assignment ta \n" +
+            "\t\t\tinner join contributor co \n" +
+            "\t\t\ton co.contributor_id = ta.contributor_id \n" +
+            "\t\t\tinner join seed_user su\n" +
+            "\t\t\ton co.user_id = su.user_id\n" +
+            "\t\t\tinner join contribution_config cc\n" +
+            "\t\t\ton cc.contribution_config_id = co.contribution_config_id\n" +
+            "            where ta.volunter_id=:volunter_id and ta.status = 'ACTIVE'",nativeQuery = true)
+    List<TrackingSeedDTO> findByTrackingContributors(@Param("volunter_id")Long contributor_id);
 }

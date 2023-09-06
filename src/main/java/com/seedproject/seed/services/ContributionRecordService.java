@@ -18,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ContributionRecordService {
@@ -35,9 +36,17 @@ public class ContributionRecordService {
     EncripttionService encripttionService;
 
     public Table getSeedContributionRecords(String SeedId){
-        //Long id = Long.parseLong(encripttionService.decrypt(SeedId));
-        List<ContributionRecord> contributionRecords = contributionRecordRepository.findAll();
-        return this.getContributionsInformat(contributionRecords);
+        Long id = Long.parseLong(encripttionService.decrypt(SeedId));
+        //List<ContributionRecord> contributionRecords = contributionRecordRepository.findAll();
+       try{
+           Contributor contributor = contributorRepository.getById(id);
+           List<ContributionRecord> contributionRecords = contributionRecordRepository.findByContributor(contributor);
+
+           if (!contributionRecords.isEmpty()) return this.getContributionsInformat(contributionRecords);
+           else return null;
+       }catch (Exception exception){
+            return null;
+        }
     }
 
     public Table getAllDonations(ContributionRecordFilter contributionRecordFilter){
@@ -186,8 +195,8 @@ public class ContributionRecordService {
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("iconAccion",
-                                            "remove_red_eye","#efc561", true,
-                                            "SeeRecord","Ver información", null,
+                                            "description","#efc561", true,
+                                            "SeeRecord","Ver detalles", null,
                                             new ArrayList<CellParam>(Arrays.asList(
                                                     new CellParam("contributionRecordId",
                                                             encripttionService.encrypt(contributionRecord.getContribution_record_id().toString()))
@@ -315,15 +324,15 @@ public class ContributionRecordService {
                                                             encripttionService.encrypt(contributionRecord.getContribution_record_id().toString()))
                                             ))),*/
                                     new CellContent("iconAccion",
-                                            "delete",ColorCode.DELETE.value, true,
-                                            "deleteRecord","Rechazar semilla", null,
+                                            "delete",ColorCode.STATE_REJECTED.value, true,
+                                            "deleteRecord","Eliminar aporte", null,
                                             new ArrayList<CellParam>(Arrays.asList(
                                                     new CellParam("contributionRecordId",
                                                             encripttionService.encrypt(contributionRecord.getContribution_record_id().toString()))
                                             ))),
                                     new CellContent("iconAccion",
-                                            "remove_red_eye","#efc561", true,
-                                            "SeeRecord","Ver información", null,
+                                            "description",ColorCode.VIEW_CONTR.value, true,
+                                            "SeeRecord","Ver Detalle", null,
                                             new ArrayList<CellParam>(Arrays.asList(
                                                     new CellParam("contributionRecordId",
                                                             encripttionService.encrypt(contributionRecord.getContribution_record_id().toString()))
@@ -363,7 +372,7 @@ public class ContributionRecordService {
         contributionRecord.setVolunter(volunter);
         contributionRecord.setContributionConfig(contributionConfig);
         contributionRecord.setTrackingAssignment(trackingAssignment);
-
+        contributionRecord.setRegister_exist(true);
         try {
             contributionRecordRepository.save(contributionRecord);
             return new ResponseEntity<>(new RequestResponseMessage(
@@ -374,7 +383,7 @@ public class ContributionRecordService {
         }
     }
 
-    public  void updateContributionRecord(ContributionRecordDao contributionRecordDao){
+    public  ResponseEntity<RequestResponseMessage> updateContributionRecord(ContributionRecordDao contributionRecordDao){
         contributionRecordDao.setContribution_record_id(encripttionService.decrypt(contributionRecordDao.getContribution_record_id()));
         ContributionRecord contributionRecord = contributionRecordRepository.findById(Long.parseLong(contributionRecordDao.getContribution_record_id())).get();
 
@@ -389,8 +398,13 @@ public class ContributionRecordService {
         contributionRecord.setSent_payment_proof(contributionRecordDao.getSent_payment_proof());
         try {
             contributionRecordRepository.save(contributionRecord);
+            return new ResponseEntity<>(new RequestResponseMessage(
+                    "El aporte fue actualizado", ResponseStatus.SUCCESS), HttpStatus.CREATED);
+
         }catch (Exception exception){
-            System.out.println("exception.getMessage();" + exception.getMessage());
+            return new ResponseEntity<>(new RequestResponseMessage(
+                    "Error actualizando el aporte", ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+
         }
     }
 
@@ -779,4 +793,29 @@ public class ContributionRecordService {
         resultList.add(this.getFooter(contributionRecords, true, true));
         return new Table(resultList);
     }
+    public ContributionRecordDTO getContributionRecordById(String id){
+        id = encripttionService.decrypt(id);
+        try{
+            Optional<ContributionRecord> contributionRecord = contributionRecordRepository.findById(Long.parseLong(id));
+
+            ContributionRecordDTO contributionConfigDTO = new ContributionRecordDTO(contributionRecord.get());
+            contributionConfigDTO.setContributionRecordId(encripttionService.encrypt(contributionConfigDTO.getContributionRecordId()));
+            contributionConfigDTO.setTrackingAssignmentId(encripttionService.encrypt(contributionConfigDTO.getTrackingAssignmentId()));
+            contributionConfigDTO.setContributionConfigId(encripttionService.encrypt(contributionConfigDTO.getContributionConfigId()));
+            contributionConfigDTO.getContributorDTO().setSeedId(encripttionService.encrypt(contributionConfigDTO.getContributorDTO().getSeedId()));
+
+            return contributionConfigDTO;
+        }catch (Exception e){
+            throw e;
+        }
+    }
+
+    public List<ContributionRecord> uniqueContributorHasRegisterContribution(TrackingAssignment trackingAssignment){
+        try{
+            return contributionRecordRepository.findByTrackingAssignment(trackingAssignment);
+        }catch (Exception e){
+            throw e;
+        }
+    }
+
 }

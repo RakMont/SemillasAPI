@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.inject.Inject;
 import java.security.Principal;
@@ -231,27 +230,26 @@ public class ContributorService {
     public Table findRejectedSeeds(){
         List<Contributor> contributors = contributorRepository.findAll();
         contributors.removeIf(p -> !(p.getContributorState() == ContributorState.REJECTED.value));
-        Table resultTable = this.getContributtorsInFormat(contributors, false, false);
+        Table resultTable = this.getContributorsInFormat(contributors, false, false);
         return resultTable;
     }
 
     public Table findAllPendingSeeds(){
         List<Contributor> contributors = contributorRepository.findAll();
         contributors.removeIf(p -> !(p.getContributorState() == ContributorState.PENDING.value));
-        Table resultTable = this.getContributtorsInFormat(contributors, false, false);
+        Table resultTable = this.getContributorsInFormat(contributors, false, false);
         return resultTable;
     }
 
-    public Table findAceptedSeeds(SeedFilter volunteerFilter){
+    public Table findAcceptedSeeds(SeedFilter volunteerFilter){
         List<Contributor> contributors = contributorRepository.findAll();
         contributors.removeIf(p -> !(p.getContributorState() == volunteerFilter.status.value));
         contributors.removeIf(p -> !(p.getRegister_exist()));
 
-        Table resultTable = this.getContributtorsInFormat(contributors,false, false);
-        return resultTable;
+        return this.getContributorsInFormat(contributors,false, false);
     }
 
-    private Table getContributtorsInFormat(List<Contributor> contributors, Boolean isTracking, Boolean isApplicantView){
+    private Table getContributorsInFormat(List<Contributor> contributors, Boolean isTracking, Boolean isApplicantView){
         List<TableRow> resultList = new ArrayList<TableRow>();
         int index=1;
         for (Contributor contributor: contributors){
@@ -302,7 +300,9 @@ public class ContributorService {
                             Arrays.asList(
                                     new CellContent("text",
                                             null,null,false,
-                                            null,null, "SISTEMA",
+                                            null,null,
+                                            contributor.getRegisterVolunter().getUser().getName()+ " " +
+                                                    contributor.getRegisterVolunter().getUser().getLastname(),
                                             null)
                             )
                     )
@@ -374,6 +374,20 @@ public class ContributorService {
                     "chipContent",
                     null, ColorCode.STATE_REJECTED.value, false,
                     null,null, "Rechazado",
+                    null
+            ));
+        }else if (contributor.getContributorState() == ContributorState.PAUSED.value){
+            contents.add(new CellContent(
+                    "chipContent",
+                    null, ColorCode.STATE_PAUSED.value, false,
+                    null,null, "En pausa",
+                    null
+            ));
+        }else if (contributor.getContributorState() == ContributorState.DESERTER.value){
+            contents.add(new CellContent(
+                    "chipContent",
+                    null, ColorCode.STATE_REJECTED.value, false,
+                    null,null, "Desertante",
                     null
             ));
         }
@@ -524,7 +538,7 @@ public class ContributorService {
     public Table findAllApplicants(SeedFilter volunterFilter){
         List<Contributor> contributors = contributorRepository.findAll();
         contributors.removeIf(p -> !(p.getContributorState() == volunterFilter.status.value));
-        Table resultTable = this.getContributtorsInFormat(contributors,false,
+        Table resultTable = this.getContributorsInFormat(contributors,false,
                 volunterFilter.viewPage.equals("applicant"));
         return resultTable;
     }
@@ -648,4 +662,6 @@ public class ContributorService {
 
         }
     }
+
+
 }

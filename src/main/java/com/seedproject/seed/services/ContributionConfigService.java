@@ -1,9 +1,6 @@
 package com.seedproject.seed.services;
 
-import com.seedproject.seed.models.dto.ContributionConfigDTO;
-import com.seedproject.seed.models.dto.ContributionConstDTO;
-import com.seedproject.seed.models.dto.ContributionDTO;
-import com.seedproject.seed.models.dto.ContributionUniqDTO;
+import com.seedproject.seed.models.dto.*;
 import com.seedproject.seed.models.entities.ConstantContribution;
 import com.seedproject.seed.models.entities.ContributionConfig;
 import com.seedproject.seed.models.entities.UniqueContribution;
@@ -64,4 +61,6 @@ public class ContributionConfigService {
         }
         return contributionConfigDTO;
     }
+
+
 }

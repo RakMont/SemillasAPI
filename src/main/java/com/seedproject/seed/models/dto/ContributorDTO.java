@@ -13,7 +13,7 @@ import java.util.Date;
 @Getter
 @Setter
 public class ContributorDTO implements Serializable {
-    private Long seedId;
+    private String seedId;
     private String name;
     private String lastname;
     private String email;
@@ -36,7 +36,7 @@ public class ContributorDTO implements Serializable {
     private Date acceptedDate;
 
     public ContributorDTO(Contributor applicant) {
-        seedId=applicant.getContributor_id();
+        seedId=applicant.getContributor_id().toString();
         name=applicant.getUser().getName();
         lastname=applicant.getUser().getLastname();
         email=applicant.getUser().getEmail();

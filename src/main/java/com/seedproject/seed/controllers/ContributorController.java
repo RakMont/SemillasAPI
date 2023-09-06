@@ -49,7 +49,7 @@ public class ContributorController {
 
     @GetMapping(path = {"/processed"})
     public Table getAcceptedSeeds(@Valid SeedFilter volunteerFilter){
-        return contributorService.findAceptedSeeds(volunteerFilter);
+        return contributorService.findAcceptedSeeds(volunteerFilter);
     }
 
     @GetMapping(path = {"/pending"})
@@ -66,6 +66,7 @@ public class ContributorController {
     public Table findAllAApplicants(@Valid SeedFilter volunterFilter) {
         return contributorService.findAllApplicants(volunterFilter);
     }
+
 
     @GetMapping(path = {"/activeseeds"})
     public List<ComboSeed> findActiveSeeds(){

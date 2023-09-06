@@ -31,8 +31,14 @@ public class ContributionController {
         return contributionConfig;
     }
 
+    @GetMapping(path = {"/getContributionRecordById"})
+    public ContributionRecordDTO findContributionRecordById(@RequestParam(required = true) String id){
+        ContributionRecordDTO contributionConfig=contributionRecordService.getContributionRecordById(id);
+        return contributionConfig;
+    }
+
     @PostMapping(value = "/createContributionRecord")
-    public ResponseEntity<RequestResponseMessage> createUniqueApplicant(@RequestBody ContributionRecordDao contributionRecordDao) {
+    public ResponseEntity<RequestResponseMessage> createContributionRecord(@RequestBody ContributionRecordDao contributionRecordDao) {
         return contributionRecordService.saveContributionRecord(contributionRecordDao);
     }
 
@@ -42,7 +48,7 @@ public class ContributionController {
     }
 
     @GetMapping(path = {"/getRecords"})
-    public Table getAceptedSeeds(@RequestParam(required = false) String id){
+    public Table getAcceptedSeeds(@RequestParam(required = false) String id){
         return contributionRecordService.getSeedContributionRecords(id);
     }
 
