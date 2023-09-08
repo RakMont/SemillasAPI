@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import java.security.Principal;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -52,6 +53,8 @@ public class TrackingAssignmentService {
     private Table getTrackingContributorsInFormat(List<TrackingSeedDTO> trackingAssignments){
         List<TableRow> resultList = new ArrayList<TableRow>();
         int index=1;
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+
         for (TrackingSeedDTO trackingSeed: trackingAssignments){
             List<Cell> cells = new ArrayList<Cell>();
             cells.add(new Cell(
@@ -114,7 +117,8 @@ public class TrackingAssignmentService {
                             Arrays.asList(
                                     new CellContent("text",
                                             null,null,false,
-                                            null,null, "fecha",
+                                            null,null,
+                                            trackingSeed.getLast_payment_date() != null ? formatter.format(trackingSeed.getLast_payment_date()) : "",
                                             null)
                             )
                     )
@@ -126,7 +130,8 @@ public class TrackingAssignmentService {
                             Arrays.asList(
                                     new CellContent("text",
                                             null,null,false,
-                                            null,null, "20BS",
+                                            null,null,
+                                            trackingSeed.getTotal_contribution()!=null ? trackingSeed.getTotal_contribution() : "0"  ,
                                             null)
                             )
                     )

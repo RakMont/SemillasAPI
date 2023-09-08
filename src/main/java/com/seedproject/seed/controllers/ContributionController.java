@@ -56,7 +56,10 @@ public class ContributionController {
     public Table getAllContributionRecords(@Valid ContributionRecordFilter  contributionRecordFilter){
         return contributionRecordService.getAllDonations(contributionRecordFilter);
     }
-
+    @GetMapping(path = "/getAllRecords/report")
+    public ResponseEntity<byte[]> getEmployeeRecordReport() {
+        return contributionRecordService.getContributionRecordsReport();
+    }
     @GetMapping(path = {"/getExportRecords"})
     public Table getExportRecords(@Valid ContributionRecordFilter  contributionRecordFilter){
         return contributionRecordService.getExportRecords(contributionRecordFilter);

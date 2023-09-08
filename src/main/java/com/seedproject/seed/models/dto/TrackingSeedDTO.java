@@ -24,4 +24,6 @@ public interface TrackingSeedDTO {
      Long getContribution_config_id();
      ContributionType getContribution_key();
      int getContributor_state();
+     String getTotal_contribution();
+     Date getLast_payment_date();
 }
