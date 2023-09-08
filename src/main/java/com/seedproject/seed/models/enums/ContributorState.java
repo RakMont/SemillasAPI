@@ -4,9 +4,11 @@ import lombok.Getter;
 
 @Getter
 public enum ContributorState {
-    ACEPTADO(1),
-    RECHAZADO(2),
-    PENDIENTE(3);
+    ACCEPTED(1),
+    REJECTED(2),
+    PENDING(3),
+    PAUSED(4),
+    DESERTER(5);
 
     public int value;
     private ContributorState(int value){

@@ -31,18 +31,24 @@ public class ContributionController {
         return contributionConfig;
     }
 
+    @GetMapping(path = {"/getContributionRecordById"})
+    public ContributionRecordDTO findContributionRecordById(@RequestParam(required = true) String id){
+        ContributionRecordDTO contributionConfig=contributionRecordService.getContributionRecordById(id);
+        return contributionConfig;
+    }
+
     @PostMapping(value = "/createContributionRecord")
-    public ResponseEntity<RequestResponseMessage> createUniqueApplicant(@RequestBody ContributionRecordDao contributionRecordDao) {
+    public ResponseEntity<RequestResponseMessage> createContributionRecord(@RequestBody ContributionRecordDao contributionRecordDao) {
         return contributionRecordService.saveContributionRecord(contributionRecordDao);
     }
 
     @PostMapping(value = "/updateContributionRecord")
-    public void updateContributionRecord(@RequestBody ContributionRecordDao contributionRecordDao) {
-        contributionRecordService.updateContributionRecord(contributionRecordDao);
+    public ResponseEntity<RequestResponseMessage> updateContributionRecord(@RequestBody ContributionRecordDao contributionRecordDao) {
+        return contributionRecordService.updateContributionRecord(contributionRecordDao);
     }
 
     @GetMapping(path = {"/getRecords"})
-    public Table getAceptedSeeds(@RequestParam(required = false) String id){
+    public Table getAcceptedSeeds(@RequestParam(required = false) String id){
         return contributionRecordService.getSeedContributionRecords(id);
     }
 
@@ -50,7 +56,10 @@ public class ContributionController {
     public Table getAllContributionRecords(@Valid ContributionRecordFilter  contributionRecordFilter){
         return contributionRecordService.getAllDonations(contributionRecordFilter);
     }
-
+    @GetMapping(path = "/getAllRecords/report")
+    public ResponseEntity<byte[]> getEmployeeRecordReport() {
+        return contributionRecordService.getContributionRecordsReport();
+    }
     @GetMapping(path = {"/getExportRecords"})
     public Table getExportRecords(@Valid ContributionRecordFilter  contributionRecordFilter){
         return contributionRecordService.getExportRecords(contributionRecordFilter);

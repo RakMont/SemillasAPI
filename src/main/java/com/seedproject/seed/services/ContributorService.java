@@ -5,6 +5,7 @@ import com.seedproject.seed.models.dao.UniqueAplicantHolderDao;
 import com.seedproject.seed.models.dto.*;
 import com.seedproject.seed.models.entities.*;
 import com.seedproject.seed.models.enums.*;
+import com.seedproject.seed.models.filters.SeedFilter;
 import com.seedproject.seed.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,6 +27,8 @@ public class ContributorService {
     @Inject
     ContributionConfigService contributionConfigService;
     @Inject
+    DeactivatedContributorRepository deactivatedContributorRepository;
+    @Inject
     VolunterRepository volunterRepository;
     @Inject
     VolunterService volunterService;
@@ -36,44 +39,81 @@ public class ContributorService {
     @Autowired
     UserDetailsServiceImpl userDetailsService;
 
-    public ResponseEntity<RequestResponseMessage> saveConstantContributtor(ConstantAplicantHolder constantAplicantHolder){
-        ConstantContribution constantContribution = new ConstantContribution();
-        constantContribution.setStart_month(constantAplicantHolder.getBeginMonth());
-        constantContribution.setPaymentDate(PaymentDate.CADA_10_DEL_MES);
-        constantContribution.setRemainderType(constantAplicantHolder.getReminderMethod());
-        constantContribution.setContribution(new Contribution(
-                constantAplicantHolder.getContribution_amount(),
-                constantAplicantHolder.getPaymentMethod(),
-                constantAplicantHolder.getSend_news(),
-                constantAplicantHolder.getSendNewsType()
-        ));
+    public ResponseEntity<RequestResponseMessage> saveConstantContributor(
+            Principal principal,ConstantApplicantHolder constantApplicantHolder){
 
-        ContributionConfig contributionConfig=contributionConfigService.saveConstantContributionConfig(constantContribution);
-        //System.out.println("salvo la configuracion" + contributionConfig.getContribution_key());
-        Volunter volunter = volunterRepository.getById(Long.parseLong("1"));
-        Contributor contributor = constantAplicantHolder.getContributor();
+        Volunter volunteer;
+        ContributionConfig contributionConfig;
+        ConstantContribution constantContribution = new ConstantContribution();
+        constantContribution.setStart_month(constantApplicantHolder.getBeginMonth());
+        constantContribution.setPaymentDate(PaymentDate.CADA_10_DEL_MES);
+        constantContribution.setRemainderType(constantApplicantHolder.getReminderMethod());
+        constantContribution.setContribution(new Contribution(
+                constantApplicantHolder.getContribution_amount(),
+                constantApplicantHolder.getPaymentMethod(),
+                constantApplicantHolder.getSend_news(),
+                constantApplicantHolder.getSendNewsType()
+        ));
+        contributionConfig = contributionConfigService.saveConstantContributionConfig(constantContribution);
+        Contributor contributor = constantApplicantHolder.getContributor();
         contributor.setSend_date(new Date());
         contributor.setRegister_date(new Date());
-        contributor.setContributorState(ContributorState.PENDIENTE.value);
         contributor.setContributionConfig(contributionConfig);
-        contributor.setRegisterVolunter(volunter);
-        ResponseMessage response;
-        try {
-            Contributor resp = contributorRepository.save(contributor);
-            return new ResponseEntity<>(
-                    new RequestResponseMessage(
-                            "Sus datos fueron registrados, estan pendientes de revision." +
-                                    "Un responsable se pondrá en contacto con usted",
-                            ResponseStatus.SUCCESS), HttpStatus.CREATED);
-        }
-        catch(Exception e) {
-            return new ResponseEntity<>(
-                    new RequestResponseMessage(
-                            "Ocurrió un erro registrando sus datos, porfavor intente mas tarde",
-                            ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+        contributor.setRegister_exist(true);
+        if (principal != null ){
+            return this.saveConstantContributionSeed(principal,contributor);
+        }else{
+            volunteer = volunterRepository.getById(Long.parseLong("1"));
+            contributor.setContributorState(ContributorState.PENDING.value);
+            contributor.setRegisterVolunter(volunteer);
+
+            try {
+                Contributor resp = contributorRepository.save(contributor);
+                return new ResponseEntity<>(
+                        new RequestResponseMessage(
+                                "Sus datos fueron enviados, estan pendientes de revision." +
+                                        "Un voluntario del programa se pondrá en contacto con usted.",
+                                ResponseStatus.SUCCESS), HttpStatus.CREATED);
+            }
+            catch(Exception e) {
+                return new ResponseEntity<>(
+                        new RequestResponseMessage(
+                                "Ocurrió un error enviando sus datos, porfavor intente mas tarde.",
+                                ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+            }
         }
     }
-    public ResponseEntity<RequestResponseMessage> savUniqueContributtor(UniqueAplicantHolderDao uniqueAplicantHolderDao){
+
+    private ResponseEntity<RequestResponseMessage> saveConstantContributionSeed(Principal principal,Contributor contributor){
+        Volunter volunteer = (Volunter) this.userDetailsService.loadUserByUsername(principal.getName());
+        contributor.setRegisterVolunter(volunteer);
+        contributor.setContributorState(ContributorState.ACCEPTED.value);
+        try{
+            Contributor contributorResp = contributorRepository.save(contributor);
+            ProcessedContributor processedContributor = new ProcessedContributor();
+            processedContributor.setProcessed_date(new Date());
+            processedContributor.setContributor(contributorResp);
+            processedContributor.setProcess_reason("SEMILLA INGRESADA DE MANERA DIRECTA");
+            processedContributor.setProcess_volunter(volunteer);
+
+            ConstantContribution constantContribution = contributorResp.getContributionConfig().getConstantContribution();
+            constantContribution.setContributionStartDate(new Date());
+            constantContribution.setContributionEndDate(new Date());
+            constantContribution.getContributionEndDate().setYear(constantContribution.getContributionEndDate().getYear() + 1);
+            constantContributionRepository.save(constantContribution);
+            processedContributorRepository.save(processedContributor);
+            return new ResponseEntity<>(new RequestResponseMessage(
+                    "La semilla fue registrada", ResponseStatus.SUCCESS),HttpStatus.CREATED);
+
+        }catch (Exception exception){
+            return new ResponseEntity<>(new RequestResponseMessage(
+                    "Error registrando a la semilla", ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+        }
+    }
+    public ResponseEntity<RequestResponseMessage> savUniqueContributor(
+            Principal principal, UniqueAplicantHolderDao uniqueAplicantHolderDao){
+        Volunter volunteer;
+        ContributionConfig contributionConfig;
         UniqueContribution uniqueContribution = new UniqueContribution();
         uniqueContribution.setDate_contribution(uniqueAplicantHolderDao.getDate_contribution());
         uniqueContribution.setContribution(new Contribution(
@@ -82,65 +122,58 @@ public class ContributorService {
                 uniqueAplicantHolderDao.getSend_news(),
                 uniqueAplicantHolderDao.getSendNewsType()
         ));
-        ContributionConfig contributionConfig=contributionConfigService.saveUniqueContributionConfig(uniqueContribution);
-        System.out.println("salvo la configuracion " + contributionConfig.getContribution_key());
+        contributionConfig=contributionConfigService.saveUniqueContributionConfig(uniqueContribution);
         Contributor contributor = uniqueAplicantHolderDao.getContributor();
-        //Contributor contributor = new Contributor();
-        Volunter volunter = volunterRepository.getById(Long.parseLong("1"));
         contributor.setSend_date(new Date());
         contributor.setRegister_date(new Date());
-        contributor.setContributorState(ContributorState.PENDIENTE.value);
         contributor.setContributionConfig(contributionConfig);
-        contributor.setRegisterVolunter(volunter);
-        ResponseMessage response;
-        try {
-            Contributor resp = contributorRepository.save(contributor);
-            return new ResponseEntity<>(
-                    new RequestResponseMessage(
-                    "Sus datos fueron registrados, estan pendientes de revision." +
-                                "Un responsable se pondrá en contacto con usted",
-                    ResponseStatus.SUCCESS), HttpStatus.CREATED);
-            /*response=new ResponseMessage(
-                    "Created",
-                    "El aplicante fue creado",
-                    200
-            );
-            return response;*/
+        contributor.setRegister_exist(true);
+        if (principal != null ){
+            return this.saveUniqueContributionSeed(principal,contributor);
         }
-        catch(Exception e) {
-            return new ResponseEntity<>(
-                    new RequestResponseMessage(
-                    "Ocurrió un erro registrando sus datos, porfavor intente mas tarde",
-                            ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
-            /*response=new ResponseMessage(
-                    "Error",
-                    "El aplicante fue creado",
-                    400
-            );
-            return response;*/
+        else{
+            volunteer = volunterRepository.getById(Long.parseLong("1"));
+            contributor.setContributorState(ContributorState.PENDING.value);
+            contributor.setRegisterVolunter(volunteer);
+            try {
+                Contributor resp = contributorRepository.save(contributor);
+                return new ResponseEntity<>(
+                        new RequestResponseMessage(
+                                "Sus datos fueron enviados, estan pendientes de revision.\" +\n" +
+                                        "                                    \"Un voluntario del programa se pondrá en contacto con usted.",
+                                ResponseStatus.SUCCESS), HttpStatus.CREATED);
+            }
+            catch(Exception e) {
+                return new ResponseEntity<>(
+                        new RequestResponseMessage(
+                                "Ocurrió un error enviando sus datos, porfavor intente mas tarde.",
+                                ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+            }
+        }
+
+    }
+
+    private ResponseEntity<RequestResponseMessage> saveUniqueContributionSeed(Principal principal,Contributor contributor){
+        Volunter volunteer = (Volunter) this.userDetailsService.loadUserByUsername(principal.getName()) ;
+        contributor.setRegisterVolunter(volunteer);
+        contributor.setContributorState(ContributorState.ACCEPTED.value);
+        try{
+            Contributor contributorReg = contributorRepository.save(contributor);
+            ProcessedContributor processedContributor = new ProcessedContributor();
+            processedContributor.setProcessed_date(new Date());
+            processedContributor.setContributor(contributorReg);
+            processedContributor.setProcess_reason("SEMILLA INGRESADA DE MANERA DIRECTA");
+            processedContributor.setProcess_volunter(volunteer);
+            processedContributorRepository.save(processedContributor);
+            return new ResponseEntity<>(new RequestResponseMessage(
+                    "La semilla fue registrada", ResponseStatus.SUCCESS),HttpStatus.CREATED);
+
+        }catch (Exception exception){
+            return new ResponseEntity<>(new RequestResponseMessage(
+                    "Error registrando a la semilla", ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
         }
     }
 
-    public Table findRejectedSeeds(){
-        List<Contributor> contributors = contributorRepository.findAll();
-        contributors.removeIf(p -> !(p.getContributorState() == ContributorState.RECHAZADO.value));
-        Table resultTable = this.getContributtorsInFormat(contributors, false);
-        return resultTable;
-    }
-
-    public Table findAllPendingSeeds(){
-        List<Contributor> contributors = contributorRepository.findAll();
-        contributors.removeIf(p -> !(p.getContributorState() == ContributorState.PENDIENTE.value));
-        Table resultTable = this.getContributtorsInFormat(contributors, false);
-        return resultTable;
-    }
-
-    public Table findAceptedSeeds(){
-        List<Contributor> contributors = contributorRepository.findAll();
-        contributors.removeIf(p -> !(p.getContributorState() == ContributorState.ACEPTADO.value));
-        Table resultTable = this.getContributtorsInFormat(contributors,false);
-        return resultTable;
-    }
 
     public Contributor rejectApplicant(Long applicant_id, String reason){
         Contributor contributor = contributorRepository.getById(applicant_id);
@@ -150,7 +183,7 @@ public class ContributorService {
         deactivatedContributor.setContributor(contributor);
         rejectedApplicantRepository.save(deactivatedContributor);
         //contributor.setContributorState(ContributorState.RECHAZADO);
-        System.out.println("an" + ContributorState.RECHAZADO);
+        System.out.println("an" + ContributorState.REJECTED);
         return contributorRepository.save(contributor);
     }
 
@@ -194,8 +227,29 @@ public class ContributorService {
         }
         return contributorDTOS;
     }
+    public Table findRejectedSeeds(){
+        List<Contributor> contributors = contributorRepository.findAll();
+        contributors.removeIf(p -> !(p.getContributorState() == ContributorState.REJECTED.value));
+        Table resultTable = this.getContributorsInFormat(contributors, false, false);
+        return resultTable;
+    }
 
-    private Table getContributtorsInFormat(List<Contributor> contributors, Boolean isTracking){
+    public Table findAllPendingSeeds(){
+        List<Contributor> contributors = contributorRepository.findAll();
+        contributors.removeIf(p -> !(p.getContributorState() == ContributorState.PENDING.value));
+        Table resultTable = this.getContributorsInFormat(contributors, false, false);
+        return resultTable;
+    }
+
+    public Table findAcceptedSeeds(SeedFilter volunteerFilter){
+        List<Contributor> contributors = contributorRepository.findAll();
+        contributors.removeIf(p -> !(p.getContributorState() == volunteerFilter.status.value));
+        contributors.removeIf(p -> !(p.getRegister_exist()));
+
+        return this.getContributorsInFormat(contributors,false, false);
+    }
+
+    private Table getContributorsInFormat(List<Contributor> contributors, Boolean isTracking, Boolean isApplicantView){
         List<TableRow> resultList = new ArrayList<TableRow>();
         int index=1;
         for (Contributor contributor: contributors){
@@ -246,7 +300,9 @@ public class ContributorService {
                             Arrays.asList(
                                     new CellContent("text",
                                             null,null,false,
-                                            null,null, "SISTEMA",
+                                            null,null,
+                                            contributor.getRegisterVolunter().getUser().getName()+ " " +
+                                                    contributor.getRegisterVolunter().getUser().getLastname(),
                                             null)
                             )
                     )
@@ -269,7 +325,7 @@ public class ContributorService {
             cells.add(new Cell(
                     new CellHeader("Opciones",0,"String",false,null),
                     new CellProperty(null,false,null,null),
-                    new ArrayList<CellContent>(this.getSeedActions(contributor, isTracking)
+                    new ArrayList<CellContent>(this.getSeedActions(contributor, isTracking,isApplicantView)
                             /*Arrays.asList(
                                     new CellContent("iconAccion",
                                             "offline_pin", ColorCode.ACCEPT_CONTR.value, true,
@@ -299,32 +355,46 @@ public class ContributorService {
     }
     private List<CellContent> getSeedStatus(Contributor contributor){
         List<CellContent> contents = new ArrayList<>();
-        if (contributor.getContributorState() == ContributorState.ACEPTADO.value){
+        if (contributor.getContributorState() == ContributorState.ACCEPTED.value){
             contents.add(new CellContent(
                     "chipContent",
                     null, ColorCode.STATE_ACEPTED.value, false,
                     null,null, "Aceptado",
                     null
             ));
-        } else if (contributor.getContributorState() == ContributorState.PENDIENTE.value){
+        } else if (contributor.getContributorState() == ContributorState.PENDING.value){
             contents.add(new CellContent(
                     "chipContent",
                     null, ColorCode.STATE_PENDING.value, false,
                     null,null, "Pendiente",
                     null
             ));
-        } else if (contributor.getContributorState() == ContributorState.RECHAZADO.value){
+        } else if (contributor.getContributorState() == ContributorState.REJECTED.value){
             contents.add(new CellContent(
                     "chipContent",
                     null, ColorCode.STATE_REJECTED.value, false,
                     null,null, "Rechazado",
                     null
             ));
+        }else if (contributor.getContributorState() == ContributorState.PAUSED.value){
+            contents.add(new CellContent(
+                    "chipContent",
+                    null, ColorCode.STATE_PAUSED.value, false,
+                    null,null, "En pausa",
+                    null
+            ));
+        }else if (contributor.getContributorState() == ContributorState.DESERTER.value){
+            contents.add(new CellContent(
+                    "chipContent",
+                    null, ColorCode.STATE_REJECTED.value, false,
+                    null,null, "Desertante",
+                    null
+            ));
         }
         return contents;
     }
 
-    private List<CellContent> getSeedActions(Contributor contributor, Boolean isTracking){
+    private List<CellContent> getSeedActions(Contributor contributor, Boolean isTracking, Boolean isApplicantView){
         List<CellContent> contents = new ArrayList<>();
         if (isTracking){
             contents.add(new CellContent("iconAccion",
@@ -336,41 +406,52 @@ public class ContributorService {
                     ))
             ));
         }
-        else if ((contributor.getContributorState() == ContributorState.ACEPTADO.value)){
+        else if ((contributor.getContributorState() == ContributorState.ACCEPTED.value)){
+            if (isApplicantView){
+                contents.add(new CellContent("iconAccion",
+                        "remove_red_eye",ColorCode.VIEW_CONTR.value, true,
+                        "SeedInfo","Ver información", null,
+                        new ArrayList<CellParam>(Arrays.asList(
+                                new CellParam("contributorId",
+                                        encripttionService.encrypt(contributor.getContributor_id().toString()))
+                        )
+                        )));
+            }else {
+                contents.add(new CellContent("iconAccion",
+                        "edit", ColorCode.EDIT.value, true,
+                        "EditContr","Editar Datos", null,
+                        new ArrayList<CellParam>(Arrays.asList(
+                                new CellParam("contributorId",
+                                        encripttionService.encrypt(contributor.getContributor_id().toString()))
+                        ))
+                ));
+                contents.add(new CellContent("iconAccion",
+                        "voice_over_off", ColorCode.DELETE.value, true,
+                        "Unactive","Desactivar", null,
+                        new ArrayList<CellParam>(Arrays.asList(
+                                new CellParam("contributorId",
+                                        encripttionService.encrypt(contributor.getContributor_id().toString()))
+                        ))
+                ));
+                contents.add(new CellContent("iconAccion",
+                        "remove_red_eye",ColorCode.VIEW_CONTR.value, true,
+                        "SeedInfo","Ver información", null,
+                        new ArrayList<CellParam>(Arrays.asList(
+                                new CellParam("contributorId",
+                                        encripttionService.encrypt(contributor.getContributor_id().toString()))
+                        )
+                        )));
+            }
+        } else if ((contributor.getContributorState() == ContributorState.PENDING.value)){
             contents.add(new CellContent("iconAccion",
-                    "edit", ColorCode.EDIT.value, true,
-                    "EditContr","Editar Datos", null,
-                    new ArrayList<CellParam>(Arrays.asList(
-                            new CellParam("contributorId",
-                                    encripttionService.encrypt(contributor.getContributor_id().toString()))
-                    ))
-            ));
-            contents.add(new CellContent("iconAccion",
-                    "voice_over_off", ColorCode.DELETE.value, true,
-                    "Unactive","Desactivar", null,
-                    new ArrayList<CellParam>(Arrays.asList(
-                            new CellParam("contributorId",
-                                    encripttionService.encrypt(contributor.getContributor_id().toString()))
-                    ))
-            ));
-            contents.add(new CellContent("iconAccion",
-                    "remove_red_eye",ColorCode.VIEW_CONTR.value, true,
-                    "SeedInfo","Ver información", null,
-                    new ArrayList<CellParam>(Arrays.asList(
-                            new CellParam("contributorId",
-                                    encripttionService.encrypt(contributor.getContributor_id().toString()))
-                    )
-                    )));
-        } else if ((contributor.getContributorState() == ContributorState.PENDIENTE.value)){
-            contents.add(new CellContent("iconAccion",
-                    "offline_pin", ColorCode.ACCEPT_CONTR.value, true,
-                    "AceptSeed","Aceptar semilla", null,
+                    "check", ColorCode.ACCEPT_CONTR.value, true,
+                    "AcceptSeed","Aceptar semilla", null,
                     new ArrayList<CellParam>(Arrays.asList(
                             new CellParam("contributorId",
                                     encripttionService.encrypt(contributor.getContributor_id().toString()))
                     ))));
             contents.add(new CellContent("iconAccion",
-                    "highlight_off",ColorCode.REJECT_CONTR.value, true,
+                    "clear",ColorCode.REJECT_CONTR.value, true,
                     "RejectSeed","Rechazar semilla", null,
                     new ArrayList<CellParam>(Arrays.asList(
                             new CellParam("contributorId",
@@ -383,7 +464,25 @@ public class ContributorService {
                             new CellParam("contributorId",
                                     encripttionService.encrypt(contributor.getContributor_id().toString()))
                     ))));
-        } else if (contributor.getContributorState() == ContributorState.RECHAZADO.value){
+        } else if (contributor.getContributorState() == ContributorState.REJECTED.value){
+            contents.add(new CellContent("iconAccion",
+                    "remove_red_eye",ColorCode.VIEW_CONTR.value, true,
+                    "SeedInfo","Ver información", null,
+                    new ArrayList<CellParam>(Arrays.asList(
+                            new CellParam("contributorId",
+                                    encripttionService.encrypt(contributor.getContributor_id().toString()))
+                    ))));
+        }
+        else if (contributor.getContributorState() == ContributorState.PAUSED.value){
+            contents.add(new CellContent("iconAccion",
+                    "remove_red_eye",ColorCode.VIEW_CONTR.value, true,
+                    "SeedInfo","Ver información", null,
+                    new ArrayList<CellParam>(Arrays.asList(
+                            new CellParam("contributorId",
+                                    encripttionService.encrypt(contributor.getContributor_id().toString()))
+                    ))));
+        }
+        else if (contributor.getContributorState() == ContributorState.DESERTER.value){
             contents.add(new CellContent("iconAccion",
                     "remove_red_eye",ColorCode.VIEW_CONTR.value, true,
                     "SeedInfo","Ver información", null,
@@ -393,13 +492,12 @@ public class ContributorService {
                     ))));
         }
 
-
         return contents;
     }
 
     public List<ComboSeed> findActiveSeeds(){
         List<Contributor> contributors = contributorRepository.findAll();
-        contributors.removeIf(p -> !(p.getContributorState() == ContributorState.ACEPTADO.value));
+        contributors.removeIf(p -> !(p.getContributorState() == ContributorState.ACCEPTED.value));
         List<ComboSeed> activecontr= new ArrayList<>();
         for (Contributor contributor:contributors){
             activecontr.add(new ComboSeed(
@@ -436,4 +534,134 @@ public class ContributorService {
         volunterDTO.setUserId(encripttionService.encrypt(volunterDTO.getUserId()));
         return volunterDTO;
     }
+
+    public Table findAllApplicants(SeedFilter volunterFilter){
+        List<Contributor> contributors = contributorRepository.findAll();
+        contributors.removeIf(p -> !(p.getContributorState() == volunterFilter.status.value));
+        Table resultTable = this.getContributorsInFormat(contributors,false,
+                volunterFilter.viewPage.equals("applicant"));
+        return resultTable;
+    }
+
+    /*CONFIRMED SEEDS*/
+    public ResponseEntity<RequestResponseMessage> updateUniqueContributor(UniqueAplicantHolderDao uniqueAplicantHolderDao){
+        Long id = Long.parseLong(this.encripttionService.decrypt(uniqueAplicantHolderDao.getContributorId()));
+
+        try{
+            Contributor contributorHelper = this.contributorRepository.getById(id);
+
+            contributorHelper.getContributionConfig().getUniqueContribution().setDate_contribution(uniqueAplicantHolderDao.getDate_contribution());
+            contributorHelper.getContributionConfig().getUniqueContribution().getContribution().setContribution_amount(uniqueAplicantHolderDao.getContribution_amount());
+            contributorHelper.getContributionConfig().getUniqueContribution().getContribution().setPaymentMethod(uniqueAplicantHolderDao.getPaymentMethod());
+            contributorHelper.getContributionConfig().getUniqueContribution().getContribution().setSend_news(uniqueAplicantHolderDao.getSend_news());
+            contributorHelper.getContributionConfig().getUniqueContribution().getContribution().setSendNewsType(uniqueAplicantHolderDao.getSendNewsType());
+            contributorHelper.setAddress(uniqueAplicantHolderDao.getContributor().getAddress());
+            contributorHelper.setCountry(uniqueAplicantHolderDao.getContributor().getCountry());
+            contributorHelper.setCity(uniqueAplicantHolderDao.getContributor().getCity());
+            contributorHelper.getUser().setName(uniqueAplicantHolderDao.getContributor().getUser().getName());
+            contributorHelper.getUser().setLastname(uniqueAplicantHolderDao.getContributor().getUser().getLastname());
+            contributorHelper.getUser().setEmail(uniqueAplicantHolderDao.getContributor().getUser().getEmail());
+            contributorHelper.getUser().setPhone(uniqueAplicantHolderDao.getContributor().getUser().getPhone());
+            contributorHelper.getUser().setDni(uniqueAplicantHolderDao.getContributor().getUser().getDni());
+            contributorHelper.getUser().setBirthdate(uniqueAplicantHolderDao.getContributor().getUser().getBirthdate());
+
+
+            try {
+                Contributor resp = contributorRepository.save(contributorHelper);
+                return new ResponseEntity<>(
+                        new RequestResponseMessage(
+                                "Sus datos fueron actualizados",
+                                ResponseStatus.SUCCESS), HttpStatus.CREATED);
+            }
+            catch(Exception e) {
+                return new ResponseEntity<>(
+                        new RequestResponseMessage(
+                                "Ocurrió un error actualizando los datos, porfavor intente mas tarde",
+                                ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+            }
+        }catch (Exception e){
+            return new ResponseEntity<>(
+                    new RequestResponseMessage(
+                            "Ocurrió un error actualizando los datos, porfavor intente mas tarde",
+                            ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+
+        }
+    }
+
+    public ResponseEntity<RequestResponseMessage> updateConstantContributor(ConstantApplicantHolder constantApplicantHolder){
+        Long id = Long.parseLong(this.encripttionService.decrypt(constantApplicantHolder.getContributorId()));
+        try{
+            Contributor contributorHelper = this.contributorRepository.getById(id);
+
+            contributorHelper.getContributionConfig().getConstantContribution().setStart_month(constantApplicantHolder.getBeginMonth());
+            contributorHelper.getContributionConfig().getConstantContribution().setPaymentDate(constantApplicantHolder.getPaymentDay());
+            contributorHelper.getContributionConfig().getConstantContribution().setRemainderType(constantApplicantHolder.getReminderMethod());
+            contributorHelper.getContributionConfig().getConstantContribution().getContribution().setContribution_amount(constantApplicantHolder.getContribution_amount());
+            contributorHelper.getContributionConfig().getConstantContribution().getContribution().setPaymentMethod(constantApplicantHolder.getPaymentMethod());
+            contributorHelper.getContributionConfig().getConstantContribution().getContribution().setSend_news(constantApplicantHolder.getSend_news());
+            contributorHelper.getContributionConfig().getConstantContribution().getContribution().setSendNewsType(constantApplicantHolder.getSendNewsType());
+            contributorHelper.setAddress(constantApplicantHolder.getContributor().getAddress());
+            contributorHelper.setCountry(constantApplicantHolder.getContributor().getCountry());
+            contributorHelper.setCity(constantApplicantHolder.getContributor().getCity());
+            contributorHelper.getUser().setName(constantApplicantHolder.getContributor().getUser().getName());
+            contributorHelper.getUser().setLastname(constantApplicantHolder.getContributor().getUser().getLastname());
+            contributorHelper.getUser().setEmail(constantApplicantHolder.getContributor().getUser().getEmail());
+            contributorHelper.getUser().setPhone(constantApplicantHolder.getContributor().getUser().getPhone());
+            contributorHelper.getUser().setDni(constantApplicantHolder.getContributor().getUser().getDni());
+            contributorHelper.getUser().setBirthdate(constantApplicantHolder.getContributor().getUser().getBirthdate());
+
+            try {
+                Contributor resp = contributorRepository.save(contributorHelper);
+                return new ResponseEntity<>(
+                        new RequestResponseMessage(
+                                "Sus datos fueron actualizados, estan pendientes de revision.",
+                                ResponseStatus.SUCCESS), HttpStatus.CREATED);
+            }
+            catch(Exception e) {
+                return new ResponseEntity<>(
+                        new RequestResponseMessage(
+                                "Ocurrió un error actualizando los datos, porfavor intente mas tarde",
+                                ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+            }
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(
+                    new RequestResponseMessage(
+                            "Ocurrió un error actualizando los datos, porfavor intente mas tarde",
+                            ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    public ResponseEntity<RequestResponseMessage> deactivateContributor(
+            Principal principal, DeactivateContributorDTO deactivateContributorDTO){
+        Volunter volunteer = (Volunter) this.userDetailsService.loadUserByUsername(principal.getName());
+        Long id = Long.parseLong(this.encripttionService.decrypt(deactivateContributorDTO.getContributorId()));
+        Contributor contributor = this.contributorRepository.getById(id);
+        //contributor.setContributorState();
+        DeactivatedContributor deactivateContributor = new DeactivatedContributor();
+        deactivateContributor.setContributor(contributor);
+        deactivateContributor.setRegVolunter(volunteer);
+        deactivateContributor.setReactivationDate(deactivateContributorDTO.getReactivationDate());
+        deactivateContributor.setDeactivationDate(deactivateContributorDTO.getDeactivationDate());
+        deactivateContributor.setDeactivationReason(deactivateContributorDTO.getDeactivationReason());
+        try{
+            this.deactivatedContributorRepository.save(deactivateContributor);
+            this.contributorRepository.updateContributorState(id,deactivateContributorDTO.getContributorState().value);
+            return new ResponseEntity<>(
+                    new RequestResponseMessage(
+                            deactivateContributorDTO.getContributorState().equals(ContributorState.PAUSED) ?
+                                    "El estado de la semilla fue cambiado a en pausa." :
+                            "El estado de la semilla fue cambiado a desertante",
+                            ResponseStatus.SUCCESS), HttpStatus.ACCEPTED);
+
+        }catch (Exception exception){
+            return new ResponseEntity<>(
+                    new RequestResponseMessage(
+                            "Ocurrió un error realizando esta acción",
+                            ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+
+        }
+    }
+
+
 }

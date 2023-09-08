@@ -22,6 +22,8 @@ public class Role {
     @Column(name = "role_name")
     private RoleName role_name;
 
+    private String name;
+
     @JsonIgnore
     @ManyToMany(mappedBy = "roles")
     private List<Volunter> volunters;

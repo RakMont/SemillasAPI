@@ -21,6 +21,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
+import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -43,14 +44,18 @@ public class VolunterService {
 
     @Inject
     RoleRepository roleRepository;
-    public Table findAllVolunter( VolunterFilter volunterFilter){
-        List<Volunter> volunters = volunterRepository.findAll();
+
+    @Autowired
+    UserDetailsServiceImpl userDetailsService;
+    public Table findAllVolunteer(VolunterFilter volunterFilter){
+        List<Volunter> volunteers = volunterRepository.findAll();
+        volunteers.removeIf(v -> !v.getRegister_exist());
         if (volunterFilter!= null && volunterFilter.getStatus() != null){
-            volunters.removeIf(v -> v.getStatus()!= volunterFilter.getStatus());
+            volunteers.removeIf(v -> v.getStatus()!= volunterFilter.getStatus());
         }
-        volunters.forEach((volunter -> volunter.setRoles(roleRepository.getVolunterRoles(volunter.getVolunterId()))));
-        Table resultTable = this.getVoluntersInformat(volunters, false);
-        return resultTable;
+        volunteers.forEach((volunteer -> volunteer.setRoles(roleRepository.getVolunterRoles(volunteer.getVolunterId()))));
+
+        return this.getVolunteersInFormat(volunteers);
     }
 
    /* public Table findVoluntersByFilter(VolunterFilter volunterFilter){
@@ -72,7 +77,7 @@ public class VolunterService {
         volunters.removeIf(v -> !v.getStatus().equals(Status.ACTIVE));
 
         //Table resultTable = this.getVoluntersInformat(volunters, true);
-        Table resultTable = this.getTrackingVoluntersInformat(volunters);
+        Table resultTable = this.getTrackingVolunteersInFormat(volunters);
         return resultTable;
     }
     public boolean gotTheRol(RoleName roleName, List<Role> roles){
@@ -81,11 +86,11 @@ public class VolunterService {
         Role res = roles.stream().filter( r-> roleName.equals(r.getRole_name())).findAny().orElse(null);
         return res != null;
     }
-    private Table getVoluntersInformat(List<Volunter> volunters, Boolean isTracking){
+    private Table getVolunteersInFormat(List<Volunter> volunteers){
         List<TableRow> resultList = new ArrayList<TableRow>();
         int index=1;
-        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-        for (Volunter volunter: volunters){
+       // SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+        for (Volunter volunter: volunteers){
             List<Cell> cells = new ArrayList<Cell>();
             cells.add(new Cell(
                     new CellHeader("No",0,"Integer",false,null),
@@ -136,7 +141,26 @@ public class VolunterService {
             cells.add(new Cell(
                     new CellHeader("Responsabilidades",0,"String",false,null),
                     new CellProperty(null,false,null,null),
-                    new ArrayList<CellContent>(this.getVolunterRoles(volunter.getRoles()))
+                    new ArrayList<CellContent>(this.getVolunteerRoles(volunter.getRoles()))
+            ));
+            cells.add(new Cell(
+                    new CellHeader("Usuario",0,"String",true,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",
+                                            null,null,false,
+                                            null,null, volunter.getUsername(),
+                                            null),
+                                    new CellContent("iconAccion",
+                                            "rate_review", ColorCode.EDIT_PASSWORD.value, true,
+                                            "updatePassword","Cambiar contraseña", null,
+                                            new ArrayList<CellParam>(Arrays.asList(
+                                                    new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))
+                                            ))
+                                    )
+                            )
+                    )
             ));
             cells.add(new Cell(
                     new CellHeader("Estado",0,"String",false,null),
@@ -171,7 +195,7 @@ public class VolunterService {
             cells.add(new Cell(
                     new CellHeader("Opciones",0,"String",false,null),
                     new CellProperty(null,false,null,null),
-                    new ArrayList<CellContent>(this.getSeedActions(volunter,isTracking))
+                    new ArrayList<CellContent>(this.getSeedActions(volunter,false))
             ));
             resultList.add(new TableRow(cells));
             index++;
@@ -179,7 +203,7 @@ public class VolunterService {
         return new Table(resultList);
     }
 
-    private List<CellContent> getVolunterRoles(List<Role> roles){
+    private List<CellContent> getVolunteerRoles(List<Role> roles){
         List<CellContent> contents = new ArrayList<>();
         for (Role role : roles){
             if(role.getRole_name().equals(RoleName.R_PRINCIPAL)){
@@ -283,10 +307,13 @@ public class VolunterService {
     }
 
 
-    public Volunter findOneVolunter(String volunter_id){
+    public VolunterDTO findOneVolunter(String volunter_id){
         volunter_id = encripttionService.decrypt(volunter_id);
         try {
-            return volunterRepository.getById(Long.parseLong(volunter_id));
+            VolunterDTO volunterDTO = new VolunterDTO(volunterRepository.getById(Long.parseLong(volunter_id)));
+            volunterDTO.getRoles().forEach(role -> role.setName(role.getRole_name().value));
+           // role.getRole_name().equals(RoleName.R_PRINCIPAL)
+            return volunterDTO;
         } catch (Exception e){
             throw  e;
         }
@@ -309,6 +336,7 @@ public class VolunterService {
             try {
                // User user =  userRepository.save(volunter.getUser());
                 volunter.setStatus(Status.ACTIVE);
+                volunter.setRegister_exist(true);
                 volunter.setEntryDate(new Date());
                 volunter.setPassword(this.bCryptPasswordEncoder.encode(volunter.getPassword()));
                  volunterRepository.save(volunter);
@@ -322,17 +350,32 @@ public class VolunterService {
         }
     }
 
-    public Volunter updateVolunter (Volunter volunter){
-        userRepository.save(volunter.getUser());
-        Volunter saveVolunter = volunterRepository.getById(volunter.getVolunterId());
-        saveVolunter.setRoles(volunter.getRoles());
-        return volunterRepository.save(saveVolunter);
+    public ResponseEntity<RequestResponseMessage> updateVolunter (Volunter volunter) throws Exception{
+        if (volunter.getRoles().isEmpty()) {
+            return new ResponseEntity<>(new RequestResponseMessage(
+                    "El voluntario debe tener al menos un rol", ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+        } else {
+            try {
+                userRepository.save(volunter.getUser());
+                Volunter saveVolunter = volunterRepository.getById(volunter.getVolunterId());
+                saveVolunter.setRoles(volunter.getRoles());
+                volunterRepository.save(saveVolunter);
+                return new ResponseEntity<>(new RequestResponseMessage(
+                        "El voluntario fue actualizado", ResponseStatus.SUCCESS),HttpStatus.CREATED);
+
+            }catch (Exception exception){
+                return new ResponseEntity<>(new RequestResponseMessage(
+                        "Error actualizando", ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+            }
+        }
+
     }
 
     public ResponseEntity<RequestResponseMessage> deleteVolunter(String id){
         id = encripttionService.decrypt(id);
         try {
-            volunterRepository.deleteById(Long.parseLong(id));
+            volunterRepository.setRegisterFalse(Long.parseLong(id));
+            //volunterRepository.deleteById(Long.parseLong(id));
             return new ResponseEntity<>(new RequestResponseMessage(
                     "El voluntario fue eliminado", ResponseStatus.SUCCESS),HttpStatus.CREATED);
         } catch (Exception exception){
@@ -370,14 +413,19 @@ public class VolunterService {
 
     }
 
-    public void activateVolunteer(ExitPost exitPost){
+    public ResponseEntity<RequestResponseMessage>  activateVolunteer(ExitPost exitPost){
         exitPost.setVolunteerId(encripttionService.decrypt(exitPost.getVolunteerId()));
         Volunter volunter=volunterRepository.getById(Long.parseLong(exitPost.getVolunteerId()));
         try {
             volunter.setStatus(Status.ACTIVE);
             volunterRepository.save(volunter);
+            return new ResponseEntity<>(new RequestResponseMessage(
+                    "El voluntario fue reactivado", ResponseStatus.SUCCESS),HttpStatus.CREATED);
+
         }catch (Exception e){
-            System.out.println("Exception " + e);
+            return new ResponseEntity<>(new RequestResponseMessage(
+                    "Error al reactivar al voluntario", ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+
         }
 
     }
@@ -400,8 +448,9 @@ public class VolunterService {
         return volunter.get();
     }
 
-    public List<ExitPost> getExitMessages(Long volunterId){
-        Volunter volunter = volunterRepository.getById(volunterId);
+    public List<ExitPost> getExitMessages(String id){
+        String volunter_id = encripttionService.decrypt(id);
+        Volunter volunter = volunterRepository.getById(Long.parseLong(volunter_id));
         List<ExitMessage> exitMessageList = exitMessageRepository.findByVolunter(volunter);
         List<ExitPost> finalList = new ArrayList<>();
         for (ExitMessage exitMessage: exitMessageList){
@@ -410,11 +459,11 @@ public class VolunterService {
         return finalList;
     }
 
-    private Table getTrackingVoluntersInformat(List<Volunter> volunters){
+    private Table getTrackingVolunteersInFormat(List<Volunter> volunteers){
         List<TableRow> resultList = new ArrayList<TableRow>();
         int index=1;
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-        for (Volunter volunter: volunters){
+        for (Volunter volunter: volunteers){
             List<Cell> cells = new ArrayList<Cell>();
             cells.add(new Cell(
                     new CellHeader("No",0,"Integer",false,null),
@@ -477,7 +526,7 @@ public class VolunterService {
             cells.add(new Cell(
                     new CellHeader("Responsabilidades",0,"String",false,null),
                     new CellProperty(null,false,null,null),
-                    new ArrayList<CellContent>(this.getVolunterRoles(volunter.getRoles()))
+                    new ArrayList<CellContent>(this.getVolunteerRoles(volunter.getRoles()))
             ));
             cells.add(new Cell(
                     new CellHeader("Opciones",0,"String",false,null),
@@ -490,4 +539,21 @@ public class VolunterService {
         return new Table(resultList);
     }
 
+    public ResponseEntity<RequestResponseMessage> updateVolunteerPassword(Principal principal,VolunteerPasswordDTO volunteerPasswordDTO){
+        try{
+            VolunterDTO volunteerDTO = new VolunterDTO((Volunter) this.userDetailsService.loadUserByUsername(principal.getName()));
+            if(volunteerDTO.getRoles().stream().anyMatch(rol->rol.getRole_name().equals(RoleName.R_PRINCIPAL))){
+                Long id = Long.parseLong(encripttionService.decrypt(volunteerPasswordDTO.getUpdatedVolunteerId()));
+                volunterRepository.setNewPassword(id,this.bCryptPasswordEncoder.encode(volunteerPasswordDTO.getUpdatedVolunteerPassword()));
+                return new ResponseEntity<>(new RequestResponseMessage(
+                        "La contraseña fue actualizada", ResponseStatus.SUCCESS),HttpStatus.CREATED);
+            }else{
+                return new ResponseEntity<>(new RequestResponseMessage(
+                        "Usted no tiene la autorización para este proceso", ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+            }
+        }catch (Exception exception){
+            return new ResponseEntity<>(new RequestResponseMessage(
+                    "Error actualizando", ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+        }
+    }
 }

@@ -22,6 +22,7 @@ public class ConstantContribution {
     @Column(name = "start_month")
     private String start_month;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "payment_date")
     private PaymentDate paymentDate;
 

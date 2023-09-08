@@ -8,16 +8,21 @@ import com.seedproject.seed.models.enums.ContributionType;
 import com.seedproject.seed.models.enums.PaymentMethod;
 import com.seedproject.seed.models.enums.ResponseStatus;
 import com.seedproject.seed.models.filters.ContributionRecordFilter;
+import com.seedproject.seed.models.reports.ContributionRecordReportDTO;
 import com.seedproject.seed.repositories.*;
+import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ResourceUtils;
 
 import javax.inject.Inject;
+import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class ContributionRecordService {
@@ -34,11 +39,66 @@ public class ContributionRecordService {
     @Inject
     EncripttionService encripttionService;
 
-    public Table getSeedContributionRecords(String SeedId){
-        //Long id = Long.parseLong(encripttionService.decrypt(SeedId));
-        List<ContributionRecord> contributionRecords = contributionRecordRepository.findAll();
-        return this.getContributionsInformat(contributionRecords);
+    public ResponseEntity<byte[]> getContributionRecordsReport(){
+        try {
+
+            List<ContributionRecord> contributionRecords = contributionRecordRepository.findAll();
+            List<ContributionRecordReportDTO> contributionRecordReportDTOS = new ArrayList<>();
+            int index = 0;
+            for(ContributionRecord contributionRecord : contributionRecords){
+                index++;
+                contributionRecordReportDTOS.add(new ContributionRecordReportDTO(Integer.toString(index), contributionRecord));
+            }
+
+            /*contributionRecords.stream().map(cr-> {
+                index++;
+                contributionRecordReportDTOS.add(new ContributionRecordReportDTO(Integer.toString(index), cr));
+                return cr;
+            }).collect(Collectors.toList());*/
+
+            Map<String, Object> empParams = new HashMap<String, Object>();
+            empParams.put("report_title", "TechGeekNext");
+            empParams.put("contribution_records", "fhgjgjhgj");
+
+
+            JasperPrint jprint = JasperFillManager.fillReport(
+                    JasperCompileManager.compileReport(
+                            ResourceUtils.getFile("classpath:seedsmainreport.jrxml")
+                                    .getAbsolutePath())
+                    , empParams, new JRBeanCollectionDataSource(contributionRecordReportDTOS));
+
+
+            HttpHeaders headers = new HttpHeaders();
+            //set the PDF format
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("filename", "contributionrecords.pdf");
+
+            return new ResponseEntity<byte[]>
+                    (JasperExportManager.exportReportToPdf(jprint), headers, HttpStatus.OK);
+
+
+        } catch(JRException | FileNotFoundException ex){
+            ex.getMessage();
+
+            return new ResponseEntity<byte[]>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
+
+    public Table getSeedContributionRecords(String SeedId){
+        Long id = Long.parseLong(encripttionService.decrypt(SeedId));
+        //List<ContributionRecord> contributionRecords = contributionRecordRepository.findAll();
+       try{
+           Contributor contributor = contributorRepository.getById(id);
+           List<ContributionRecord> contributionRecords = contributionRecordRepository.findByContributor(contributor);
+
+           if (!contributionRecords.isEmpty()) return this.getContributionsInformat(contributionRecords);
+           else return null;
+       }catch (Exception exception){
+            return null;
+        }
+    }
+
+
 
     public Table getAllDonations(ContributionRecordFilter contributionRecordFilter){
         List<ContributionRecord> contributionRecords = contributionRecordRepository.findAll();
@@ -186,8 +246,8 @@ public class ContributionRecordService {
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("iconAccion",
-                                            "remove_red_eye","#efc561", true,
-                                            "SeeRecord","Ver información", null,
+                                            "description","#efc561", true,
+                                            "SeeRecord","Ver detalles", null,
                                             new ArrayList<CellParam>(Arrays.asList(
                                                     new CellParam("contributionRecordId",
                                                             encripttionService.encrypt(contributionRecord.getContribution_record_id().toString()))
@@ -315,15 +375,22 @@ public class ContributionRecordService {
                                                             encripttionService.encrypt(contributionRecord.getContribution_record_id().toString()))
                                             ))),*/
                                     new CellContent("iconAccion",
-                                            "delete",ColorCode.DELETE.value, true,
-                                            "deleteRecord","Rechazar semilla", null,
+                                            "delete",ColorCode.STATE_REJECTED.value, true,
+                                            "deleteRecord","Eliminar aporte", null,
                                             new ArrayList<CellParam>(Arrays.asList(
                                                     new CellParam("contributionRecordId",
                                                             encripttionService.encrypt(contributionRecord.getContribution_record_id().toString()))
                                             ))),
                                     new CellContent("iconAccion",
-                                            "remove_red_eye","#efc561", true,
-                                            "SeeRecord","Ver información", null,
+                                            "description",ColorCode.VIEW_CONTR.value, true,
+                                            "SeeRecord","Ver Detalle", null,
+                                            new ArrayList<CellParam>(Arrays.asList(
+                                                    new CellParam("contributionRecordId",
+                                                            encripttionService.encrypt(contributionRecord.getContribution_record_id().toString()))
+                                            ))),
+                                    new CellContent("iconAccion",
+                                            "edit", ColorCode.EDIT.value, true,
+                                            "UpdateRecord", "Actualizar aporte", null,
                                             new ArrayList<CellParam>(Arrays.asList(
                                                     new CellParam("contributionRecordId",
                                                             encripttionService.encrypt(contributionRecord.getContribution_record_id().toString()))
@@ -363,7 +430,7 @@ public class ContributionRecordService {
         contributionRecord.setVolunter(volunter);
         contributionRecord.setContributionConfig(contributionConfig);
         contributionRecord.setTrackingAssignment(trackingAssignment);
-
+        contributionRecord.setRegister_exist(true);
         try {
             contributionRecordRepository.save(contributionRecord);
             return new ResponseEntity<>(new RequestResponseMessage(
@@ -374,7 +441,7 @@ public class ContributionRecordService {
         }
     }
 
-    public  void updateContributionRecord(ContributionRecordDao contributionRecordDao){
+    public  ResponseEntity<RequestResponseMessage> updateContributionRecord(ContributionRecordDao contributionRecordDao){
         contributionRecordDao.setContribution_record_id(encripttionService.decrypt(contributionRecordDao.getContribution_record_id()));
         ContributionRecord contributionRecord = contributionRecordRepository.findById(Long.parseLong(contributionRecordDao.getContribution_record_id())).get();
 
@@ -389,8 +456,13 @@ public class ContributionRecordService {
         contributionRecord.setSent_payment_proof(contributionRecordDao.getSent_payment_proof());
         try {
             contributionRecordRepository.save(contributionRecord);
+            return new ResponseEntity<>(new RequestResponseMessage(
+                    "El aporte fue actualizado", ResponseStatus.SUCCESS), HttpStatus.CREATED);
+
         }catch (Exception exception){
-            System.out.println("exception.getMessage();" + exception.getMessage());
+            return new ResponseEntity<>(new RequestResponseMessage(
+                    "Error actualizando el aporte", ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+
         }
     }
 
@@ -779,4 +851,91 @@ public class ContributionRecordService {
         resultList.add(this.getFooter(contributionRecords, true, true));
         return new Table(resultList);
     }
+    public ContributionRecordDTO getContributionRecordById(String id){
+        id = encripttionService.decrypt(id);
+        try{
+            Optional<ContributionRecord> contributionRecord = contributionRecordRepository.findById(Long.parseLong(id));
+
+            ContributionRecordDTO contributionConfigDTO = new ContributionRecordDTO(contributionRecord.get());
+            contributionConfigDTO.setContributionRecordId(encripttionService.encrypt(contributionConfigDTO.getContributionRecordId()));
+            contributionConfigDTO.setTrackingAssignmentId(encripttionService.encrypt(contributionConfigDTO.getTrackingAssignmentId()));
+            contributionConfigDTO.setContributionConfigId(encripttionService.encrypt(contributionConfigDTO.getContributionConfigId()));
+            contributionConfigDTO.getContributorDTO().setSeedId(encripttionService.encrypt(contributionConfigDTO.getContributorDTO().getSeedId()));
+
+            return contributionConfigDTO;
+        }catch (Exception e){
+            throw e;
+        }
+    }
+
+    public List<ContributionRecord> uniqueContributorHasRegisterContribution(TrackingAssignment trackingAssignment){
+        try{
+            return contributionRecordRepository.findByTrackingAssignment(trackingAssignment);
+        }catch (Exception e){
+            throw e;
+        }
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+    *Employee emp1 = new Employee(1, "AAA", "BBB", "A city");
+            Employee emp2 = new Employee(2, "XXX", "ZZZ", "B city");
+
+            List<Employee> empLst = new ArrayList<Employee>();
+            empLst.add(emp1);
+            empLst.add(emp2);
+
+            //dynamic parameters required for report
+            Map<String, Object> empParams = new HashMap<String, Object>();
+            empParams.put("CompanyName", "TechGeekNext");
+            empParams.put("employeeData", new JRBeanCollectionDataSource(empLst));
+
+            JasperPrint empReport =
+                    JasperFillManager.fillReport
+                            (
+                                    JasperCompileManager.compileReport(
+                                            ResourceUtils.getFile("classpath:employees-details.jrxml")
+                                                    .getAbsolutePath()) // path of the jasper report
+                                    , empParams // dynamic parameters
+                                    , new JREmptyDataSource()
+                            );
+
+            HttpHeaders headers = new HttpHeaders();
+            //set the PDF format
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("filename", "employees-details.pdf");
+            //create the report in PDF format
+            return new ResponseEntity<byte[]>
+                    (JasperExportManager.exportReportToPdf(empReport), headers, HttpStatus.OK);
+    * */

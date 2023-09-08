@@ -1,6 +1,7 @@
 package com.seedproject.seed.models.dto;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.seedproject.seed.models.entities.ExitMessage;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,6 +14,7 @@ public class ExitPost {
     Long message_id;
     String message;
     String volunteerId;
+    @JsonFormat(pattern="yyyy-MM-dd")
     Date registerDate;
 
     public ExitPost() {
