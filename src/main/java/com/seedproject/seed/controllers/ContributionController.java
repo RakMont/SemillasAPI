@@ -60,10 +60,10 @@ public class ContributionController {
     public ResponseEntity<byte[]> getEmployeeRecordReport() {
         return contributionRecordService.getContributionRecordsReport();
     }
-    @GetMapping(path = {"/getExportRecords"})
+    /*@GetMapping(path = {"/getExportRecords"})
     public Table getExportRecords(@Valid ContributionRecordFilter  contributionRecordFilter){
         return contributionRecordService.getExportRecords(contributionRecordFilter);
-    }
+    }*/
 
     @PostMapping(value = "/deleteContributionRecord")
     @ResponseStatus(HttpStatus.NO_CONTENT)

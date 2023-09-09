@@ -78,11 +78,19 @@
 			<artifactId>jasperreports</artifactId>
 			<version>6.20.1</version>
 		</dependency>
-		<dependency>
+		 <dependency>
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy-all</artifactId>
 			<version>3.0.16</version>
+			 <type>pom</type>
 		</dependency>
+
+		<dependency>
+			<groupId>com.yugabyte</groupId>
+			<artifactId>ysql</artifactId>
+			<version>42.2.7-yb-2</version>
+		</dependency>
+
 	</dependencies>
 	<repositories>
 		<!-- JasperSoft, they modified a standard library for their own special needs -->
@@ -93,11 +101,12 @@
 	</repositories>
 
 	<pluginRepositories>
-		<!-- JasperSoft, they modified a standard library for their own special needs -->
-		<pluginRepository>
+
+		 <pluginRepository>
 			<id>jaspersoft-third-party</id>
 			<url>https://jaspersoft.jfrog.io/jaspersoft/third-party-ce-artifacts/</url>
 		</pluginRepository>
+
 	</pluginRepositories>
 	<build>
 		<plugins>

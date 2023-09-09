@@ -88,10 +88,10 @@ public class ContributionRecordService {
         Long id = Long.parseLong(encripttionService.decrypt(SeedId));
         //List<ContributionRecord> contributionRecords = contributionRecordRepository.findAll();
        try{
-           Contributor contributor = contributorRepository.getById(id);
-           List<ContributionRecord> contributionRecords = contributionRecordRepository.findByContributor(contributor);
+           //Contributor contributor = contributorRepository.getById(id);
+           List<ContributionReportDTO> contributionRecords = contributionRecordRepository.findContributionsBySeed(id);
 
-           if (!contributionRecords.isEmpty()) return this.getContributionsInformat(contributionRecords);
+           if (!contributionRecords.isEmpty()) return this.getContributionsInFormat(contributionRecords);
            else return null;
        }catch (Exception exception){
             return null;
@@ -101,19 +101,22 @@ public class ContributionRecordService {
 
 
     public Table getAllDonations(ContributionRecordFilter contributionRecordFilter){
-        List<ContributionRecord> contributionRecords = contributionRecordRepository.findAll();
-        return this.getAllContributionsFormat(contributionRecords);
+       // List<ContributionRecord> contributionRecords = contributionRecordRepository.findAll();
+        List<ContributionReportDTO> contributionReportDTOS =
+                contributionRecordRepository.findContributionRecord(contributionRecordFilter.getBeginDate(),contributionRecordFilter.getEndDate());
+        return this.getAllContributionsFormat(contributionReportDTOS);
     }
 
-    public Table getExportRecords(ContributionRecordFilter contributionRecordFilter){
+    /*public Table getExportRecords(ContributionRecordFilter contributionRecordFilter){
         List<ContributionRecord> contributionRecords = contributionRecordRepository.findAll();
         return this.getExportRecordsFormat(contributionRecords);
-    }
-    public Table getAllContributionsFormat(List<ContributionRecord> contributionRecords){
+    }*/
+
+    public Table getAllContributionsFormat(List<ContributionReportDTO> contributionRecords){
         List<TableRow> resultList = new ArrayList<TableRow>();
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
         int index=1;
-        for (ContributionRecord contributionRecord : contributionRecords){
+        for (ContributionReportDTO contributionRecord : contributionRecords){
             List<Cell> cells = new ArrayList<Cell>();
             cells.add(new Cell(
                     new CellHeader("#",0,"Integer",false,null),
@@ -130,9 +133,7 @@ public class ContributionRecordService {
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("text",null,null,false,null,null,
-                                            contributionRecord.getContributor().getUser().getName()
-                                            + " " + contributionRecord.getContributor().getUser().getLastname()
-                                            ,null)
+                                            contributionRecord.getSeed_name(),null)
                             )
                     )
             ));
@@ -144,7 +145,7 @@ public class ContributionRecordService {
                                     new CellContent("chipContent",
                                             null,
                                             "#eaae4e",false,null, null,
-                                            contributionRecord.getContributionConfig().getContribution_key().equals(ContributionType.APORTE_CONSTANTE)
+                                            contributionRecord.getContribution_key().equals(ContributionType.APORTE_CONSTANTE)
                                                     ? "Aporte Constante" : "Aporte unico", null
                                             /*contributionRecord.getContributionConfig().getContribution_key().equals(ContributionType.APORTE_CONSTANTE)
                                                     ? ColorCode.CONSTANT_CONTRIBUTION.value : ColorCode.UNIQUE_CONTRIBUTION.value, false,
@@ -173,7 +174,7 @@ public class ContributionRecordService {
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("text",null,null,false,null,null,
-                                            contributionRecord.getContribution_ammount().toString(),null)
+                                            contributionRecord.getPayment_amount().toString(),null)
                             )
                     )
             ));
@@ -183,7 +184,7 @@ public class ContributionRecordService {
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("text",null,null,false,null,null,
-                                            contributionRecord.getExtra_income_ammount(),null)
+                                            contributionRecord.getExtra_amount(),null)
                             )
                     )
             ));
@@ -193,8 +194,8 @@ public class ContributionRecordService {
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("text",null,null,false,null,null,
-                                            contributionRecord.getExtraExpense() != null ?
-                                                    contributionRecord.getExtraExpense().getExtra_expense_amount().toString()
+                                            contributionRecord.getSpent_amount() != null ?
+                                                    contributionRecord.getSpent_amount()
                                                     : "0"
                                             ,null)
                             )
@@ -232,9 +233,9 @@ public class ContributionRecordService {
                                     new CellContent("chipContent",
                                             null, ColorCode.PAYMENT_METHODS.value,false,
                                             null,null,
-                                            contributionRecord.getPaymentMethod().equals(PaymentMethod.CODIGO_QR) ?
-                                                    "Codigo QR" : contributionRecord.getPaymentMethod().equals(PaymentMethod.DEPOSITO_BANCARIO) ?
-                                                    "Depósito Bancario" : contributionRecord.getPaymentMethod().equals(PaymentMethod.EFECTIVO) ?
+                                            contributionRecord.getPayment_method().equals(PaymentMethod.CODIGO_QR) ?
+                                                    "Codigo QR" : contributionRecord.getPayment_method().equals(PaymentMethod.DEPOSITO_BANCARIO) ?
+                                                    "Depósito Bancario" : contributionRecord.getPayment_method().equals(PaymentMethod.EFECTIVO) ?
                                                     "Efectivo" : "Transferencia",
                                             null)
                             )
@@ -261,11 +262,11 @@ public class ContributionRecordService {
         resultList.add(this.getFooter(contributionRecords, true, false));
         return new Table(resultList);
     }
-    public Table getContributionsInformat(List<ContributionRecord> contributionRecords){
+    public Table getContributionsInFormat(List<ContributionReportDTO> contributionRecords){
         List<TableRow> resultList = new ArrayList<TableRow>();
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
         int index=1;
-        for (ContributionRecord contributionRecord : contributionRecords){
+        for (ContributionReportDTO contributionRecord : contributionRecords){
             List<Cell> cells = new ArrayList<Cell>();
             cells.add(new Cell(
                     new CellHeader("#",0,"Integer",false,null),
@@ -308,7 +309,7 @@ public class ContributionRecordService {
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("text",null,null,false,null,null,
-                                            contributionRecord.getContribution_ammount().toString(),null)
+                                            contributionRecord.getPayment_amount().toString(),null)
                             )
                     )
             ));
@@ -318,7 +319,7 @@ public class ContributionRecordService {
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("text",null,null,false,null,null,
-                                            contributionRecord.getExtra_income_ammount(),null)
+                                            contributionRecord.getExtra_amount(),null)
                             )
                     )
             ));
@@ -354,9 +355,9 @@ public class ContributionRecordService {
                                     new CellContent("chipContent",
                                             null, ColorCode.PAYMENT_METHODS.value,false,
                                             null,null,
-                                            contributionRecord.getPaymentMethod().equals(PaymentMethod.CODIGO_QR) ?
-                                                    "Codigo QR" : contributionRecord.getPaymentMethod().equals(PaymentMethod.DEPOSITO_BANCARIO) ?
-                                                    "Depósito Bancario" : contributionRecord.getPaymentMethod().equals(PaymentMethod.EFECTIVO) ?
+                                            contributionRecord.getPayment_method().equals(PaymentMethod.CODIGO_QR) ?
+                                                    "Codigo QR" : contributionRecord.getPayment_method().equals(PaymentMethod.DEPOSITO_BANCARIO) ?
+                                                    "Depósito Bancario" : contributionRecord.getPayment_method().equals(PaymentMethod.EFECTIVO) ?
                                                     "Efectivo" : "Transferencia",
                                             null)
                             )
@@ -367,13 +368,6 @@ public class ContributionRecordService {
                     new CellProperty(null,false,null,null),
                     new ArrayList<CellContent>(
                             Arrays.asList(
-                                    /*new CellContent("iconAccion",
-                                            "edit", ColorCode.EDIT.value, true,
-                                            "editRecord","Editar", null,
-                                            new ArrayList<CellParam>(Arrays.asList(
-                                                    new CellParam("contributionRecordId",
-                                                            encripttionService.encrypt(contributionRecord.getContribution_record_id().toString()))
-                                            ))),*/
                                     new CellContent("iconAccion",
                                             "delete",ColorCode.STATE_REJECTED.value, true,
                                             "deleteRecord","Eliminar aporte", null,
@@ -476,12 +470,12 @@ public class ContributionRecordService {
         }
     }
 
-    public TableRow getFooter(List<ContributionRecord> contributionRecords, Boolean isAll, Boolean isReport){
+    public TableRow getFooter(List<ContributionReportDTO> contributionRecords, Boolean isAll, Boolean isReport){
         int total = 0;
         int totalExtra = 0;
-        for (ContributionRecord contributionRecord: contributionRecords){
-            total = total+contributionRecord.getContribution_ammount().intValue();
-            totalExtra = totalExtra + Integer.parseInt(contributionRecord.getExtra_income_ammount());
+        for (ContributionReportDTO contributionRecord: contributionRecords){
+            total = total+contributionRecord.getPayment_amount().intValue();
+            totalExtra = totalExtra + Integer.parseInt(contributionRecord.getExtra_amount());
         }
         List<Cell> cells = new ArrayList<Cell>();
         if (!isAll){
@@ -718,11 +712,11 @@ public class ContributionRecordService {
         return new TableRow(cells);
     }
 
-    public Table getExportRecordsFormat(List<ContributionRecord> contributionRecords){
+    public Table getExportRecordsFormat(List<ContributionReportDTO> contributionRecords){
         List<TableRow> resultList = new ArrayList<TableRow>();
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
         int index=1;
-        for (ContributionRecord contributionRecord : contributionRecords){
+        for (ContributionReportDTO contributionRecord : contributionRecords){
             List<Cell> cells = new ArrayList<Cell>();
             cells.add(new Cell(
                     new CellHeader("#",0,"Integer",false,null),
@@ -739,8 +733,7 @@ public class ContributionRecordService {
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("text",null,null,false,null,null,
-                                            contributionRecord.getContributor().getUser().getName()
-                                                    + " " + contributionRecord.getContributor().getUser().getLastname()
+                                            contributionRecord.getSeed_name()
                                             ,null)
                             )
                     )
@@ -753,7 +746,7 @@ public class ContributionRecordService {
                                     new CellContent("chipContent",
                                             null,
                                             "#eaae4e",false,null, null,
-                                            contributionRecord.getContributionConfig().getContribution_key().equals(ContributionType.APORTE_CONSTANTE)
+                                            contributionRecord.getContribution_key().equals(ContributionType.APORTE_CONSTANTE)
                                                     ? "Aporte Constante" : "Aporte unico", null
                                            )
                             )
@@ -778,7 +771,7 @@ public class ContributionRecordService {
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("text",null,null,false,null,null,
-                                            contributionRecord.getContribution_ammount().toString(),null)
+                                            contributionRecord.getPayment_amount().toString(),null)
                             )
                     )
             ));
@@ -788,7 +781,7 @@ public class ContributionRecordService {
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("text",null,null,false,null,null,
-                                            contributionRecord.getExtra_income_ammount(),null)
+                                            contributionRecord.getExtra_amount(),null)
                             )
                     )
             ));
@@ -798,8 +791,8 @@ public class ContributionRecordService {
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("text",null,null,false,null,null,
-                                            contributionRecord.getExtraExpense() != null ?
-                                                    contributionRecord.getExtraExpense().getExtra_expense_amount().toString()
+                                            contributionRecord.getSpent_amount() != null ?
+                                                    contributionRecord.getSpent_amount()
                                                     : "0"
                                             ,null)
                             )
@@ -837,9 +830,9 @@ public class ContributionRecordService {
                                     new CellContent("chipContent",
                                             null, ColorCode.PAYMENT_METHODS.value,false,
                                             null,null,
-                                            contributionRecord.getPaymentMethod().equals(PaymentMethod.CODIGO_QR) ?
-                                                    "Codigo QR" : contributionRecord.getPaymentMethod().equals(PaymentMethod.DEPOSITO_BANCARIO) ?
-                                                    "Depósito Bancario" : contributionRecord.getPaymentMethod().equals(PaymentMethod.EFECTIVO) ?
+                                            contributionRecord.getPayment_method().equals(PaymentMethod.CODIGO_QR) ?
+                                                    "Codigo QR" : contributionRecord.getPayment_method().equals(PaymentMethod.DEPOSITO_BANCARIO) ?
+                                                    "Depósito Bancario" : contributionRecord.getPayment_method().equals(PaymentMethod.EFECTIVO) ?
                                                     "Efectivo" : "Transferencia",
                                             null)
                             )
