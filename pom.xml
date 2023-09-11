@@ -123,7 +123,7 @@
 				</configuration>
 			</plugin>
 		</plugins>
-		<finalName>seeds-backend</finalName>
+		<!-- <finalName>seed</finalName> -->
 	</build>
 
 </project>
