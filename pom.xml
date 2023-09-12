@@ -85,11 +85,11 @@
 			 <type>pom</type>
 		</dependency>
 
-		<!--<dependency>
+	<dependency>
 			<groupId>com.yugabyte</groupId>
 			<artifactId>ysql</artifactId>
 			<version>42.2.7-yb-2</version>
-		</dependency> -->
+		</dependency>
 
 	</dependencies>
 	<repositories>
