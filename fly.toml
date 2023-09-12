@@ -16,8 +16,8 @@ primary_region = "scl"
   auto_start_machines = true
 
 [checks]
-  [checks.alive]
+ [checks.alive]
   type = "tcp"
   interval = "15s"
-  timeout = "2s"
+  timeout = "12s"
   grace_period = "5s"

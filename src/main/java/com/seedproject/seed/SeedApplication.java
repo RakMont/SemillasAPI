@@ -24,6 +24,11 @@ public class SeedApplication implements CommandLineRunner {
 		SpringApplication.run(SeedApplication.class, args);
 	}
 
+	@GetMapping(path = {"init"})
+	public String init(){
+		return "Inicializado";
+	}
+
 	@Override
 	public void run(String... args) throws Exception {
 		System.out.println("encrypted " + this.bCryptPasswordEncoder.encode("8815992"));
@@ -31,8 +36,5 @@ public class SeedApplication implements CommandLineRunner {
 
 		System.out.println("ids" +  this.encripttionService.encrypt("3"));
 	}
-	@GetMapping(path = {"/init"})
-	public String init(){
-		return "Inicializado";
-	}
+
 }
