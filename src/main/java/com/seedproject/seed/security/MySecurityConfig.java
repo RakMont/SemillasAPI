@@ -61,7 +61,7 @@ public class MySecurityConfig extends WebSecurityConfigurerAdapter {
                 .disable()
                 .authorizeRequests()
                 .antMatchers("/oauth/**","/seeds/volunters/**").permitAll()
-                //.antMatchers("/**").permitAll()
+                .antMatchers("/**").permitAll()
                 .antMatchers("/seeds/contribution/**").permitAll()
                 .antMatchers("/seeds/volunteers/**").permitAll()
                 .antMatchers("/seeds/applicants/**").permitAll()
