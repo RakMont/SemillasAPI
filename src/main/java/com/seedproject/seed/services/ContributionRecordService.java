@@ -78,7 +78,7 @@ public class ContributionRecordService {
             empParams.put("label_seed_country",contributor.get().getCountry());
             empParams.put("label_today_date", "Fecha: " + formatter.format(new Date()));
 
-            String resourceUtils = ResourceUtils.getFile("classpath:./templates/reports/report_seed_contributionsPDF.jrxml")
+            String resourceUtils = ResourceUtils.getFile("src/main/resources/templates/reports/report_seed_contributionsPDF.jrxml")
                     .getAbsolutePath();
 
             JasperPrint jprint = JasperFillManager.fillReport(
@@ -184,7 +184,7 @@ public class ContributionRecordService {
             empParams.put("label_seed_country",contributor.get().getCountry());
             empParams.put("label_today_date", "Fecha: " + formatter.format(new Date()));
 
-            String resourceUtils = ResourceUtils.getFile("classpath:./templates/reports/report_seed_contributionsCSV.jrxml")
+            String resourceUtils = ResourceUtils.getFile("src/main/resources/templates/reports/report_seed_contributionsCSV.jrxml")
                     .getAbsolutePath();
             JasperPrint jprint = JasperFillManager.fillReport(
                     JasperCompileManager.compileReport(resourceUtils)
@@ -225,7 +225,7 @@ public class ContributionRecordService {
             empParams.put("total_extra", contributionRecordReportDTOS.get(contributionRecordReportDTOS.size()-1).getExtra_amount());
             empParams.put("label_contr_type", contributionRecordFilter.getContributionType() != null ? contributionRecordFilter.getContributionType() : "TODOS");
 
-            String resourceUtils = ResourceUtils.getFile("classpath:./templates/reports/report_generalCSV.jrxml")
+            String resourceUtils = ResourceUtils.getFile("src/main/resources/templates/reports/report_generalCSV.jrxml")
                     .getAbsolutePath();
             JasperPrint jprint = JasperFillManager.fillReport(
                     JasperCompileManager.compileReport(resourceUtils)
@@ -266,7 +266,7 @@ public class ContributionRecordService {
             empParams.put("label_today_date", "Fecha: " + formatter.format(new Date()));
             empParams.put("label_contr_type", contributionRecordFilter.getContributionType() != null ? contributionRecordFilter.getContributionType() : "TODOS");
 
-            String resourceUtils = ResourceUtils.getFile("classpath:./templates/reports/report_generalPDF.jrxml")
+            String resourceUtils = ResourceUtils.getFile("src/main/resources/templates/reports/report_generalPDF.jrxml")
                     .getAbsolutePath();
 
             JasperPrint jprint = JasperFillManager.fillReport(
