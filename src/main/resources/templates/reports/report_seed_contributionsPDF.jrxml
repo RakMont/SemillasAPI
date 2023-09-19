@@ -47,7 +47,7 @@
 		<band height="175" splitType="Stretch">
 			<image onErrorType="Icon" hyperlinkType="ReportExecution">
 				<reportElement x="10" y="10" width="216" height="80" uuid="4aa6f4d1-27dc-4b34-9227-59e19ce2c959"/>
-				<imageExpression><![CDATA["./templates/reports/coffee_stain.png"]]></imageExpression>
+				<imageExpression><![CDATA["src/main/resources/templates/reports/coffee_stain.png"]]></imageExpression>
 			</image>
 			<line>
 				<reportElement positionType="FixRelativeToBottom" x="0" y="155" width="560" height="1" uuid="e9d2002a-c8ee-4649-a258-640dad29110c">

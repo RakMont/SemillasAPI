@@ -111,6 +111,7 @@
 					<include>**/*.yml</include>
 					<include>**/*.jasper</include>
 					<include>**/*.jrxml</include>
+					<include>**/*.png</include>
 				</includes>
 			</resource>
 		</resources>
