@@ -1,39 +1,34 @@
 package com.seedproject.seed.models.reports;
 
+import com.seedproject.seed.models.dto.ContributionReportDTO;
 import com.seedproject.seed.models.entities.ContributionRecord;
-import lombok.Getter;
-import lombok.Setter;
-import net.sf.jasperreports.engine.JRDataSource;
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRField;
 
-import java.util.List;
-
+import java.text.SimpleDateFormat;
 
 public class ContributionRecordReportDTO  {
    private String nro;
    private String seed_name;
    private String contr_type;
    private String payment_date;
-   private String payment_amount;
-   private String extra_amount;
-   private String spent_amount;
+   private Long payment_amount;
+   private Long extra_amount;
+   private Long spent_amount;
    private String receipt_code;
    private String receipt_number;
    private String payment_method;
 
 
-   public ContributionRecordReportDTO(String index, ContributionRecord contributionRecord) {
+   public ContributionRecordReportDTO(String index, ContributionReportDTO contributionRecord, SimpleDateFormat format) {
       this.nro = index;
-      this.seed_name = contributionRecord.getVolunter().getUser().getName();
-      this.contr_type = contributionRecord.getContributionConfig().getContribution_key().toString();
-      this.payment_date = contributionRecord.getPayment_date().toString();
-      this.payment_amount = contributionRecord.getContribution_ammount().toString();
-      this.extra_amount = contributionRecord.getExtra_income_ammount();
-      this.spent_amount = "0";
+      this.seed_name = contributionRecord.getSeed_name();
+      this.contr_type = contributionRecord.getContribution_key().toString();
+      this.payment_date = format.format(contributionRecord.getPayment_date());
+      this.payment_amount = contributionRecord.getPayment_amount();
+      this.extra_amount = contributionRecord.getExtra_amount() != null ? Long.parseLong(contributionRecord.getExtra_amount()) : 0;
+      this.spent_amount = contributionRecord.getSpent_amount() != null ? Long.parseLong(contributionRecord.getSpent_amount()) : 0 ;
       this.receipt_code = contributionRecord.getReceipt_code();
       this.receipt_number = contributionRecord.getReceipt_number();
-      this.payment_method = contributionRecord.getPaymentMethod().toString();
+      this.payment_method = contributionRecord.getPayment_method().toString();
    }
 
    public ContributionRecordReportDTO() {
@@ -71,27 +66,27 @@ public class ContributionRecordReportDTO  {
       this.payment_date = payment_date;
    }
 
-   public String getPayment_amount() {
+   public Long getPayment_amount() {
       return payment_amount;
    }
 
-   public void setPayment_amount(String payment_amount) {
+   public void setPayment_amount(Long payment_amount) {
       this.payment_amount = payment_amount;
    }
 
-   public String getExtra_amount() {
+   public Long getExtra_amount() {
       return extra_amount;
    }
 
-   public void setExtra_amount(String extra_amount) {
+   public void setExtra_amount(Long extra_amount) {
       this.extra_amount = extra_amount;
    }
 
-   public String getSpent_amount() {
+   public Long getSpent_amount() {
       return spent_amount;
    }
 
-   public void setSpent_amount(String spent_amount) {
+   public void setSpent_amount(Long spent_amount) {
       this.spent_amount = spent_amount;
    }
 

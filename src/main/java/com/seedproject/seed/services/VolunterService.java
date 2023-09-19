@@ -17,6 +17,7 @@ import com.seedproject.seed.repositories.VolunterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -307,16 +308,27 @@ public class VolunterService {
     }
 
 
-    public VolunterDTO findOneVolunter(String volunter_id){
-        volunter_id = encripttionService.decrypt(volunter_id);
-        try {
-            VolunterDTO volunterDTO = new VolunterDTO(volunterRepository.getById(Long.parseLong(volunter_id)));
-            volunterDTO.getRoles().forEach(role -> role.setName(role.getRole_name().value));
-           // role.getRole_name().equals(RoleName.R_PRINCIPAL)
-            return volunterDTO;
-        } catch (Exception e){
-            throw  e;
+    public VolunterDTO findOneVolunteer(String volunter_id, Principal principal){
+        if (!volunter_id.isEmpty()){
+            volunter_id = encripttionService.decrypt(volunter_id);
+            try {
+                VolunterDTO volunterDTO = new VolunterDTO(volunterRepository.getById(Long.parseLong(volunter_id)));
+                volunterDTO.getRoles().forEach(role -> role.setName(role.getRole_name().value));
+                return volunterDTO;
+            } catch (Exception exception){
+                throw new RuntimeException(exception);
+            }
         }
+        else{
+            try{
+                VolunterDTO volunteerDTO = new VolunterDTO((Volunter) this.userDetailsService.loadUserByUsername(principal.getName()));
+                volunteerDTO.getRoles().forEach(role -> role.setName(role.getRole_name().value));
+                return volunteerDTO;
+            } catch (UsernameNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
     }
 
     public ResponseEntity<RequestResponseMessage> saveVolunter (Volunter volunter) throws Exception{

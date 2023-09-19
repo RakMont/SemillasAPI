@@ -6,12 +6,15 @@ import com.seedproject.seed.models.filters.ContributionRecordFilter;
 import com.seedproject.seed.services.ConstantContributionService;
 import com.seedproject.seed.services.ContributionConfigService;
 import com.seedproject.seed.services.ContributionRecordService;
+import net.sf.jasperreports.engine.JRException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -57,8 +60,14 @@ public class ContributionController {
         return contributionRecordService.getAllDonations(contributionRecordFilter);
     }
     @GetMapping(path = "/getAllRecords/report")
-    public ResponseEntity<byte[]> getEmployeeRecordReport() {
-        return contributionRecordService.getContributionRecordsReport();
+    public ResponseEntity<byte[]>  getEmployeeRecordReport(@Valid ContributionRecordFilter contributionRecordFilter) {
+        return contributionRecordService.getContributionRecordsReport(contributionRecordFilter);
+    }
+
+    @GetMapping(path = "/getAllRecords/reportPDF")
+    public ResponseEntity<byte[]>  getEmployeeRecordReportPDF(@Valid ContributionRecordFilter contributionRecordFilter)throws JRException, IOException {
+       // ByteArrayOutputStream res =
+        return contributionRecordService.getTOTAL_AMOUNT_CSV(contributionRecordFilter);
     }
     /*@GetMapping(path = {"/getExportRecords"})
     public Table getExportRecords(@Valid ContributionRecordFilter  contributionRecordFilter){

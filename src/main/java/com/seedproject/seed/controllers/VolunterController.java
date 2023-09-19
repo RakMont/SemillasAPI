@@ -67,9 +67,8 @@ public class VolunterController {
 
 
     @GetMapping(path = {"/getVolunter"})
-    public VolunterDTO listarId(@RequestParam(required = true) String id) {
-        VolunterDTO volunterDTO = volunterService.findOneVolunter(id);
-        return volunterDTO;
+    public VolunterDTO listarId(@RequestParam(required = true) String id, Principal principal) {
+        return volunterService.findOneVolunteer(id, principal);
     }
 
     @PostMapping(value = "/deleteVolunter")
@@ -102,7 +101,7 @@ public class VolunterController {
     }
 
     @GetMapping(path = {"/trackingVolunteers"})
-    public Table gettrackingVolunters(){
+    public Table getTrackingVolunteers(){
         return volunterService.findAlltrackingVolunters();
     }
 

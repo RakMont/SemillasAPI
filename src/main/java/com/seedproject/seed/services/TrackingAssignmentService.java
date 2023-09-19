@@ -137,6 +137,21 @@ public class TrackingAssignmentService {
                     )
             ));
             cells.add(new Cell(
+                    new CellHeader("Aportes",0,"String",true,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("iconAccion",
+                                            "cloud_download",ColorCode.VIEW_CONTR.value, true,
+                                            "downloadRecords","Descargar aportes", null,
+                                            new ArrayList<CellParam>(Arrays.asList(
+                                                    new CellParam("contributorId",
+                                                            encripttionService.encrypt(trackingSeed.getContributor_id().toString()))
+                                            )))
+                            )
+                    )
+            ));
+            cells.add(new Cell(
                     new CellHeader("Tipo aporte",0,"String",true,null),
                     new CellProperty(null,false,null,null),
                     new ArrayList<CellContent>(

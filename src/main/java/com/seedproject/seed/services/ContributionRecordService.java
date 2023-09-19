@@ -3,15 +3,18 @@ package com.seedproject.seed.services;
 import com.seedproject.seed.models.dao.ContributionRecordDao;
 import com.seedproject.seed.models.dto.*;
 import com.seedproject.seed.models.entities.*;
-import com.seedproject.seed.models.enums.ColorCode;
-import com.seedproject.seed.models.enums.ContributionType;
-import com.seedproject.seed.models.enums.PaymentMethod;
-import com.seedproject.seed.models.enums.ResponseStatus;
+import com.seedproject.seed.models.enums.*;
 import com.seedproject.seed.models.filters.ContributionRecordFilter;
 import com.seedproject.seed.models.reports.ContributionRecordReportDTO;
 import com.seedproject.seed.repositories.*;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+
+import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
+
+import net.sf.jasperreports.export.SimpleExporterInput;
+import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
+import net.sf.jasperreports.export.SimpleXlsxReportConfiguration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
 import javax.inject.Inject;
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -39,32 +43,234 @@ public class ContributionRecordService {
     @Inject
     EncripttionService encripttionService;
 
-    public ResponseEntity<byte[]> getContributionRecordsReport(){
-        try {
+    public ResponseEntity<byte[]> getContributionRecordsReport(ContributionRecordFilter contributionRecordFilter){
+        ResponseEntity<byte[]> finalResult = null;
+        switch (contributionRecordFilter.getReportType()){
+            case TOTAL_AMOUNT_PDF:
+                finalResult = this.getTOTAL_AMOUNT_PDF(contributionRecordFilter);
+                break;
+            case TOTAL_AMOUNT_CSV:
+                finalResult = this.getTOTAL_AMOUNT_CSV(contributionRecordFilter);
+                break;
+            case SEED_RECORD_PDF:
+                finalResult = this.getSEED_RECORD_PDF(contributionRecordFilter);
+                break;
+            case SEED_RECORD_CSV:
+                finalResult = this.getSEED_RECORD_CSV(contributionRecordFilter);
+                break;
+        }
 
-            List<ContributionRecord> contributionRecords = contributionRecordRepository.findAll();
-            List<ContributionRecordReportDTO> contributionRecordReportDTOS = new ArrayList<>();
-            int index = 0;
-            for(ContributionRecord contributionRecord : contributionRecords){
-                index++;
-                contributionRecordReportDTOS.add(new ContributionRecordReportDTO(Integer.toString(index), contributionRecord));
-            }
+        return  finalResult;
+    }
 
-            /*contributionRecords.stream().map(cr-> {
-                index++;
-                contributionRecordReportDTOS.add(new ContributionRecordReportDTO(Integer.toString(index), cr));
-                return cr;
-            }).collect(Collectors.toList());*/
-
+    public ResponseEntity<byte[]> getSEED_RECORD_PDF(ContributionRecordFilter contributionRecordFilter){
+        try{
+            SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+            Long seedId = Long.parseLong(encripttionService.decrypt(contributionRecordFilter.getSeedId()));
+            List<ContributionRecordReportDTO> contributionRecordReportDTOList = this.getSeedRecords(seedId);
+            Optional<Contributor> contributor = contributorRepository.findById(Long.parseLong(encripttionService.decrypt(contributionRecordFilter.getSeedId())));
             Map<String, Object> empParams = new HashMap<String, Object>();
-            empParams.put("report_title", "TechGeekNext");
-            empParams.put("contribution_records", "fhgjgjhgj");
+            empParams.put("label_seed_description", "Se muestran todos los aportes obtenidos de la semilla:");
+            empParams.put("label_seed_name", contributor.get().getUser().getName()+ " " + contributor.get().getUser().getLastname());
+            empParams.put("label_title", "REPORTE: APORTES DE SEMILLA");
+            empParams.put("label_seed_phone",contributor.get().getUser().getPhone());
+            empParams.put("label_seed_id", contributor.get().getUser().getDni());
+            empParams.put("label_seed_country",contributor.get().getCountry());
+            empParams.put("label_today_date", "Fecha: " + formatter.format(new Date()));
 
+            String resourceUtils = ResourceUtils.getFile("classpath:./templates/reports/report_seed_contributionsPDF.jrxml")
+                    .getAbsolutePath();
 
             JasperPrint jprint = JasperFillManager.fillReport(
-                    JasperCompileManager.compileReport(
-                            ResourceUtils.getFile("classpath:seedsmainreport.jrxml")
-                                    .getAbsolutePath())
+                    JasperCompileManager.compileReport(resourceUtils)
+                    , empParams, new JRBeanCollectionDataSource(contributionRecordReportDTOList));
+
+
+            HttpHeaders headers = new HttpHeaders();
+            //set the PDF format
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("filename", "seed_records_report.pdf");
+
+            return new ResponseEntity<byte[]>
+                    (JasperExportManager.exportReportToPdf(jprint), headers, HttpStatus.OK);
+
+
+        } catch(JRException | FileNotFoundException ex){
+            System.out.println("ON ERROR " + ex.getMessage());
+            return new ResponseEntity<byte[]>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private List<ContributionRecordReportDTO> getSeedRecords(Long seed_Id){
+        List<ContributionReportDTO> contributionRecords =
+                contributionRecordRepository.findContributionsBySeed(seed_Id);
+        List<ContributionRecordReportDTO> contributionRecordReportDTOS = new ArrayList<>();
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+
+        int index = 0;
+        Long total_amount= 0L;
+        Long total_extra=0L;
+        Long total_spent=0L;
+
+        for(ContributionReportDTO contributionRecord : contributionRecords){
+            index++;
+            total_amount = total_amount + contributionRecord.getPayment_amount().intValue();
+            total_extra = total_extra + (contributionRecord.getExtra_amount() != null ?
+                    Integer.parseInt(contributionRecord.getExtra_amount()) : 0);
+            total_spent = total_spent + (contributionRecord.getSpent_amount() != null ?
+                    Integer.parseInt(contributionRecord.getSpent_amount()) : 0 );
+            contributionRecordReportDTOS.add(new ContributionRecordReportDTO(Integer.toString(index), contributionRecord, formatter));
+        }
+
+        ContributionRecordReportDTO lastLine= new ContributionRecordReportDTO();
+        lastLine.setNro("");
+        lastLine.setPayment_date(" TOTAL : ");
+        lastLine.setPayment_amount(total_amount);
+        lastLine.setExtra_amount(total_extra);
+        lastLine.setSpent_amount(total_spent);
+        contributionRecordReportDTOS.add(lastLine);
+        return  contributionRecordReportDTOS;
+    }
+
+    private  List<ContributionRecordReportDTO> getContributionsReportList(ContributionRecordFilter contributionRecordFilter){
+        try{
+            List<ContributionReportDTO> contributionReportDTOS =
+                    contributionRecordRepository.findContributionRecord(contributionRecordFilter.getBeginDate(),contributionRecordFilter.getEndDate());
+
+            List<ContributionRecordReportDTO> contributionRecordReportDTOS = new ArrayList<>();
+            SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+
+            int index = 0;
+            Long total_amount=0L;
+            Long total_extra=0L;
+            Long total_spent=0L;
+
+            for(ContributionReportDTO contributionRecord : contributionReportDTOS){
+                index++;
+                total_amount = total_amount + contributionRecord.getPayment_amount().intValue();
+                total_extra = total_extra + (contributionRecord.getExtra_amount() != null ?
+                        Integer.parseInt(contributionRecord.getExtra_amount()) : 0);
+                total_spent = total_spent + (contributionRecord.getSpent_amount() != null ?
+                        Integer.parseInt(contributionRecord.getSpent_amount()) : 0 );
+                contributionRecordReportDTOS.add(new ContributionRecordReportDTO(Integer.toString(index), contributionRecord, formatter));
+            }
+
+            ContributionRecordReportDTO lastLine= new ContributionRecordReportDTO();
+            lastLine.setNro("");
+            lastLine.setPayment_date(" TOTAL : ");
+            lastLine.setPayment_amount(total_amount);
+            lastLine.setExtra_amount(total_extra);
+            lastLine.setSpent_amount(total_spent);
+            contributionRecordReportDTOS.add(lastLine);
+            return  contributionRecordReportDTOS;
+        }
+        catch (Exception e){
+            throw e;
+        }
+    }
+    public ResponseEntity<byte[]> getSEED_RECORD_CSV(ContributionRecordFilter contributionRecordFilter){
+        try{
+            SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+            Long seedId = Long.parseLong(encripttionService.decrypt(contributionRecordFilter.getSeedId()));
+            List<ContributionRecordReportDTO> contributionRecordReportDTOList = this.getSeedRecords(seedId);
+            Optional<Contributor> contributor = contributorRepository.findById(Long.parseLong(encripttionService.decrypt(contributionRecordFilter.getSeedId())));
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            Map<String, Object> empParams = new HashMap<String, Object>();
+            empParams.put("label_seed_description", "Se muestran todos los aportes obtenidos de la semilla:");
+            empParams.put("label_seed_name", contributor.get().getUser().getName()+ " " + contributor.get().getUser().getLastname());
+            empParams.put("label_title", "REPORTE: APORTES DE SEMILLA");
+            empParams.put("label_seed_phone",contributor.get().getUser().getPhone());
+            empParams.put("label_seed_id", contributor.get().getUser().getDni());
+            empParams.put("label_seed_country",contributor.get().getCountry());
+            empParams.put("label_today_date", "Fecha: " + formatter.format(new Date()));
+
+            String resourceUtils = ResourceUtils.getFile("classpath:./templates/reports/report_seed_contributionsCSV.jrxml")
+                    .getAbsolutePath();
+            JasperPrint jprint = JasperFillManager.fillReport(
+                    JasperCompileManager.compileReport(resourceUtils)
+                    , empParams, new JRBeanCollectionDataSource(contributionRecordReportDTOList));
+
+
+            JRXlsxExporter exporter = new JRXlsxExporter();
+            exporter.setExporterInput(new SimpleExporterInput(jprint));
+            exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(stream));
+            SimpleXlsxReportConfiguration configuration = new SimpleXlsxReportConfiguration();
+            configuration.setDetectCellType(true);
+            configuration.setCollapseRowSpan(true);
+            exporter.setConfiguration(configuration);
+            exporter.exportReport();
+
+            byte[] bs = stream.toByteArray();
+            return new ResponseEntity<byte[]>(bs, HttpStatus.ACCEPTED);
+        }catch (JRException exception){
+            exception.getMessage();
+            throw  new RuntimeException(exception);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public ResponseEntity<byte[]> getTOTAL_AMOUNT_CSV(ContributionRecordFilter contributionRecordFilter){
+        try {
+            List<ContributionRecordReportDTO> contributionRecordReportDTOS = this.getContributionsReportList(contributionRecordFilter);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+            Map<String, Object> empParams = new HashMap<String, Object>();
+            empParams.put("label_description", "Se muestran todos los reportes obtenidos en los siguientes filtros.");
+            empParams.put("contribution_records", "fhgjgjhgj");
+            empParams.put("label_title", "REPORTE DE APORTES OBTENIDOS");
+            empParams.put("label_dates", "F.Inicio: " +
+                    formatter.format(contributionRecordFilter.getBeginDate()) +
+                    " - F.Fin " +formatter.format(contributionRecordFilter.getEndDate()));
+            empParams.put("label_payment_method",contributionRecordFilter.getPaymentMethod() != null ? contributionRecordFilter.getPaymentMethod() : "TODOS");
+            empParams.put("total_extra", contributionRecordReportDTOS.get(contributionRecordReportDTOS.size()-1).getExtra_amount());
+            empParams.put("label_contr_type", contributionRecordFilter.getContributionType() != null ? contributionRecordFilter.getContributionType() : "TODOS");
+
+            String resourceUtils = ResourceUtils.getFile("classpath:./templates/reports/report_generalCSV.jrxml")
+                    .getAbsolutePath();
+            JasperPrint jprint = JasperFillManager.fillReport(
+                    JasperCompileManager.compileReport(resourceUtils)
+                    , empParams, new JRBeanCollectionDataSource(contributionRecordReportDTOS));
+
+
+            JRXlsxExporter exporter = new JRXlsxExporter();
+            exporter.setExporterInput(new SimpleExporterInput(jprint));
+            exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(stream));
+            SimpleXlsxReportConfiguration configuration = new SimpleXlsxReportConfiguration();
+            configuration.setDetectCellType(true);
+            configuration.setCollapseRowSpan(true);
+            exporter.setConfiguration(configuration);
+            exporter.exportReport();
+
+            byte[] bs = stream.toByteArray();
+            return new ResponseEntity<byte[]>(bs, HttpStatus.ACCEPTED);
+        }catch (JRException exception){
+            exception.getMessage();
+            return null;
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    private ResponseEntity<byte[]>getTOTAL_AMOUNT_PDF(ContributionRecordFilter contributionRecordFilter){
+        try {
+            List<ContributionRecordReportDTO> contributionRecordReportDTOS = this.getContributionsReportList(contributionRecordFilter);
+            SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+
+            Map<String, Object> empParams = new HashMap<String, Object>();
+            empParams.put("label_description", "Se muestran todos los reportes obtenidos en los siguientes filtros.");
+            empParams.put("contribution_records", "fhgjgjhgj");
+            empParams.put("label_title", "REPORTE DE APORTES OBTENIDOS");
+            empParams.put("label_dates", "F.Inicio: " +
+                    formatter.format(contributionRecordFilter.getBeginDate()) +
+                    " - F.Fin " +formatter.format(contributionRecordFilter.getEndDate()));
+            empParams.put("label_payment_method",contributionRecordFilter.getPaymentMethod() != null ? contributionRecordFilter.getPaymentMethod() : "TODOS");
+            empParams.put("label_today_date", "Fecha: " + formatter.format(new Date()));
+            empParams.put("label_contr_type", contributionRecordFilter.getContributionType() != null ? contributionRecordFilter.getContributionType() : "TODOS");
+
+            String resourceUtils = ResourceUtils.getFile("classpath:./templates/reports/report_generalPDF.jrxml")
+                    .getAbsolutePath();
+
+            JasperPrint jprint = JasperFillManager.fillReport(
+                    JasperCompileManager.compileReport(resourceUtils)
                     , empParams, new JRBeanCollectionDataSource(contributionRecordReportDTOS));
 
 
@@ -79,16 +285,13 @@ public class ContributionRecordService {
 
         } catch(JRException | FileNotFoundException ex){
             ex.getMessage();
-
+            System.out.println("ON ERROR" + ex.getMessage());
             return new ResponseEntity<byte[]>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
     public Table getSeedContributionRecords(String SeedId){
         Long id = Long.parseLong(encripttionService.decrypt(SeedId));
-        //List<ContributionRecord> contributionRecords = contributionRecordRepository.findAll();
        try{
-           //Contributor contributor = contributorRepository.getById(id);
            List<ContributionReportDTO> contributionRecords = contributionRecordRepository.findContributionsBySeed(id);
 
            if (!contributionRecords.isEmpty()) return this.getContributionsInFormat(contributionRecords);
