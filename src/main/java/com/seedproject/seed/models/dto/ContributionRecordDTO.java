@@ -18,6 +18,7 @@ public class ContributionRecordDTO {
     public Date expectedPaymentDate;
     public String extraIncomeAmount;
     public PaymentMethod paymentMethod;
+    public String paymentMethodLabel;
     public Date paymentDate;
     public String receiptCode;
     public String receiptNumber;
@@ -47,5 +48,10 @@ public class ContributionRecordDTO {
             this.extraExpenseReason = contributionRecord.getExtraExpense().getExtra_expense_reason();
             this.hasExtraExpense=true;
         }
+        this.paymentMethodLabel =
+                contributionRecord.getPaymentMethod().equals(PaymentMethod.CODIGO_QR) ? "Codigo QR":
+                contributionRecord.getPaymentMethod().equals(PaymentMethod.DEPOSITO_BANCARIO) ? "Deposito Bancario" :
+                contributionRecord.getPaymentMethod().equals(PaymentMethod.TRANSFERENCIA_BANCARIA) ? "Transferencia Bancaria" :
+                        contributionRecord.getPaymentMethod().equals(PaymentMethod.EFECTIVO) ? "Efectivo" : "";
     }
 }
