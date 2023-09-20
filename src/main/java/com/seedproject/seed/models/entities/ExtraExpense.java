@@ -22,6 +22,6 @@ public class ExtraExpense {
     @Column(name = "extra_expense_reason")
     private String extra_expense_reason;
 
-    @Column(name = "extra_expense_date")
-    private Date extra_expense_date;
+    /*@Column(name = "extra_expense_date")
+    private Date extra_expense_date;*/
 }
