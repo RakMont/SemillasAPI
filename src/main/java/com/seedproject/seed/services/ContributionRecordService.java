@@ -891,12 +891,12 @@ public class ContributionRecordService {
                     )
             ));
             cells.add(new Cell(
-                    new CellHeader("Gasto",0,"Integer",false,null),
+                    new CellHeader("Monto Gasto",0,"Integer",false,null),
                     new CellProperty(null,false,null,null),
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("text",null,null,false,null,null,
-                                            "0" + " BOB",null)
+                                            totalSpent + " BOB",null)
                             )
                     )
             ));
