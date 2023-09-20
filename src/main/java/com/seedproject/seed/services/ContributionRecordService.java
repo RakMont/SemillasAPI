@@ -43,6 +43,8 @@ public class ContributionRecordService {
     @Inject
     EncripttionService encripttionService;
 
+    @Inject
+    ExtraExpenseRepository extraExpenseRepository;
     public ResponseEntity<byte[]> getContributionRecordsReport(ContributionRecordFilter contributionRecordFilter){
         ResponseEntity<byte[]> finalResult = null;
         switch (contributionRecordFilter.getReportType()){
@@ -387,7 +389,7 @@ public class ContributionRecordService {
                     )
             ));
             cells.add(new Cell(
-                    new CellHeader("Gasto",0,"Integer",false,null),
+                    new CellHeader("Monto Gasto",0,"Integer",false,null),
                     new CellProperty(null,false,null,null),
                     new ArrayList<CellContent>(
                             Arrays.asList(
@@ -522,6 +524,16 @@ public class ContributionRecordService {
                     )
             ));
             cells.add(new Cell(
+                    new CellHeader("Monto Gasto",0,"Integer",false,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",null,null,false,null,null,
+                                            contributionRecord.getSpent_amount() != null ? contributionRecord.getSpent_amount() : "0",null)
+                            )
+                    )
+            ));
+            cells.add(new Cell(
                     new CellHeader("Codigo recibo",0,"String",true,null),
                     new CellProperty(null,false,null,null),
                     new ArrayList<CellContent>(
@@ -603,7 +615,6 @@ public class ContributionRecordService {
         contributionRecordDao.setTracking_assignment_id(encripttionService.decrypt( contributionRecordDao.getTracking_assignment_id()));
         contributionRecordDao.setContribution_config_id(encripttionService.decrypt(contributionRecordDao.getContribution_config_id()));
         contributionRecordDao.setContributor_id(encripttionService.decrypt(contributionRecordDao.getContributor_id()));
-
         TrackingAssignment trackingAssignment = trackingAssignmentRepository.getById(Long.parseLong(contributionRecordDao.getTracking_assignment_id()));
         ContributionConfig contributionConfig = contributionConfigRepository.getById(Long.parseLong(contributionRecordDao.getContribution_config_id()));
         Volunter volunter = volunterRepository.getById(trackingAssignment.getVolunter_id());
@@ -623,6 +634,13 @@ public class ContributionRecordService {
         contributionRecord.setContributionConfig(contributionConfig);
         contributionRecord.setTrackingAssignment(trackingAssignment);
         contributionRecord.setRegister_exist(true);
+        if (contributionRecordDao.getHasExtraExpense()){
+            ExtraExpense extraExpense = new ExtraExpense();
+            extraExpense.setExtra_expense_amount(contributionRecordDao.getExtraExpenseAmount());
+            extraExpense.setExtra_expense_reason(contributionRecordDao.getExtraExpenseReason());
+            //extraExpense.setExtra_expense_date(new Date());
+            contributionRecord.setExtraExpense(extraExpense);
+        }
         try {
             contributionRecordRepository.save(contributionRecord);
             return new ResponseEntity<>(new RequestResponseMessage(
@@ -646,6 +664,20 @@ public class ContributionRecordService {
         contributionRecord.setExtra_income_ammount(contributionRecordDao.getExtra_income_ammount());
         contributionRecord.setContribution_obtained(contributionRecordDao.getContribution_obtained());
         contributionRecord.setSent_payment_proof(contributionRecordDao.getSent_payment_proof());
+
+        if (contributionRecordDao.getHasExtraExpense()){
+           if(contributionRecord.getExtraExpense()!= null){
+               contributionRecord.getExtraExpense().setExtra_expense_amount(contributionRecordDao.getExtraExpenseAmount());
+               contributionRecord.getExtraExpense().setExtra_expense_reason(contributionRecordDao.getExtraExpenseReason());
+
+           }else{
+               ExtraExpense extraExpense = new ExtraExpense();
+               extraExpense.setExtra_expense_amount(contributionRecordDao.getExtraExpenseAmount());
+               extraExpense.setExtra_expense_reason(contributionRecordDao.getExtraExpenseReason());
+               contributionRecord.setExtraExpense(extraExpense);
+           }
+        }else contributionRecord.setExtraExpense(null);
+
         try {
             contributionRecordRepository.save(contributionRecord);
             return new ResponseEntity<>(new RequestResponseMessage(
@@ -671,9 +703,12 @@ public class ContributionRecordService {
     public TableRow getFooter(List<ContributionReportDTO> contributionRecords, Boolean isAll, Boolean isReport){
         int total = 0;
         int totalExtra = 0;
+        int totalSpent = 0;
         for (ContributionReportDTO contributionRecord: contributionRecords){
             total = total+contributionRecord.getPayment_amount().intValue();
             totalExtra = totalExtra + Integer.parseInt(contributionRecord.getExtra_amount());
+            totalSpent = totalSpent + (contributionRecord.getSpent_amount() == null ?  0 :
+                    Integer.parseInt(contributionRecord.getSpent_amount()));
         }
         List<Cell> cells = new ArrayList<Cell>();
         if (!isAll){
@@ -728,6 +763,16 @@ public class ContributionRecordService {
                             Arrays.asList(
                                     new CellContent("text",null,null,false,null,null,
                                             totalExtra + " BOB",null)
+                            )
+                    )
+            ));
+            cells.add(new Cell(
+                    new CellHeader("Monto Gasto",0,"Integer",false,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",null,null,false,null,null,
+                                            totalSpent + " BOB",null)
                             )
                     )
             ));

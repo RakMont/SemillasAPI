@@ -22,7 +22,9 @@ public class ContributionRecordDTO {
     public String receiptCode;
     public String receiptNumber;
     public Boolean sentPaymentProof;
-    public ExtraExpense extraExpense;
+    public Long extraExpenseAmount;
+    public String extraExpenseReason;
+    public Boolean hasExtraExpense;
     public String trackingAssignmentId;
     public String contributionConfigId;
 
@@ -40,5 +42,10 @@ public class ContributionRecordDTO {
         this.sentPaymentProof = contributionRecord.getSent_payment_proof();
         this.trackingAssignmentId = contributionRecord.getTrackingAssignment().getTracking_assignment_id().toString();
         this.contributionConfigId = contributionRecord.getContributionConfig().getContribution_config_id().toString();
+        if (contributionRecord.getExtraExpense()!= null){
+            this.extraExpenseAmount = contributionRecord.getExtraExpense().getExtra_expense_amount();
+            this.extraExpenseReason = contributionRecord.getExtraExpense().getExtra_expense_reason();
+            this.hasExtraExpense=true;
+        }
     }
 }

@@ -23,10 +23,9 @@ public class ContributionRecordDao {
     Boolean contribution_obtained;
     Boolean sent_payment_proof;
     String volunter_id;
-
-    /* Extra expense */
-    String extra_expense_id;
-    Long extra_expense_amount;
-    String extra_expense_reason;
-    Date extra_expense_date;
+    /**/
+    String extraExpenseId;
+    Long extraExpenseAmount;
+    String extraExpenseReason;
+    Boolean hasExtraExpense;
 }
