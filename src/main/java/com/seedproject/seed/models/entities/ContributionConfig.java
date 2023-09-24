@@ -26,6 +26,10 @@ public class ContributionConfig {
     private UniqueContribution uniqueContribution;
 
     @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "enterprise_contribution_id", referencedColumnName = "enterprise_contribution_id")
+    private EnterpriseContribution enterpriseContribution;
+
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "const_contribution_id", referencedColumnName = "const_contribution_id")
     private ConstantContribution constantContribution;
 

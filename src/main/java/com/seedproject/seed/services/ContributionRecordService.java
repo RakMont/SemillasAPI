@@ -309,6 +309,14 @@ public class ContributionRecordService {
        // List<ContributionRecord> contributionRecords = contributionRecordRepository.findAll();
         List<ContributionReportDTO> contributionReportDTOS =
                 contributionRecordRepository.findContributionRecord(contributionRecordFilter.getBeginDate(),contributionRecordFilter.getEndDate());
+
+        if(!(contributionRecordFilter.getContributionType() == null)) contributionReportDTOS.removeIf(element ->
+               !element.getContribution_key().equals(contributionRecordFilter.getContributionType()));
+
+
+        if(!(contributionRecordFilter.getPaymentMethod() == null)) contributionReportDTOS.removeIf(element ->
+                !element.getPayment_method().equals(contributionRecordFilter.getPaymentMethod()));
+
         return this.getAllContributionsFormat(contributionReportDTOS);
     }
 
@@ -344,7 +352,9 @@ public class ContributionRecordService {
                             Arrays.asList(
                                     new CellContent("chipContent",
                                             null,
-                                            "#eaae4e",false,null, null,
+                                            contributionRecord.getContribution_key().equals(ContributionType.APORTE_CONSTANTE)
+                                                    ? ColorCode.CONSTANT_CONTRIBUTION.value : ColorCode.UNIQUE_CONTRIBUTION.value
+                                            ,false,null, null,
                                             contributionRecord.getContribution_key().equals(ContributionType.APORTE_CONSTANTE)
                                                     ? "Aporte Constante" : "Aporte unico", null
                                             /*contributionRecord.getContributionConfig().getContribution_key().equals(ContributionType.APORTE_CONSTANTE)
@@ -447,7 +457,7 @@ public class ContributionRecordService {
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("iconAccion",
-                                            "description","#efc561", true,
+                                            "description",ColorCode.VIEW_CONTR.value, true,
                                             "SeeRecord","Ver detalles", null,
                                             new ArrayList<CellParam>(Arrays.asList(
                                                     new CellParam("contributionRecordId",

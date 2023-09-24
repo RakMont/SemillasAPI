@@ -1,6 +1,8 @@
 package com.seedproject.seed.controllers;
 
-import com.seedproject.seed.models.dao.UniqueAplicantHolderDao;
+import com.seedproject.seed.models.dao.ConstantApplicantHolder;
+import com.seedproject.seed.models.dao.EnterpriseApplicantHolderDao;
+import com.seedproject.seed.models.dao.UniqueApplicantHolderDao;
 import com.seedproject.seed.models.dto.*;
 import com.seedproject.seed.models.filters.ContributorFilter;
 import com.seedproject.seed.models.filters.SeedFilter;
@@ -22,13 +24,18 @@ public class ContributorController {
     ContributorService contributorService;
 
     @PostMapping(value = "/unique", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<RequestResponseMessage> createUniqueApplicant(Principal principal,@RequestBody UniqueAplicantHolderDao uniqueAplicantHolderDao) {
-        return contributorService.savUniqueContributor(principal,uniqueAplicantHolderDao);
+    public ResponseEntity<RequestResponseMessage> createUniqueApplicant(Principal principal,@RequestBody UniqueApplicantHolderDao uniqueApplicantHolderDao) {
+        return contributorService.savUniqueContributor(principal, uniqueApplicantHolderDao);
     }
 
     @PostMapping(value = "/constant", consumes = "application/json", produces = "application/json")
     public ResponseEntity<RequestResponseMessage> createConstantApplicant(Principal principal,@RequestBody ConstantApplicantHolder constantApplicantHolder) {
         return contributorService.saveConstantContributor(principal, constantApplicantHolder);
+    }
+
+    @PostMapping(value = "/enterprise", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<RequestResponseMessage> createEnterpriseApplicant(Principal principal,@RequestBody EnterpriseApplicantHolderDao enterpriseApplicantHolderDao) {
+        return contributorService.saveEnterpriseContributor(principal, enterpriseApplicantHolderDao);
     }
 
     @PostMapping(value = "/processSeed", consumes = "application/json", produces = "application/json")

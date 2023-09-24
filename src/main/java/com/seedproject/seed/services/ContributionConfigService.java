@@ -3,6 +3,7 @@ package com.seedproject.seed.services;
 import com.seedproject.seed.models.dto.*;
 import com.seedproject.seed.models.entities.ConstantContribution;
 import com.seedproject.seed.models.entities.ContributionConfig;
+import com.seedproject.seed.models.entities.EnterpriseContribution;
 import com.seedproject.seed.models.entities.UniqueContribution;
 import com.seedproject.seed.models.enums.ContributionType;
 import com.seedproject.seed.repositories.ConstantContributionRepository;
@@ -24,6 +25,8 @@ public class ContributionConfigService {
     @Inject
     UniqueContributionService uniqueContributionService;
     @Inject
+    EnterpriseContributionService enterpriseContributionService;
+    @Inject
     EncripttionService encripttionService;
     public ContributionConfig saveUniqueContributionConfig(UniqueContribution uniqueContribution){
         UniqueContribution contribution=uniqueContributionService.saveUniqueContribution(uniqueContribution);
@@ -33,7 +36,14 @@ public class ContributionConfigService {
         contributionConfig.setContribution_key(ContributionType.APORTE_UNICO);
         return contributionConfigRepository.save(contributionConfig);
     }
-
+    public ContributionConfig saveEnterpriseContributionConfig(EnterpriseContribution enterpriseContribution){
+        EnterpriseContribution contribution=enterpriseContributionService.saveEnterpriseContribution(enterpriseContribution);
+        ContributionConfig contributionConfig=new ContributionConfig();
+        contributionConfig.setEnterpriseContribution(contribution);
+        contributionConfig.setIs_active(true);
+        contributionConfig.setContribution_key(ContributionType.APORTE_EMPRESAS);
+        return contributionConfigRepository.save(contributionConfig);
+    }
     public ContributionConfig saveConstantContributionConfig(ConstantContribution constantContribution){
         ConstantContribution contribution=constantContributionRepository.save(constantContribution);
         ContributionConfig contributionConfig=new ContributionConfig();
