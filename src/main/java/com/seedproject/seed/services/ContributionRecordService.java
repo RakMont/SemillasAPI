@@ -295,7 +295,6 @@ public class ContributionRecordService {
         Long id = Long.parseLong(encripttionService.decrypt(SeedId));
        try{
            List<ContributionReportDTO> contributionRecords = contributionRecordRepository.findContributionsBySeed(id);
-
            if (!contributionRecords.isEmpty()) return this.getContributionsInFormat(contributionRecords);
            else return null;
        }catch (Exception exception){
@@ -379,7 +378,7 @@ public class ContributionRecordService {
                     )
             ));
             cells.add(new Cell(
-                    new CellHeader("Monto de pago",0,"Integer",false,null),
+                    new CellHeader("Monto pago",0,"Integer",false,null),
                     new CellProperty(null,false,null,null),
                     new ArrayList<CellContent>(
                             Arrays.asList(
@@ -424,13 +423,14 @@ public class ContributionRecordService {
                     )
             ));
             cells.add(new Cell(
-                    new CellHeader("Número recibo",0,"String",false,null),
+                    new CellHeader("Validado",0,"String",false,null),
                     new CellProperty(null,false,null,null),
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("text",
                                             null,null,false,
-                                            null,null, contributionRecord.getReceipt_number(),
+                                            null,null,
+                                            contributionRecord.getValid_transaction() ? "Sí" : "No",
                                             null)
                             )
                     )
@@ -469,9 +469,188 @@ public class ContributionRecordService {
             resultList.add(new TableRow(cells));
             index++;
         }
-        resultList.add(this.getFooter(contributionRecords, true, false));
+        Map<String, Long> result = this.getSummarize(contributionRecords);
+        resultList.add(this.getFooter(result, true));
+        resultList.add(this.getBenefitedChildren(result, true));
         return new Table(resultList);
     }
+
+    public Map<String, Long> getSummarize(List<ContributionReportDTO> contributionRecords){
+        Map<String, Long> resultParams = new HashMap<String, Long>();
+        int total = 0;
+        int totalExtra = 0;
+        int totalSpent = 0;
+        for (ContributionReportDTO contributionRecord: contributionRecords){
+            total = total+contributionRecord.getPayment_amount().intValue();
+            totalExtra = totalExtra + Integer.parseInt(contributionRecord.getExtra_amount());
+            totalSpent = totalSpent + (contributionRecord.getSpent_amount() == null ?  0 :
+                    Integer.parseInt(contributionRecord.getSpent_amount()));
+        }
+        resultParams.put("total", (long) total);
+        resultParams.put("totalExtra", (long) totalExtra);
+        resultParams.put("totalSpent", (long) totalSpent);
+        return resultParams;
+    }
+
+    public TableRow getBenefitedChildren(Map<String, Long> summarize,Boolean isAll){
+        List<Cell> cells = new ArrayList<Cell>();
+        cells.add(new Cell(
+                new CellHeader("#",0,"Integer",false,null),
+                new CellProperty("#161d2b",false,null,null),
+                new ArrayList<CellContent>(
+                        Arrays.asList(
+                                new CellContent("text",null,null,false,
+                                        null,null,"",null)
+                        )
+                )
+        ));
+        if(isAll){
+            cells.add(new Cell(
+                    new CellHeader("Semilla",0,"Integer",false,null),
+                    new CellProperty("#161d2b",false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",null,null,false,
+                                            null,null,"",null)
+                            )
+                    )
+            ));
+        }
+        if(isAll){
+            cells.add(new Cell(
+                    new CellHeader("Tipo",0,"Integer",false,null),
+                    new CellProperty("#161d2b",false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",null,null,false,
+                                            null,null,"",null)
+                            )
+                    )
+            ));
+        }
+        if(!isAll){
+            cells.add(new Cell(
+                    new CellHeader("Mes correspondiente",0,"String",true,null),
+                    new CellProperty("#161d2b",false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",
+                                            null,null,false,
+                                            null,null,
+                                            null, null)
+                            )
+                    )
+            ));
+        }
+        cells.add(new Cell(
+                new CellHeader("Fecha pago",0,"String",true,null),
+                new CellProperty(!isAll ? "#161d2b" : null,false,null,null),
+                new ArrayList<CellContent>(
+                        Arrays.asList(
+                                new CellContent("text",
+                                        null,null,false,
+                                        null,null,
+                                        !isAll ? "" : "Total niños alimentados", null)
+                        )
+                )
+        ));
+        cells.add(new Cell(
+                new CellHeader("Fecha prevista",0,"String",true,null),
+                new CellProperty(null,false,null,null),
+                new ArrayList<CellContent>(
+                        Arrays.asList(
+                                new CellContent("text",
+                                        null,null,false,
+                                        null,null,
+                                        "Total niños alimentados", null)
+                        )
+                )
+        ));
+        cells.add(new Cell(
+                new CellHeader("Monto pago",0,"Integer",false,null),
+                new CellProperty(null,false,null,null),
+                new ArrayList<CellContent>(
+                        Arrays.asList(
+                                new CellContent("text",null,null,false,null,null,
+                                        summarize.get("total")/35 + " Niños",null)
+                        )
+                )
+        ));
+        cells.add(new Cell(
+                new CellHeader("Monto extra",0,"Integer",false,null),
+                new CellProperty("#161d2b",false,null,null),
+                new ArrayList<CellContent>(
+                        Arrays.asList(
+                                new CellContent("text",null,null,false,null,null,
+                                        "",null)
+                        )
+                )
+        ));
+        cells.add(new Cell(
+                new CellHeader("Monto Gasto",0,"Integer",false,null),
+                new CellProperty("#161d2b",false,null,null),
+                new ArrayList<CellContent>(
+                        Arrays.asList(
+                                new CellContent("text",null,null,false,null,null,
+                                        "",null)
+                        )
+                )
+        ));
+        cells.add(new Cell(
+                new CellHeader("Codigo recibo",0,"String",true,null),
+                new CellProperty("#161d2b",false,null,null),
+                new ArrayList<CellContent>(
+                        Arrays.asList(
+                                new CellContent("text",
+                                        null,null,false,
+                                        null,null, "",
+                                        null)
+                        )
+                )
+        ));
+        cells.add(new Cell(
+                new CellHeader("Validado",0,"String",true,null),
+                new CellProperty(null,false,null,null),
+                new ArrayList<CellContent>(
+                        Arrays.asList(
+                                new CellContent("text",
+                                        null,null,false,
+                                        null,null,
+                                        (summarize.get("total")+
+                                        summarize.get("totalExtra")-
+                                        summarize.get("totalSpent"))/35 + " Niños",
+                                        null)
+                        )
+                )
+        ));
+        cells.add(new Cell(
+                new CellHeader("Tipo aporte",0,"String",true,null),
+                new CellProperty("#161d2b",false,null,null),
+                new ArrayList<CellContent>(
+                        Arrays.asList(
+                                new CellContent("text",
+                                        null,null,false,
+                                        null,null, "",
+                                        null)
+                        )
+                )
+        ));
+        cells.add(new Cell(
+                new CellHeader("Opciones",0,"String",false,null),
+                new CellProperty("#161d2b",false,null,null),
+                new ArrayList<CellContent>(
+                        Arrays.asList(
+                                new CellContent("text",
+                                        null,null,false,
+                                        null,null, "",
+                                        null)
+                        )
+                )
+        ));
+        return new TableRow(cells);
+
+    }
+
     public Table getContributionsInFormat(List<ContributionReportDTO> contributionRecords){
         List<TableRow> resultList = new ArrayList<TableRow>();
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
@@ -488,15 +667,15 @@ public class ContributionRecordService {
                     )
             ));
             cells.add(new Cell(
-                    new CellHeader("Fecha prevista",0,"String",true,null),
+                    new CellHeader("Mes correspondiente",0,"String",true,null),
                     new CellProperty(null,false,null,null),
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("text",
                                             null,null,false,
                                             null,null,
-                                            contributionRecord.getExpected_payment_date() != null ?
-                                                    formatter.format(contributionRecord.getExpected_payment_date()) : " ", null)
+                                            contributionRecord.getContribution_month() !=null ?
+                                                    contributionRecord.getContribution_month().toString() : "-----", null)
                             )
                     )
             ));
@@ -514,7 +693,20 @@ public class ContributionRecordService {
                     )
             ));
             cells.add(new Cell(
-                    new CellHeader("Monto de pago",0,"Integer",false,null),
+                    new CellHeader("Fecha prevista",0,"String",true,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",
+                                            null,null,false,
+                                            null,null,
+                                            contributionRecord.getExpected_payment_date() != null ?
+                                                    formatter.format(contributionRecord.getExpected_payment_date()) : " ", null)
+                            )
+                    )
+            ));
+            cells.add(new Cell(
+                    new CellHeader("Monto pago",0,"Integer",false,null),
                     new CellProperty(null,false,null,null),
                     new ArrayList<CellContent>(
                             Arrays.asList(
@@ -556,13 +748,14 @@ public class ContributionRecordService {
                     )
             ));
             cells.add(new Cell(
-                    new CellHeader("Número recibo",0,"String",true,null),
+                    new CellHeader("Validado",0,"String",true,null),
                     new CellProperty(null,false,null,null),
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("text",
                                             null,null,false,
-                                            null,null, contributionRecord.getReceipt_number(),
+                                            null,null,
+                                            contributionRecord.getValid_transaction() ? "Sí" : "No" ,
                                             null)
                             )
                     )
@@ -615,7 +808,10 @@ public class ContributionRecordService {
             resultList.add(new TableRow(cells));
             index++;
         }
-        resultList.add(this.getFooter(contributionRecords, false, false));
+
+        Map<String, Long> result = this.getSummarize(contributionRecords);
+        resultList.add(this.getFooter(result, false));
+        resultList.add(this.getBenefitedChildren(result, false));
         return new Table(resultList);
     }
 
@@ -634,7 +830,7 @@ public class ContributionRecordService {
         contributionRecord.setExpected_payment_date(contributionRecordDao.getExpected_payment_date());
         contributionRecord.setPaymentMethod(contributionRecordDao.getPaymentMethod());
         contributionRecord.setContribution_ammount(contributionRecordDao.getContribution_ammount());
-        contributionRecord.setReceipt_number(contributionRecordDao.getReceipt_number());
+        contributionRecord.setValidTransaction(contributionRecordDao.getValidTransaction());
         contributionRecord.setReceipt_code(contributionRecordDao.getReceipt_code());
         contributionRecord.setExtra_income_ammount(contributionRecordDao.getExtra_income_ammount());
         contributionRecord.setContribution_obtained(contributionRecordDao.getContribution_obtained());
@@ -643,6 +839,8 @@ public class ContributionRecordService {
         contributionRecord.setVolunter(volunter);
         contributionRecord.setContributionConfig(contributionConfig);
         contributionRecord.setTrackingAssignment(trackingAssignment);
+        contributionRecord.setValidTransaction(contributionRecordDao.getValidTransaction());
+        contributionRecord.setContributionMonth(contributionRecordDao.getContributionMonth());
         contributionRecord.setRegister_exist(true);
         if (contributionRecordDao.getHasExtraExpense()){
             ExtraExpense extraExpense = new ExtraExpense();
@@ -669,13 +867,14 @@ public class ContributionRecordService {
         contributionRecord.setExpected_payment_date(contributionRecordDao.getExpected_payment_date());
         contributionRecord.setPaymentMethod(contributionRecordDao.getPaymentMethod());
         contributionRecord.setContribution_ammount(contributionRecordDao.getContribution_ammount());
-        contributionRecord.setReceipt_number(contributionRecordDao.getReceipt_number());
+        contributionRecord.setValidTransaction(contributionRecordDao.getValidTransaction());
         contributionRecord.setReceipt_code(contributionRecordDao.getReceipt_code());
         contributionRecord.setExtra_income_ammount(contributionRecordDao.getExtra_income_ammount());
         contributionRecord.setContribution_obtained(contributionRecordDao.getContribution_obtained());
         contributionRecord.setSent_payment_proof(contributionRecordDao.getSent_payment_proof());
-
-        if (contributionRecordDao.getHasExtraExpense()){
+        contributionRecord.setValidTransaction(contributionRecordDao.getValidTransaction());
+        contributionRecord.setContributionMonth(contributionRecordDao.getContributionMonth());
+        if (contributionRecordDao.getHasExtraExpense()!= null){
            if(contributionRecord.getExtraExpense()!= null){
                contributionRecord.getExtraExpense().setExtra_expense_amount(contributionRecordDao.getExtraExpenseAmount());
                contributionRecord.getExtraExpense().setExtra_expense_reason(contributionRecordDao.getExtraExpenseReason());
@@ -686,7 +885,10 @@ public class ContributionRecordService {
                extraExpense.setExtra_expense_reason(contributionRecordDao.getExtraExpenseReason());
                contributionRecord.setExtraExpense(extraExpense);
            }
-        }else contributionRecord.setExtraExpense(null);
+        }
+        else{
+            contributionRecord.setExtraExpense(null);
+        }
 
         try {
             contributionRecordRepository.save(contributionRecord);
@@ -710,18 +912,8 @@ public class ContributionRecordService {
         }
     }
 
-    public TableRow getFooter(List<ContributionReportDTO> contributionRecords, Boolean isAll, Boolean isReport){
-        int total = 0;
-        int totalExtra = 0;
-        int totalSpent = 0;
-        for (ContributionReportDTO contributionRecord: contributionRecords){
-            total = total+contributionRecord.getPayment_amount().intValue();
-            totalExtra = totalExtra + Integer.parseInt(contributionRecord.getExtra_amount());
-            totalSpent = totalSpent + (contributionRecord.getSpent_amount() == null ?  0 :
-                    Integer.parseInt(contributionRecord.getSpent_amount()));
-        }
+    public TableRow getFooter(Map<String, Long> summarize, Boolean isAll){
         List<Cell> cells = new ArrayList<Cell>();
-        if (!isAll){
             cells.add(new Cell(
                     new CellHeader("#",0,"Integer",false,null),
                     new CellProperty("#161d2b",false,null,null),
@@ -732,20 +924,59 @@ public class ContributionRecordService {
                             )
                     )
             ));
+            if(isAll){
+                cells.add(new Cell(
+                        new CellHeader("Semilla",0,"Integer",false,null),
+                        new CellProperty("#161d2b",false,null,null),
+                        new ArrayList<CellContent>(
+                                Arrays.asList(
+                                        new CellContent("text",null,null,false,
+                                                null,null,"",null)
+                                )
+                        )
+                ));
+            }
+            if(isAll){
+                cells.add(new Cell(
+                        new CellHeader("Tipo",0,"Integer",false,null),
+                        new CellProperty("#161d2b",false,null,null),
+                        new ArrayList<CellContent>(
+                                Arrays.asList(
+                                        new CellContent("text",null,null,false,
+                                                null,null,"",null)
+                                )
+                        )
+                ));
+            }
+            if(!isAll){
+                cells.add(new Cell(
+                        new CellHeader("Mes correspondiente",0,"String",true,null),
+                        new CellProperty("#161d2b",false,null,null),
+                        new ArrayList<CellContent>(
+                                Arrays.asList(
+                                        new CellContent("text",
+                                                null,null,false,
+                                                null,null,
+                                                null, null)
+                                )
+                        )
+                ));
+            }
+        cells.add(new Cell(
+                new CellHeader("Fecha pago",0,"String",true,null),
+                new CellProperty(!isAll ? "#161d2b" : null,false,null,null),
+                new ArrayList<CellContent>(
+                        Arrays.asList(
+                                new CellContent("text",
+                                        null,null,false,
+                                        null,null,
+                                        !isAll ? "" : "Total", null)
+                        )
+                )
+        ));
+        if(!isAll){
             cells.add(new Cell(
                     new CellHeader("Fecha prevista",0,"String",true,null),
-                    new CellProperty("#161d2b",false,null,null),
-                    new ArrayList<CellContent>(
-                            Arrays.asList(
-                                    new CellContent("text",
-                                            null,null,false,
-                                            null,null,
-                                            "", null)
-                            )
-                    )
-            ));
-            cells.add(new Cell(
-                    new CellHeader("Fecha pago",0,"String",true,null),
                     new CellProperty(null,false,null,null),
                     new ArrayList<CellContent>(
                             Arrays.asList(
@@ -756,137 +987,14 @@ public class ContributionRecordService {
                             )
                     )
             ));
-            cells.add(new Cell(
-                    new CellHeader("Monto de pago",0,"Integer",false,null),
-                    new CellProperty(null,false,null,null),
-                    new ArrayList<CellContent>(
-                            Arrays.asList(
-                                    new CellContent("text",null,null,false,null,null,
-                                            total + " BOB",null)
-                            )
-                    )
-            ));
-            cells.add(new Cell(
-                    new CellHeader("Monto extra",0,"Integer",false,null),
-                    new CellProperty(null,false,null,null),
-                    new ArrayList<CellContent>(
-                            Arrays.asList(
-                                    new CellContent("text",null,null,false,null,null,
-                                            totalExtra + " BOB",null)
-                            )
-                    )
-            ));
-            cells.add(new Cell(
-                    new CellHeader("Monto Gasto",0,"Integer",false,null),
-                    new CellProperty(null,false,null,null),
-                    new ArrayList<CellContent>(
-                            Arrays.asList(
-                                    new CellContent("text",null,null,false,null,null,
-                                            totalSpent + " BOB",null)
-                            )
-                    )
-            ));
-            cells.add(new Cell(
-                    new CellHeader("Codigo recibo",0,"String",true,null),
-                    new CellProperty("#161d2b",false,null,null),
-                    new ArrayList<CellContent>(
-                            Arrays.asList(
-                                    new CellContent("text",
-                                            null,null,false,
-                                            null,null, "",
-                                            null)
-                            )
-                    )
-            ));
-            cells.add(new Cell(
-                    new CellHeader("Número recibo",0,"String",true,null),
-                    new CellProperty("#161d2b",false,null,null),
-                    new ArrayList<CellContent>(
-                            Arrays.asList(
-                                    new CellContent("text",
-                                            null,null,false,
-                                            null,null, "",
-                                            null)
-                            )
-                    )
-            ));
-            cells.add(new Cell(
-                    new CellHeader("Tipo aporte",0,"String",true,null),
-                    new CellProperty("#161d2b",false,null,null),
-                    new ArrayList<CellContent>(
-                            Arrays.asList(
-                                    new CellContent("text",
-                                            null,null,false,
-                                            null,null, "",
-                                            null)
-                            )
-                    )
-            ));
-            if (!isReport){
-                cells.add(new Cell(
-                        new CellHeader("Opciones",0,"String",false,null),
-                        new CellProperty("#161d2b",false,null,null),
-                        new ArrayList<CellContent>(
-                                Arrays.asList(
-                                        new CellContent("text",
-                                                null,null,false,
-                                                null,null, "",
-                                                null)
-                                )
-                        )
-                ));
-            }
         }
-        else {
             cells.add(new Cell(
-                    new CellHeader("#",0,"Integer",false,null),
-                    new CellProperty("#161d2b",false,null,null),
-                    new ArrayList<CellContent>(
-                            Arrays.asList(
-                                    new CellContent("text",null,null,false,
-                                            null,null,"",null)
-                            )
-                    )
-            ));
-            cells.add(new Cell(
-                    new CellHeader("Semilla",0,"Integer",false,null),
-                    new CellProperty("#161d2b",false,null,null),
-                    new ArrayList<CellContent>(
-                            Arrays.asList(
-                                    new CellContent("text",null,null,false,
-                                            null,null,"",null)
-                            )
-                    )
-            ));
-            cells.add(new Cell(
-                    new CellHeader("Tipo",0,"Integer",false,null),
-                    new CellProperty("#161d2b",false,null,null),
-                    new ArrayList<CellContent>(
-                            Arrays.asList(
-                                    new CellContent("text",null,null,false,
-                                            null,null,"",null)
-                            )
-                    )
-            ));
-            cells.add(new Cell(
-                    new CellHeader("Fecha pago",0,"String",true,null),
-                    new CellProperty(null,false,null,null),
-                    new ArrayList<CellContent>(
-                            Arrays.asList(
-                                    new CellContent("text",
-                                            null,null,false,
-                                            null,null,
-                                            "Total", null)
-                            )
-                    )
-            ));
-            cells.add(new Cell(
-                    new CellHeader("Monto de pago",0,"Integer",false,null),
+                    new CellHeader("Monto pago",0,"Integer",false,null),
                     new CellProperty(null,false,null,null),
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("text",null,null,false,null,null,
-                                            total + " BOB",null)
+                                            summarize.get("total") + " BOB",null)
                             )
                     )
             ));
@@ -896,7 +1004,7 @@ public class ContributionRecordService {
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("text",null,null,false,null,null,
-                                            totalExtra + " BOB",null)
+                                            summarize.get("totalExtra") + " BOB",null)
                             )
                     )
             ));
@@ -906,30 +1014,33 @@ public class ContributionRecordService {
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("text",null,null,false,null,null,
-                                            totalSpent + " BOB",null)
+                                            summarize.get("totalSpent") + " BOB",null)
                             )
                     )
             ));
             cells.add(new Cell(
                     new CellHeader("Codigo recibo",0,"String",true,null),
-                    new CellProperty("#161d2b",false,null,null),
+                    new CellProperty(null,false,null,null),
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("text",
                                             null,null,false,
-                                            null,null, "",
+                                            null,null, "Total sumado: ",
                                             null)
                             )
                     )
             ));
             cells.add(new Cell(
-                    new CellHeader("Número recibo",0,"String",true,null),
-                    new CellProperty("#161d2b",false,null,null),
+                    new CellHeader("Validado",0,"String",true,null),
+                    new CellProperty(null,false,null,null),
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("text",
                                             null,null,false,
-                                            null,null, "",
+                                            null,null,
+                                            summarize.get("total")+
+                                                    summarize.get("totalExtra")-
+                                                    summarize.get("totalSpent")+ " BOB",
                                             null)
                             )
                     )
@@ -946,12 +1057,10 @@ public class ContributionRecordService {
                             )
                     )
             ));
-            if  (!isReport) {
-                cells.add(new Cell(
-                        new CellHeader("Opciones",0,"String",false,null),
-                        new CellProperty("#161d2b",false,null,null),
-                        new ArrayList<CellContent>(
-                                Arrays.asList(
+            cells.add(new Cell(
+                    new CellHeader("Opciones",0,"String",false,null),
+                    new CellProperty("#161d2b",false,null,null),
+                    new ArrayList<CellContent>(Arrays.asList(
                                         new CellContent("text",
                                                 null,null,false,
                                                 null,null, "",
@@ -959,9 +1068,9 @@ public class ContributionRecordService {
                                 )
                         )
                 ));
-            }
 
-        }
+
+
         return new TableRow(cells);
     }
 

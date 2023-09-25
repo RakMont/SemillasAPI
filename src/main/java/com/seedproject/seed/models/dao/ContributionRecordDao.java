@@ -1,5 +1,6 @@
 package com.seedproject.seed.models.dao;
 
+import com.seedproject.seed.models.enums.DonationMonth;
 import com.seedproject.seed.models.enums.PaymentMethod;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,12 +18,13 @@ public class ContributionRecordDao {
     Date expected_payment_date;
     PaymentMethod paymentMethod;
     Long contribution_ammount;
-    String receipt_number;
+    Boolean validTransaction;
     String receipt_code;
     String extra_income_ammount;
     Boolean contribution_obtained;
     Boolean sent_payment_proof;
     String volunter_id;
+    DonationMonth contributionMonth;
     /**/
     String extraExpenseId;
     Long extraExpenseAmount;

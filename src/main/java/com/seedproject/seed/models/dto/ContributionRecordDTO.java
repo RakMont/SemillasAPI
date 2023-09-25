@@ -1,7 +1,7 @@
 package com.seedproject.seed.models.dto;
 
 import com.seedproject.seed.models.entities.ContributionRecord;
-import com.seedproject.seed.models.entities.ExtraExpense;
+import com.seedproject.seed.models.enums.DonationMonth;
 import com.seedproject.seed.models.enums.PaymentMethod;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,10 +21,11 @@ public class ContributionRecordDTO {
     public String paymentMethodLabel;
     public Date paymentDate;
     public String receiptCode;
-    public String receiptNumber;
+    public Boolean validTransaction;
     public Boolean sentPaymentProof;
     public Long extraExpenseAmount;
     public String extraExpenseReason;
+    public DonationMonth contributionMonth;
     public Boolean hasExtraExpense;
     public String trackingAssignmentId;
     public String contributionConfigId;
@@ -39,7 +40,8 @@ public class ContributionRecordDTO {
         this.paymentMethod = contributionRecord.getPaymentMethod();
         this.paymentDate = contributionRecord.getPayment_date();
         this.receiptCode = contributionRecord.getReceipt_code();
-        this.receiptNumber = contributionRecord.getReceipt_number();
+        this.validTransaction = contributionRecord.getValidTransaction();
+        this.contributionMonth = contributionRecord.getContributionMonth();
         this.sentPaymentProof = contributionRecord.getSent_payment_proof();
         this.trackingAssignmentId = contributionRecord.getTrackingAssignment().getTracking_assignment_id().toString();
         this.contributionConfigId = contributionRecord.getContributionConfig().getContribution_config_id().toString();

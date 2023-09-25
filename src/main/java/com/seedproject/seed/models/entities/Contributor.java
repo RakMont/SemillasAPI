@@ -27,6 +27,9 @@ public class Contributor implements Serializable {
     @Column(name = "city")
     private String city;
 
+    @Column(name = "is_foreign")
+    private Boolean isForeign;
+
     @Column(name = "send_date")
     private Date send_date;
 

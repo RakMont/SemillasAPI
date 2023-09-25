@@ -19,9 +19,9 @@ public interface ContributionRecordRepository extends JpaRepository<Contribution
     List<ContributionRecord> findByTrackingAssignment(TrackingAssignment trackingAssignment);
 
     @Query(value = "select cr.contribution_record_id ,cr.payment_method,concat(su.name, ' ', su.lastname) as seed_name, cconf.contribution_key, \n" +
-            "            cr.payment_date, cr.expected_payment_date, cr.contribution_ammount as payment_amount,\n" +
+            "            cr.payment_date,cr.contribution_month, cr.expected_payment_date, cr.contribution_ammount as payment_amount,\n" +
             "            cr.extra_income_ammount as extra_amount, exex.extra_expense_amount as spent_amount,\n" +
-            "            cr.receipt_code, cr.receipt_number\n" +
+            "            cr.receipt_code, cr.valid_transaction\n" +
             "            from contribution_record cr\n" +
             "            inner join contributor co\n" +
             "            on co.contributor_id = cr.contributor_id\n" +
@@ -36,9 +36,9 @@ public interface ContributionRecordRepository extends JpaRepository<Contribution
     List<ContributionReportDTO> findContributionsBySeed(@Param("seedId")Long seedId);
 
     @Query(value="select cr.contribution_record_id ,concat(su.name, ' ', su.lastname) as seed_name,cconf.contribution_key, \n" +
-            "            cr.payment_date, cr.expected_payment_date, cr.payment_method, cr.contribution_ammount as payment_amount,\n" +
+            "            cr.payment_date,cr.contribution_month, cr.expected_payment_date, cr.payment_method, cr.contribution_ammount as payment_amount,\n" +
             "            cr.extra_income_ammount as extra_amount, exex.extra_expense_amount as spent_amount,\n" +
-            "            cr.receipt_code, cr.receipt_number\n" +
+            "            cr.receipt_code, cr.valid_transaction\n" +
             "            from contribution_record cr\n" +
             "            inner join contributor co\n" +
             "            on co.contributor_id = cr.contributor_id\n" +

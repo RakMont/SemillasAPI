@@ -48,7 +48,7 @@ public class ContributorService {
         ContributionConfig contributionConfig;
         ConstantContribution constantContribution = new ConstantContribution();
         constantContribution.setStart_month(constantApplicantHolder.getBeginMonth());
-        constantContribution.setPaymentDate(PaymentDate.CADA_10_DEL_MES);
+        constantContribution.setPaymentDate(constantApplicantHolder.getPaymentDay());
         constantContribution.setRemainderType(constantApplicantHolder.getReminderMethod());
         constantContribution.setContribution(new Contribution(
                 constantApplicantHolder.getContribution_amount(),
@@ -60,6 +60,7 @@ public class ContributorService {
         Contributor contributor = constantApplicantHolder.getContributor();
         contributor.setSend_date(new Date());
         contributor.setRegister_date(new Date());
+       // contributor.setIsForeign(constantApplicantHolder.getContributor().getIsForeign());
         contributor.setContributionConfig(contributionConfig);
         contributor.setRegister_exist(true);
         if (principal != null ){
@@ -251,7 +252,6 @@ public class ContributorService {
             constantContribution.setContributionEndDate(processSeedDTO.getContributionEndDate());
             constantContributionRepository.save(constantContribution);
         }
-        ResponseMessage response;
        try {
            processedContributorRepository.save(processedContributor);
            contributorRepository.save(contributor);
@@ -567,8 +567,11 @@ public class ContributorService {
             ContributionDTO contributionDTO = new ContributionConstDTO(contributor.get().getContributionConfig().getConstantContribution());
             contributionConfigDTO.setContribution(contributionDTO);
         }
-        else {
+        else if (contributor.get().getContributionConfig().getContribution_key().equals(ContributionType.APORTE_UNICO)){
             ContributionDTO contributionDTO = new ContributionUniqDTO(contributor.get().getContributionConfig().getUniqueContribution());
+            contributionConfigDTO.setContribution(contributionDTO);
+        } else {
+            ContributionDTO contributionDTO = new ContributionEnterpriseDTO(contributor.get().getContributionConfig().getEnterpriseContribution());
             contributionConfigDTO.setContribution(contributionDTO);
         }
         contributorDTO.setContributionConfig(contributionConfigDTO);
@@ -635,6 +638,48 @@ public class ContributorService {
         }
     }
 
+    public ResponseEntity<RequestResponseMessage>updateEnterpriseContributor(EnterpriseApplicantHolderDao enterpriseApplicantHolderDao){
+        Long id = Long.parseLong(this.encripttionService.decrypt(enterpriseApplicantHolderDao.getContributorId()));
+
+        try{
+            Contributor contributorHelper = this.contributorRepository.getById(id);
+
+            contributorHelper.getContributionConfig().getEnterpriseContribution().setDate_contribution(enterpriseApplicantHolderDao.getDate_contribution());
+            contributorHelper.getContributionConfig().getEnterpriseContribution().getContribution().setContribution_amount(enterpriseApplicantHolderDao.getContribution_amount());
+            contributorHelper.getContributionConfig().getEnterpriseContribution().getContribution().setPaymentMethod(enterpriseApplicantHolderDao.getPaymentMethod());
+            contributorHelper.getContributionConfig().getEnterpriseContribution().getContribution().setSend_news(enterpriseApplicantHolderDao.getSend_news());
+            contributorHelper.getContributionConfig().getEnterpriseContribution().getContribution().setSendNewsType(enterpriseApplicantHolderDao.getSendNewsType());
+            contributorHelper.setAddress(enterpriseApplicantHolderDao.getContributor().getAddress());
+            contributorHelper.setCountry(enterpriseApplicantHolderDao.getContributor().getCountry());
+            contributorHelper.setCity(enterpriseApplicantHolderDao.getContributor().getCity());
+            contributorHelper.getUser().setName(enterpriseApplicantHolderDao.getContributor().getUser().getName());
+            contributorHelper.getUser().setLastname(enterpriseApplicantHolderDao.getContributor().getUser().getLastname());
+            contributorHelper.getUser().setEmail(enterpriseApplicantHolderDao.getContributor().getUser().getEmail());
+            contributorHelper.getUser().setPhone(enterpriseApplicantHolderDao.getContributor().getUser().getPhone());
+            contributorHelper.getUser().setDni(enterpriseApplicantHolderDao.getContributor().getUser().getDni());
+            contributorHelper.getUser().setBirthdate(enterpriseApplicantHolderDao.getContributor().getUser().getBirthdate());
+
+            try {
+                Contributor resp = contributorRepository.save(contributorHelper);
+                return new ResponseEntity<>(
+                        new RequestResponseMessage(
+                                "Sus datos fueron actualizados",
+                                ResponseStatus.SUCCESS), HttpStatus.CREATED);
+            }
+            catch(Exception e) {
+                return new ResponseEntity<>(
+                        new RequestResponseMessage(
+                                "Ocurrió un error actualizando los datos, porfavor intente mas tarde",
+                                ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+            }
+        }catch (Exception e){
+            return new ResponseEntity<>(
+                    new RequestResponseMessage(
+                            "Ocurrió un error actualizando los datos, porfavor intente mas tarde",
+                            ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+
+        }
+    }
     public ResponseEntity<RequestResponseMessage> updateConstantContributor(ConstantApplicantHolder constantApplicantHolder){
         Long id = Long.parseLong(this.encripttionService.decrypt(constantApplicantHolder.getContributorId()));
         try{

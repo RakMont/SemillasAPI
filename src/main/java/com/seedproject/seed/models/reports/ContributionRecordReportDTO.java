@@ -14,7 +14,7 @@ public class ContributionRecordReportDTO  {
    private Long extra_amount;
    private Long spent_amount;
    private String receipt_code;
-   private String receipt_number;
+   private Boolean valid_transaction;
    private String payment_method;
 
 
@@ -27,7 +27,7 @@ public class ContributionRecordReportDTO  {
       this.extra_amount = contributionRecord.getExtra_amount() != null ? Long.parseLong(contributionRecord.getExtra_amount()) : 0;
       this.spent_amount = contributionRecord.getSpent_amount() != null ? Long.parseLong(contributionRecord.getSpent_amount()) : 0 ;
       this.receipt_code = contributionRecord.getReceipt_code();
-      this.receipt_number = contributionRecord.getReceipt_number();
+      this.valid_transaction = contributionRecord.getValid_transaction();
       this.payment_method = contributionRecord.getPayment_method().toString();
    }
 
@@ -98,12 +98,12 @@ public class ContributionRecordReportDTO  {
       this.receipt_code = receipt_code;
    }
 
-   public String getReceipt_number() {
-      return receipt_number;
+   public Boolean getValid_transaction() {
+      return valid_transaction;
    }
 
-   public void setReceipt_number(String receipt_number) {
-      this.receipt_number = receipt_number;
+   public void setReceipt_number(Boolean valid_transaction) {
+      this.valid_transaction = valid_transaction;
    }
 
    public String getPayment_method() {

@@ -2,6 +2,7 @@ package com.seedproject.seed.models.entities;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.seedproject.seed.models.enums.DonationMonth;
 import com.seedproject.seed.models.enums.PaymentMethod;
 import lombok.Getter;
 import lombok.Setter;
@@ -49,9 +50,6 @@ public class ContributionRecord {
     @Column(name = "contribution_ammount")
     private Long contribution_ammount;
 
-    @Column(name = "receipt_number")
-    private String receipt_number;
-
     @Column(name = "receipt_code")
     private String receipt_code;
 
@@ -66,6 +64,12 @@ public class ContributionRecord {
 
     @Column(name = "register_exist")
     private Boolean register_exist;
+
+    @Column(name = "contribution_month")
+    private DonationMonth contributionMonth;
+
+    @Column(name = "valid_transaction")
+    private Boolean validTransaction;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "extra_expense_id", referencedColumnName = "extra_expense_id")

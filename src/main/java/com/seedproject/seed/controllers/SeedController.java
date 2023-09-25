@@ -1,5 +1,6 @@
 package com.seedproject.seed.controllers;
 
+import com.seedproject.seed.models.dao.EnterpriseApplicantHolderDao;
 import com.seedproject.seed.models.dao.UniqueApplicantHolderDao;
 import com.seedproject.seed.models.dao.ConstantApplicantHolder;
 import com.seedproject.seed.models.dto.RequestResponseMessage;
@@ -19,6 +20,11 @@ public class SeedController {
     @PostMapping(value = "/updateUnique", consumes = "application/json", produces = "application/json")
     public ResponseEntity<RequestResponseMessage> createUniqueApplicant(@RequestBody UniqueApplicantHolderDao uniqueApplicantHolderDao) {
         return contributorService.updateUniqueContributor(uniqueApplicantHolderDao);
+    }
+
+    @PostMapping(value = "/updateEnterprise", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<RequestResponseMessage> updateEnterpriseApplicant(@RequestBody EnterpriseApplicantHolderDao enterpriseApplicantHolderDao) {
+        return contributorService.updateEnterpriseContributor(enterpriseApplicantHolderDao);
     }
 
     @PostMapping(value = "/updateConstant", consumes = "application/json", produces = "application/json")
