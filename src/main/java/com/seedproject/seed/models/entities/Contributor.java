@@ -6,7 +6,9 @@ import lombok.Setter;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "contributor")
@@ -53,14 +55,29 @@ public class Contributor implements Serializable {
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")
     private User user;
 
-    @NotNull(message = "The Config must not be null")
+    /*@NotNull(message = "The Config must not be null")
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "contribution_config_id", referencedColumnName = "contribution_config_id")
-    private ContributionConfig contributionConfig;
+    private ContributionConfig contributionConfig;*/
+
+    @NotNull(message = "The Config must not be null")
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "seed_configuration",
+            joinColumns = @JoinColumn(name = "contributor_id", referencedColumnName = "contributor_id"),
+            inverseJoinColumns = @JoinColumn(name = "contribution_config_id"))
+    private List<ContributionConfig> seedConfigurations = new ArrayList<>();
 
     @OneToOne(mappedBy = "contributor")
     private DeactivatedContributor deactivatedContributor;
 
     @OneToOne(mappedBy = "contributor")
     private ProcessedContributor processedContributor;
+
+    public ContributionConfig getActiveContribution(){
+        ContributionConfig contributionConfig = null;
+        for(ContributionConfig cr: this.seedConfigurations){
+            if(cr.getIs_active()) contributionConfig = cr;
+        }
+        return contributionConfig;
+    }
 }

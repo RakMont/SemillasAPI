@@ -1,5 +1,6 @@
 package com.seedproject.seed.models.entities;
 
+import com.seedproject.seed.models.dao.TrackingAssignmentDao;
 import com.seedproject.seed.models.enums.Status;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,4 +33,16 @@ public class TrackingAssignment {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private Status status;
+
+    public TrackingAssignment() {
+    }
+    public TrackingAssignment(TrackingAssignmentDao trackingAssignmentDao) {
+        this.tracking_assignment_id = trackingAssignmentDao.getTracking_assignment_id() != null ?
+                Long.parseLong(trackingAssignmentDao.getTracking_assignment_id()) : null;
+        this.volunter_id = Long.parseLong(trackingAssignmentDao.getVolunter_id());
+        this.contributor_id = Long.parseLong(trackingAssignmentDao.getContributor_id());
+        this.start_date = trackingAssignmentDao.getStart_date();
+        this.end_date = trackingAssignmentDao.getEnd_date();
+        this.status=trackingAssignmentDao.getStatus();
+    }
 }

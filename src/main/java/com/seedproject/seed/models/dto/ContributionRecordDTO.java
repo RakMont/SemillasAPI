@@ -30,6 +30,8 @@ public class ContributionRecordDTO {
     public String trackingAssignmentId;
     public String contributionConfigId;
 
+    public String registerVolunteer;
+
     public ContributionRecordDTO(ContributionRecord contributionRecord){
         this.contributionRecordId = contributionRecord.getContribution_record_id().toString();
         this.contributionAmount =contributionRecord.getContribution_ammount();
@@ -45,6 +47,7 @@ public class ContributionRecordDTO {
         this.sentPaymentProof = contributionRecord.getSent_payment_proof();
         this.trackingAssignmentId = contributionRecord.getTrackingAssignment().getTracking_assignment_id().toString();
         this.contributionConfigId = contributionRecord.getContributionConfig().getContribution_config_id().toString();
+        this.registerVolunteer = contributionRecord.getVolunter().getUser().getName() + " " +contributionRecord.getVolunter().getUser().getLastname();
         if (contributionRecord.getExtraExpense()!= null){
             this.extraExpenseAmount = contributionRecord.getExtraExpense().getExtra_expense_amount();
             this.extraExpenseReason = contributionRecord.getExtraExpense().getExtra_expense_reason();

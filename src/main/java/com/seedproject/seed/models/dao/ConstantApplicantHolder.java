@@ -8,6 +8,8 @@ import com.seedproject.seed.models.enums.SendNewsType;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Date;
+
 @Getter
 @Setter
 public class ConstantApplicantHolder {
@@ -20,4 +22,6 @@ public class ConstantApplicantHolder {
     private String beginMonth;
     private PaymentDate paymentDay;
     private RemainderType reminderMethod;
+    private Date contribution_start_date;
+    private Date contribution_end_date;
 }

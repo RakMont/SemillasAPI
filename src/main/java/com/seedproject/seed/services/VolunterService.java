@@ -1,14 +1,8 @@
 package com.seedproject.seed.services;
 
 import com.seedproject.seed.models.dto.*;
-import com.seedproject.seed.models.entities.ExitMessage;
-import com.seedproject.seed.models.entities.Role;
-import com.seedproject.seed.models.entities.User;
-import com.seedproject.seed.models.entities.Volunter;
-import com.seedproject.seed.models.enums.ColorCode;
-import com.seedproject.seed.models.enums.ResponseStatus;
-import com.seedproject.seed.models.enums.RoleName;
-import com.seedproject.seed.models.enums.Status;
+import com.seedproject.seed.models.entities.*;
+import com.seedproject.seed.models.enums.*;
 import com.seedproject.seed.models.filters.VolunterFilter;
 import com.seedproject.seed.repositories.ExitMessageRepository;
 import com.seedproject.seed.repositories.RoleRepository;
@@ -22,9 +16,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
+import java.awt.*;
 import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.List;
 
 @Service
 public class VolunterService {
@@ -40,6 +36,8 @@ public class VolunterService {
     @Autowired
     private EncripttionService encripttionService;
 
+    @Inject
+    MenuService menuService;
     @Inject
     ExitMessageRepository exitMessageRepository;
 
@@ -59,6 +57,22 @@ public class VolunterService {
         return this.getVolunteersInFormat(volunteers);
     }
 
+    public List<ComboVolunteer> findComboTrackingVolunteers(){
+        List<Volunter> volunteers = volunterRepository.findAll();
+        volunteers.removeIf(p -> !(menuService.hasRole( p.getRoles(), RoleName.R_REGISTROS)));
+        List<ComboVolunteer> comboVolunteers= new ArrayList<>();
+        for (Volunter volunteer:volunteers){
+            comboVolunteers.add(new ComboVolunteer(
+                    encripttionService.encrypt( volunteer.getVolunterId().toString())
+                    ,volunteer.getUser().getName(),volunteer.getUser().getLastname(),
+                    volunteer.getUser().getName()+ ' ' + volunteer.getUser().getLastname(),
+                    volunteer.getUser().getEmail(),
+                    volunteer.getUser().getPhone(),
+                    volunteer.getUser().getDni()));
+        }
+        return comboVolunteers;
+    }
+
    /* public Table findVoluntersByFilter(VolunterFilter volunterFilter){
         List<Volunter> volunters = volunterRepository.findAll();
         if (volunterFilter!= null && volunterFilter.getStatus() != null){
@@ -71,8 +85,8 @@ public class VolunterService {
         return resultTable;
     }
 */
-    public Table findAlltrackingVolunters(){
-        List<Volunter> volunters =  volunterRepository.findAll();
+    public Table findAllTrackingVolunteers(){
+        List<Volunter> volunters =  volunterRepository.findByOrderByUsernameAsc();
         volunters.forEach((volunter -> volunter.setRoles(roleRepository.getVolunterRoles(volunter.getVolunterId()))));
         volunters.removeIf(v -> !this.gotTheRol(RoleName.R_SEGUIMIENTOS,v.getRoles()));
         volunters.removeIf(v -> !v.getStatus().equals(Status.ACTIVE));
@@ -253,13 +267,13 @@ public class VolunterService {
                             new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))
                     ))
             ));
-            contents.add(new CellContent("iconAccion",
+            /*contents.add(new CellContent("iconAccion",
                     "group_add", ColorCode.ASSIGN_SEED.value, true,
                     "AssignSeed","Asignar semilla", null,
                     new ArrayList<CellParam>(Arrays.asList(
                             new CellParam("volunterId", encripttionService.encrypt(volunter.getVolunterId().toString()))
                     ))
-            ));
+            ));*/
         }
         else {
             if (volunter.getStatus().equals(Status.ACTIVE)){

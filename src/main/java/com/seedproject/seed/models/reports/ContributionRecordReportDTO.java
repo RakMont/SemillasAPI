@@ -1,7 +1,6 @@
 package com.seedproject.seed.models.reports;
 
-import com.seedproject.seed.models.dto.ContributionReportDTO;
-import com.seedproject.seed.models.entities.ContributionRecord;
+import com.seedproject.seed.models.dto.interfaces.ContributionReportDTO;
 
 import java.text.SimpleDateFormat;
 

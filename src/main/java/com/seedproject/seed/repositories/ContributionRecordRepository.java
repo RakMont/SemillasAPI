@@ -1,14 +1,15 @@
 package com.seedproject.seed.repositories;
 
-import com.seedproject.seed.models.dto.ContributionReportDTO;
-import com.seedproject.seed.models.dto.TrackingSeedDTO;
+import com.seedproject.seed.models.dto.interfaces.ContributionReportDTO;
 import com.seedproject.seed.models.entities.ContributionRecord;
 import com.seedproject.seed.models.entities.Contributor;
 import com.seedproject.seed.models.entities.TrackingAssignment;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -31,8 +32,8 @@ public interface ContributionRecordRepository extends JpaRepository<Contribution
             "            on cconf.contribution_config_id = cr.contribution_config_id\n" +
             "            left join extra_expense exex\n" +
             "            on exex.extra_expense_id = cr.extra_expense_id\n" +
-            "\t\t\twhere cr.contributor_id=:seedId" +
-            "\t\t\torder by cr.payment_date", nativeQuery = true)
+            "where cr.contributor_id=:seedId and cr.register_exist=true " +
+            "order by cr.payment_date", nativeQuery = true)
     List<ContributionReportDTO> findContributionsBySeed(@Param("seedId")Long seedId);
 
     @Query(value="select cr.contribution_record_id ,concat(su.name, ' ', su.lastname) as seed_name,cconf.contribution_key, \n" +
@@ -48,8 +49,14 @@ public interface ContributionRecordRepository extends JpaRepository<Contribution
             "            on cconf.contribution_config_id = cr.contribution_config_id\n" +
             "            left join extra_expense exex\n" +
             "            on exex.extra_expense_id = cr.extra_expense_id\n" +
-            "\t\t\twhere cr.payment_date between :beginDate and :endDate\n" +
+            "\t\t\twhere cr.payment_date between :beginDate and :endDate and cr.register_exist=true " +
             "\t\t\torder by cr.payment_date",nativeQuery = true)
     List<ContributionReportDTO> findContributionRecord(@Param("beginDate") Date beginDate, @Param("endDate")Date endDate);
+
+    @Transactional
+    @Modifying
+    @Query(value="update contribution_record set register_exist=false " +
+            "where contribution_record_id=:id",nativeQuery = true)
+    void deleteContributionRecord(@Param("id")Long id);
 
 }
