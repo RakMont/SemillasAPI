@@ -125,9 +125,6 @@ public class MenuService {
     }
 
     boolean hasRole(List<Role> roles, RoleName verifyRol){
-
-       /* roles.removeIf(role -> !role.getRole_name().equals(verifyRol));
-        return !roles.isEmpty();*/
         return roles.stream().anyMatch(rol->rol.getRole_name().equals(verifyRol));
     }
 }

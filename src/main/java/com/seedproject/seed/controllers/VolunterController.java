@@ -102,11 +102,16 @@ public class VolunterController {
 
     @GetMapping(path = {"/trackingVolunteers"})
     public Table getTrackingVolunteers(){
-        return volunterService.findAlltrackingVolunters();
+        return volunterService.findAllTrackingVolunteers();
     }
 
     @GetMapping(path = {"/roles"})
     public List<Role> findAllApplicants(){
         return roleService.getRoles();
+    }
+
+    @GetMapping(path = {"/comboTrackingVolunteers"})
+    public List<ComboVolunteer> findComboTrackingVolunteers(){
+        return volunterService.findComboTrackingVolunteers();
     }
 }

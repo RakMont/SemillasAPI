@@ -1,7 +1,8 @@
 package com.seedproject.seed.controllers;
 
-import com.seedproject.seed.models.dao.UniqueAplicantHolderDao;
-import com.seedproject.seed.models.dto.ConstantApplicantHolder;
+import com.seedproject.seed.models.dao.EnterpriseApplicantHolderDao;
+import com.seedproject.seed.models.dao.UniqueApplicantHolderDao;
+import com.seedproject.seed.models.dao.ConstantApplicantHolder;
 import com.seedproject.seed.models.dto.RequestResponseMessage;
 import com.seedproject.seed.services.ContributorService;
 import org.springframework.http.ResponseEntity;
@@ -17,8 +18,13 @@ public class SeedController {
     ContributorService contributorService;
 
     @PostMapping(value = "/updateUnique", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<RequestResponseMessage> createUniqueApplicant(@RequestBody UniqueAplicantHolderDao uniqueAplicantHolderDao) {
-        return contributorService.updateUniqueContributor(uniqueAplicantHolderDao);
+    public ResponseEntity<RequestResponseMessage> createUniqueApplicant(@RequestBody UniqueApplicantHolderDao uniqueApplicantHolderDao) {
+        return contributorService.updateUniqueContributor(uniqueApplicantHolderDao);
+    }
+
+    @PostMapping(value = "/updateEnterprise", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<RequestResponseMessage> updateEnterpriseApplicant(@RequestBody EnterpriseApplicantHolderDao enterpriseApplicantHolderDao) {
+        return contributorService.updateEnterpriseContributor(enterpriseApplicantHolderDao);
     }
 
     @PostMapping(value = "/updateConstant", consumes = "application/json", produces = "application/json")

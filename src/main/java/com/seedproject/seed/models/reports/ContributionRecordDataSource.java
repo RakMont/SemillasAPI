@@ -7,6 +7,7 @@ import net.sf.jasperreports.engine.JRField;
 
 import java.util.List;
 
+/*
 
 public class ContributionRecordDataSource implements JRDataSource {
     private List<ContributionRecord> contributionRecords;
@@ -60,7 +61,6 @@ public class ContributionRecordDataSource implements JRDataSource {
     }
 
     public JRDataSource getDataSource(){
-        //this.contributionRecords = contributionRecords;
         return new ContributionRecordDataSource();
     }
-}
+}*/

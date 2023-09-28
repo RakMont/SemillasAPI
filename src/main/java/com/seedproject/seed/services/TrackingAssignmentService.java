@@ -275,14 +275,21 @@ public class TrackingAssignmentService {
 
 
     public ResponseEntity<RequestResponseMessage> saveTrackingAssignment(TrackingAssignmentDao trackingAssignment){
-        trackingAssignment.setTracking_assignment_id(encripttionService.decrypt(trackingAssignment.getTracking_assignment_id()));
         trackingAssignment.setVolunter_id(encripttionService.decrypt(trackingAssignment.getVolunter_id()));
         trackingAssignment.setContributor_id(encripttionService.decrypt(trackingAssignment.getContributor_id()));
+        if (trackingAssignment.getTracking_assignment_id()!= null){
+            trackingAssignment.setTracking_assignment_id(encripttionService.decrypt(trackingAssignment.getTracking_assignment_id()));
+            TrackingAssignment payload = new TrackingAssignment(trackingAssignment);
+            payload.setStatus(Status.INACTIVE);
+            try {
+                this.trackingAssignmentRepository.save(payload);
+            }catch (Exception exception){
+                return new ResponseEntity<>(new RequestResponseMessage(
+                        "Error asignando", ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+            }
+        }
 
-        if (this.noActiveAssignment(Long.parseLong(trackingAssignment.getContributor_id()))){
             TrackingAssignment payload = new TrackingAssignment();
-            payload.setTracking_assignment_id(trackingAssignment.getTracking_assignment_id() != null ?
-                    Long.parseLong(trackingAssignment.getTracking_assignment_id()): null);
             payload.setVolunter_id(Long.parseLong(trackingAssignment.getVolunter_id()));
             payload.setContributor_id(Long.parseLong(trackingAssignment.getContributor_id()));
             payload.setStatus(trackingAssignment.getStatus());
@@ -290,7 +297,7 @@ public class TrackingAssignmentService {
             payload.setEnd_date(trackingAssignment.getEnd_date());
             payload.setStatus(Status.ACTIVE);
             try {
-                TrackingAssignment result = this.trackingAssignmentRepository.save(payload);
+                this.trackingAssignmentRepository.save(payload);
                 return new ResponseEntity<>(new RequestResponseMessage(
                         "Se asignó correctamente", ResponseStatus.SUCCESS), HttpStatus.CREATED);
             }catch (Exception exception){
@@ -298,10 +305,10 @@ public class TrackingAssignmentService {
                         "Error asignando", ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
                 //throw exception;
             }
-        }else {
+        /*if (this.noActiveAssignment(Long.parseLong(trackingAssignment.getContributor_id()))){ }else {
             return new ResponseEntity<>(new RequestResponseMessage(
                     "La semilla ya tiene un responsable de seguimiento", ResponseStatus.WARNING),HttpStatus.BAD_REQUEST);
-        }
+        }*/
     }
 
     public boolean noActiveAssignment(Long contributorId){

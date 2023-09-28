@@ -26,6 +26,8 @@ public class ContributorDTO implements Serializable {
     private String city;
     //@JsonFormat(pattern="yyyy-MM-dd")
     private Date send_date;
+
+    private Boolean isForeign;
     private int contributorState;
 
     private String registerVolunteer;
@@ -46,11 +48,17 @@ public class ContributorDTO implements Serializable {
         address=applicant.getAddress();
         country=applicant.getCountry();
         city=applicant.getCity();
+        isForeign=applicant.getIsForeign();
         send_date=applicant.getSend_date();
         contributorState =applicant.getContributorState();
-        contributionType= applicant.getContributionConfig().getContribution_key().equals(ContributionType.APORTE_CONSTANTE) ? "Aporte Constante" : "Aporte Único";
-        //contribution_id=applicant.getContributor().getContributionConfig().getContribution_id();
-        //acepted_date=applicant.getAcepted_date();
+        /*contributionType= applicant.getContributionConfig().getContribution_key().equals(ContributionType.APORTE_CONSTANTE)
+                ? "Aporte Constante" : applicant.getContributionConfig().getContribution_key().equals(ContributionType.APORTE_UNICO)
+            ? "Aporte Único" : "Aporte Empresas";*/
+        contributionType = applicant.getActiveContribution().getContribution_key().equals(ContributionType.APORTE_CONSTANTE)
+                ? "Aporte Constante" : applicant.getActiveContribution().getContribution_key().equals(ContributionType.APORTE_UNICO)
+                ? "Aporte Único" : "Aporte Empresas";
+        registerVolunteer=applicant.getRegisterVolunter().getUser().getName() + " " +
+                applicant.getRegisterVolunter().getUser().getLastname();
     }
     public void saveContributionConfig(ContributionConfigDTO contributionConfigDTO){
         contributionConfig=contributionConfigDTO;

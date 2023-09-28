@@ -1,11 +1,13 @@
 package com.seedproject.seed.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.seedproject.seed.models.enums.ContributionType;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "contribution_config")
@@ -26,6 +28,10 @@ public class ContributionConfig {
     private UniqueContribution uniqueContribution;
 
     @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "enterprise_contribution_id", referencedColumnName = "enterprise_contribution_id")
+    private EnterpriseContribution enterpriseContribution;
+
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "const_contribution_id", referencedColumnName = "const_contribution_id")
     private ConstantContribution constantContribution;
 
@@ -35,4 +41,7 @@ public class ContributionConfig {
     @Column(name = "is_active")
     private Boolean is_active;
 
+    /*@JsonIgnore
+    @ManyToMany(mappedBy = "seedConfigurations")
+    private List<Contributor> contributors;*/
 }

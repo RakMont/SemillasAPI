@@ -1,6 +1,7 @@
-package com.seedproject.seed.models.dto;
+package com.seedproject.seed.models.dto.interfaces;
 
 import com.seedproject.seed.models.enums.ContributionType;
+import com.seedproject.seed.models.enums.DonationMonth;
 import com.seedproject.seed.models.enums.PaymentMethod;
 
 import java.util.Date;
@@ -15,7 +16,7 @@ public interface ContributionReportDTO {
     String getExtra_amount();
     String getSpent_amount();
     String getReceipt_code();
-    String getReceipt_number();
+    Boolean getValid_transaction();
     PaymentMethod getPayment_method();
-
+    DonationMonth getContribution_month();
 }

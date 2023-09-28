@@ -29,7 +29,7 @@
 	<field name="extra_amount" class="java.lang.Long"/>
 	<field name="spent_amount" class="java.lang.Long"/>
 	<field name="receipt_code" class="java.lang.String"/>
-	<field name="receipt_number" class="java.lang.String"/>
+	<field name="valid_tr" class="java.lang.String"/>
 	<field name="payment_method" class="java.lang.String"/>
 	<background>
 		<band height="27" splitType="Stretch"/>
@@ -49,8 +49,8 @@
 					<pen lineWidth="0.5" lineColor="#999999"/>
 				</graphicElement>
 			</line>
-			<textField>
-				<reportElement x="430" y="115" width="260" height="20" forecolor="#736343" uuid="06e71dcd-d6af-42b8-9a12-efb2c181f282">
+			<textField textAdjust="StretchHeight">
+				<reportElement x="430" y="115" width="350" height="20" forecolor="#736343" uuid="06e71dcd-d6af-42b8-9a12-efb2c181f282">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
@@ -63,14 +63,14 @@
 			</textField>
 			<textField>
 				<reportElement x="340" y="40" width="451" height="50" forecolor="#050401" uuid="d29a9e1f-e09c-42db-927c-97e06675e272"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle">
+				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="Times New Roman" size="22" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{label_title}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="340" y="90" width="451" height="20" uuid="55d9ca8c-1568-4fd2-bdc8-935fd2b083ec"/>
-				<textElement textAlignment="Justified" verticalAlignment="Middle">
+				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="Times New Roman" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{label_description}]]></textFieldExpression>
@@ -107,7 +107,7 @@
 				</textElement>
 				<text><![CDATA[Tipo de aporte : ]]></text>
 			</staticText>
-			<textField>
+			<textField textAdjust="StretchHeight">
 				<reportElement x="662" y="135" width="130" height="20" forecolor="#736343" uuid="b7c4f840-91e4-4ebc-829c-07aef43c3c95">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
@@ -118,7 +118,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$P{label_payment_method}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField textAdjust="StretchHeight">
 				<reportElement x="430" y="135" width="130" height="20" forecolor="#736343" uuid="557459d5-3b8e-4522-abac-ca9ca303fec1">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
@@ -134,14 +134,14 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Calle Francisco Prada entre Aurelio Melean y J. Arauco s/n, Cochabamba, Bolivia.]]></text>
+				<text><![CDATA[Av. Thunupa entre calle Killagas y Bororó, Cochabamba, Bolivia.]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="11" y="100" width="268" height="20" uuid="7bd3ed16-19a7-44f7-95e2-ede12c69c72f"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font isBold="true" isUnderline="false"/>
 				</textElement>
-				<text><![CDATA[ (+591) 76413700]]></text>
+				<text><![CDATA[ (+591) 76994149]]></text>
 			</staticText>
 		</band>
 	</title>
@@ -169,7 +169,7 @@
 				<text><![CDATA[#]]></text>
 			</staticText>
 			<staticText>
-				<reportElement isPrintRepeatedValues="false" mode="Opaque" x="20" y="0" width="110" height="30" isPrintInFirstWholeBand="true" forecolor="#FFFFFF" backcolor="#102027" uuid="d5535cae-5bf6-4690-bd8f-ebae79778c9c">
+				<reportElement isPrintRepeatedValues="false" mode="Opaque" x="20" y="0" width="95" height="30" isPrintInFirstWholeBand="true" forecolor="#FFFFFF" backcolor="#102027" uuid="d5535cae-5bf6-4690-bd8f-ebae79778c9c">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
 					<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
@@ -185,7 +185,7 @@
 				<text><![CDATA[Semilla]]></text>
 			</staticText>
 			<staticText>
-				<reportElement isPrintRepeatedValues="false" mode="Opaque" x="130" y="0" width="95" height="30" isPrintInFirstWholeBand="true" forecolor="#FFFFFF" backcolor="#102027" uuid="2343d693-981f-4dc6-93f7-1355916eb062">
+				<reportElement isPrintRepeatedValues="false" mode="Opaque" x="115" y="0" width="100" height="30" isPrintInFirstWholeBand="true" forecolor="#FFFFFF" backcolor="#102027" uuid="2343d693-981f-4dc6-93f7-1355916eb062">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
 					<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
@@ -201,7 +201,7 @@
 				<text><![CDATA[Tipo de aporte]]></text>
 			</staticText>
 			<staticText>
-				<reportElement isPrintRepeatedValues="false" mode="Opaque" x="225" y="0" width="75" height="30" isPrintInFirstWholeBand="true" forecolor="#FFFFFF" backcolor="#102027" uuid="afdb1108-d1d6-45c4-9338-dd7d10edf209">
+				<reportElement isPrintRepeatedValues="false" mode="Opaque" x="215" y="0" width="90" height="30" isPrintInFirstWholeBand="true" forecolor="#FFFFFF" backcolor="#102027" uuid="afdb1108-d1d6-45c4-9338-dd7d10edf209">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
 					<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
@@ -217,7 +217,7 @@
 				<text><![CDATA[Fecha de pago]]></text>
 			</staticText>
 			<staticText>
-				<reportElement isPrintRepeatedValues="false" mode="Opaque" x="300" y="0" width="80" height="30" isPrintInFirstWholeBand="true" forecolor="#FFFFFF" backcolor="#102027" uuid="a67e7043-74f5-4f28-817a-2e0cef89672c">
+				<reportElement isPrintRepeatedValues="false" mode="Opaque" x="305" y="0" width="75" height="30" isPrintInFirstWholeBand="true" forecolor="#FFFFFF" backcolor="#102027" uuid="a67e7043-74f5-4f28-817a-2e0cef89672c">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
 					<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
@@ -291,11 +291,11 @@
 					<printWhenExpression><![CDATA[$V{PAGE_NUMBER}.equals( 1 )]]></printWhenExpression>
 				</reportElement>
 				<box topPadding="0"/>
-				<textElement verticalAlignment="Middle">
+				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="9" isBold="true"/>
 					<paragraph leftIndent="2" rightIndent="2" spacingBefore="0"/>
 				</textElement>
-				<text><![CDATA[Número recibo]]></text>
+				<text><![CDATA[Validado]]></text>
 			</staticText>
 			<staticText>
 				<reportElement isPrintRepeatedValues="false" mode="Opaque" x="690" y="0" width="110" height="30" isPrintInFirstWholeBand="true" forecolor="#FFFFFF" backcolor="#102027" uuid="460a40d1-bada-4289-a7c1-3a36b7268ed3">
@@ -337,7 +337,7 @@
 					<textFieldExpression><![CDATA[$F{nro}]]></textFieldExpression>
 				</textField>
 				<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-					<reportElement x="20" y="0" width="110" height="30" uuid="ccaea875-e21f-410d-ada5-f71ad0ea2ecb">
+					<reportElement x="20" y="0" width="95" height="30" uuid="ccaea875-e21f-410d-ada5-f71ad0ea2ecb">
 						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="e048dbca-7e0b-4ea4-af96-b30c8610bf4d"/>
 						<property name="com.jaspersoft.studio.unit.y" value="px"/>
 						<property name="com.jaspersoft.studio.unit.x" value="px"/>
@@ -352,7 +352,7 @@
 					<textFieldExpression><![CDATA[$F{seed_name}]]></textFieldExpression>
 				</textField>
 				<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-					<reportElement style="Detail" mode="Transparent" x="130" y="0" width="94" height="30" forecolor="#6B9074" backcolor="#EAAE4E" uuid="52cf198a-3741-4dac-b84e-86b28e673e68">
+					<reportElement style="Detail" mode="Transparent" x="115" y="0" width="100" height="30" forecolor="#6B9074" backcolor="#EAAE4E" uuid="52cf198a-3741-4dac-b84e-86b28e673e68">
 						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="e4a75642-6bbd-48f2-83e2-42284583d987"/>
 						<property name="com.jaspersoft.studio.unit.y" value="px"/>
 						<property name="com.jaspersoft.studio.unit.x" value="px"/>
@@ -367,7 +367,7 @@
 					<textFieldExpression><![CDATA[$F{contr_type}]]></textFieldExpression>
 				</textField>
 				<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-					<reportElement x="225" y="0" width="74" height="30" uuid="379ecf8f-b61e-4d06-ac84-790338a9d3e7">
+					<reportElement x="215" y="0" width="90" height="30" uuid="379ecf8f-b61e-4d06-ac84-790338a9d3e7">
 						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="91523680-1b04-40b3-8e34-cf96e1e52520"/>
 						<property name="com.jaspersoft.studio.unit.y" value="px"/>
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
@@ -382,7 +382,7 @@
 					<textFieldExpression><![CDATA[$F{payment_date}]]></textFieldExpression>
 				</textField>
 				<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-					<reportElement x="300" y="0" width="80" height="30" uuid="2a1a7046-5dd6-4f5b-b35c-296373c53f0b">
+					<reportElement x="305" y="0" width="75" height="30" uuid="2a1a7046-5dd6-4f5b-b35c-296373c53f0b">
 						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="00cb194d-b95f-4aeb-b908-a4e94d665761"/>
 						<property name="com.jaspersoft.studio.unit.y" value="px"/>
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
@@ -451,10 +451,10 @@
 					<box>
 						<pen lineWidth="0.0"/>
 					</box>
-					<textElement verticalAlignment="Middle">
+					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="Times New Roman" size="10"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{receipt_number}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{valid_tr}]]></textFieldExpression>
 				</textField>
 				<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 					<reportElement x="690" y="0" width="110" height="30" forecolor="#6B9074" uuid="ec043d7b-3251-4b66-89cc-1f1481cbdcb1">

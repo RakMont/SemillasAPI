@@ -24,4 +24,6 @@ public interface VolunterRepository extends JpaRepository<Volunter, Long> {
     @Query(value="update Volunter set register_exist=false " +
             "where volunter_id=:id",nativeQuery = true)
     void setRegisterFalse(@Param("id")Long id);
+
+    List<Volunter> findByOrderByUsernameAsc();
 }

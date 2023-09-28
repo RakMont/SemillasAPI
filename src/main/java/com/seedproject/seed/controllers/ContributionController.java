@@ -76,8 +76,8 @@ public class ContributionController {
 
     @PostMapping(value = "/deleteContributionRecord")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteContributionRecord(@RequestBody String id) {
-        contributionRecordService.deleteContributionRecord(id);
+    public ResponseEntity<RequestResponseMessage> deleteContributionRecord(@RequestBody String id) {
+        return contributionRecordService.deleteContributionRecord(id);
     }
 
 }
