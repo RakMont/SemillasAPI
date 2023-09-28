@@ -1,9 +1,13 @@
 package com.seedproject.seed.models.reports;
 
 import com.seedproject.seed.models.dto.interfaces.ContributionReportDTO;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.text.SimpleDateFormat;
 
+@Getter
+@Setter
 public class ContributionRecordReportDTO  {
    private String nro;
    private String seed_name;
@@ -14,6 +18,8 @@ public class ContributionRecordReportDTO  {
    private Long spent_amount;
    private String receipt_code;
    private Boolean valid_transaction;
+
+   private String valid_tr;
    private String payment_method;
 
 
@@ -28,6 +34,7 @@ public class ContributionRecordReportDTO  {
       this.receipt_code = contributionRecord.getReceipt_code();
       this.valid_transaction = contributionRecord.getValid_transaction();
       this.payment_method = contributionRecord.getPayment_method().toString();
+      this.valid_tr = contributionRecord.getValid_transaction() ? "Sí" : "No";
    }
 
    public ContributionRecordReportDTO() {

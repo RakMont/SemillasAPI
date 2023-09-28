@@ -73,10 +73,13 @@ public class ContributionRecordService {
         try{
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
             Long seedId = Long.parseLong(encripttionService.decrypt(contributionRecordFilter.getSeedId()));
-            List<ContributionRecordReportDTO> contributionRecordReportDTOList = this.getSeedRecords(seedId);
             Optional<Contributor> contributor = contributorRepository.findById(Long.parseLong(encripttionService.decrypt(contributionRecordFilter.getSeedId())));
+            List<ContributionRecordReportDTO> contributionRecordReportDTOList = this.getSeedRecords(contributor.get());
+
             Map<String, Object> empParams = new HashMap<String, Object>();
-            empParams.put("label_seed_description", "Se muestran todos los aportes obtenidos de la semilla:");
+            empParams.put("label_seed_description", "Fecha Inicio: "+
+                    formatter.format(contributor.get().getActiveContribution().getConstantContribution().getContributionStartDate())+
+                    " - Fecha Fin "+ formatter.format(contributor.get().getActiveContribution().getConstantContribution().getContributionEndDate()));
             empParams.put("label_seed_name", contributor.get().getUser().getName()+ " " + contributor.get().getUser().getLastname());
             empParams.put("label_title", "REPORTE: APORTES DE SEMILLA");
             empParams.put("label_seed_phone",contributor.get().getUser().getPhone());
@@ -107,34 +110,50 @@ public class ContributionRecordService {
         }
     }
 
-    private List<ContributionRecordReportDTO> getSeedRecords(Long seed_Id){
+    private List<ContributionRecordReportDTO> getSeedRecords(Contributor contributor){
         List<ContributionReportDTO> contributionRecords =
-                contributionRecordRepository.findContributionsBySeed(seed_Id);
+                contributionRecordRepository.findContributionsBySeed(contributor.getContributor_id());
         List<ContributionRecordReportDTO> contributionRecordReportDTOS = new ArrayList<>();
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 
+        Map<String, Long> result = this.getSummarize(contributionRecords, contributor);
+
         int index = 0;
-        Long total_amount= 0L;
-        Long total_extra=0L;
-        Long total_spent=0L;
 
         for(ContributionReportDTO contributionRecord : contributionRecords){
             index++;
-            total_amount = total_amount + contributionRecord.getPayment_amount().intValue();
-            total_extra = total_extra + (contributionRecord.getExtra_amount() != null ?
-                    Integer.parseInt(contributionRecord.getExtra_amount()) : 0);
-            total_spent = total_spent + (contributionRecord.getSpent_amount() != null ?
-                    Integer.parseInt(contributionRecord.getSpent_amount()) : 0 );
             contributionRecordReportDTOS.add(new ContributionRecordReportDTO(Integer.toString(index), contributionRecord, formatter));
         }
 
-        ContributionRecordReportDTO lastLine= new ContributionRecordReportDTO();
-        lastLine.setNro("");
-        lastLine.setPayment_date(" TOTAL : ");
-        lastLine.setPayment_amount(total_amount);
-        lastLine.setExtra_amount(total_extra);
-        lastLine.setSpent_amount(total_spent);
-        contributionRecordReportDTOS.add(lastLine);
+        ContributionRecordReportDTO line1= new ContributionRecordReportDTO();
+        line1.setNro("");
+        line1.setPayment_date("Total aportes obtenidos: ");
+        line1.setPayment_amount(result.get("total"));
+        line1.setExtra_amount(result.get("totalExtra"));
+        line1.setSpent_amount(result.get("totalSpent"));
+        line1.setReceipt_code("Total sumado:");
+        line1.setValid_tr(result.get("totalSummed").toString());
+        contributionRecordReportDTOS.add(line1);
+        /*-----------------------------------------------------------------*/
+        ContributionRecordReportDTO line2= new ContributionRecordReportDTO();
+        line2.setNro("");
+        line2.setPayment_date("Total niños alimentados: ");
+        line2.setPayment_amount(result.get("total")/35);
+        //line2.setExtra_amount(result.get("totalExtra"));
+        //line2.setSpent_amount(result.get("totalSpent"));
+        //line2.setReceipt_code("Total sumado:");
+        line2.setValid_tr(String.valueOf(result.get("totalSummed")/35));
+        contributionRecordReportDTOS.add(line2);
+        /*-----------------------------------------------------------------*/
+        ContributionRecordReportDTO line3= new ContributionRecordReportDTO();
+        line3.setNro("");
+        line3.setPayment_date("Total aportes esperados: ");
+        line3.setPayment_amount(result.get("expectedAmount"));
+        //line2.setExtra_amount(result.get("totalExtra"));
+        //line2.setSpent_amount(result.get("totalSpent"));
+        line3.setReceipt_code("Total aportes faltantes:");
+        line3.setValid_tr(String.valueOf(result.get("leftAmount")));
+        contributionRecordReportDTOS.add(line3);
         return  contributionRecordReportDTOS;
     }
 
@@ -147,27 +166,33 @@ public class ContributionRecordService {
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 
             int index = 0;
-            Long total_amount=0L;
-            Long total_extra=0L;
-            Long total_spent=0L;
+            Map<String, Long> result = this.getSummarize(contributionReportDTOS, null);
 
             for(ContributionReportDTO contributionRecord : contributionReportDTOS){
                 index++;
-                total_amount = total_amount + contributionRecord.getPayment_amount().intValue();
-                total_extra = total_extra + (contributionRecord.getExtra_amount() != null ?
-                        Integer.parseInt(contributionRecord.getExtra_amount()) : 0);
-                total_spent = total_spent + (contributionRecord.getSpent_amount() != null ?
-                        Integer.parseInt(contributionRecord.getSpent_amount()) : 0 );
                 contributionRecordReportDTOS.add(new ContributionRecordReportDTO(Integer.toString(index), contributionRecord, formatter));
             }
 
-            ContributionRecordReportDTO lastLine= new ContributionRecordReportDTO();
-            lastLine.setNro("");
-            lastLine.setPayment_date(" TOTAL : ");
-            lastLine.setPayment_amount(total_amount);
-            lastLine.setExtra_amount(total_extra);
-            lastLine.setSpent_amount(total_spent);
-            contributionRecordReportDTOS.add(lastLine);
+            ContributionRecordReportDTO line1= new ContributionRecordReportDTO();
+            line1.setNro("");
+            line1.setPayment_date("Total aportes obtenidos: ");
+            line1.setPayment_amount(result.get("total"));
+            line1.setExtra_amount(result.get("totalExtra"));
+            line1.setSpent_amount(result.get("totalSpent"));
+            line1.setReceipt_code("Total sumado:");
+            line1.setValid_tr(result.get("totalSummed").toString());
+            contributionRecordReportDTOS.add(line1);
+
+
+            ContributionRecordReportDTO line2= new ContributionRecordReportDTO();
+            line2.setNro("");
+            line2.setPayment_date("Total niños alimentados: ");
+            line2.setPayment_amount(result.get("total")/35);
+            //line2.setExtra_amount(result.get("totalExtra"));
+            //line2.setSpent_amount(result.get("totalSpent"));
+            //line2.setReceipt_code("Total sumado:");
+            line2.setValid_tr(String.valueOf(result.get("totalSummed")/35));
+            contributionRecordReportDTOS.add(line2);
             return  contributionRecordReportDTOS;
         }
         catch (Exception e){
@@ -178,11 +203,14 @@ public class ContributionRecordService {
         try{
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
             Long seedId = Long.parseLong(encripttionService.decrypt(contributionRecordFilter.getSeedId()));
-            List<ContributionRecordReportDTO> contributionRecordReportDTOList = this.getSeedRecords(seedId);
             Optional<Contributor> contributor = contributorRepository.findById(Long.parseLong(encripttionService.decrypt(contributionRecordFilter.getSeedId())));
+            List<ContributionRecordReportDTO> contributionRecordReportDTOList = this.getSeedRecords(contributor.get());
+
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             Map<String, Object> empParams = new HashMap<String, Object>();
-            empParams.put("label_seed_description", "Se muestran todos los aportes obtenidos de la semilla:");
+            empParams.put("label_seed_description", "Fecha Inicio: "+
+                    formatter.format(contributor.get().getActiveContribution().getConstantContribution().getContributionStartDate())+
+                    " - Fecha Fin "+ formatter.format(contributor.get().getActiveContribution().getConstantContribution().getContributionEndDate()));
             empParams.put("label_seed_name", contributor.get().getUser().getName()+ " " + contributor.get().getUser().getLastname());
             empParams.put("label_title", "REPORTE: APORTES DE SEMILLA");
             empParams.put("label_seed_phone",contributor.get().getUser().getPhone());
@@ -221,9 +249,9 @@ public class ContributionRecordService {
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
             Map<String, Object> empParams = new HashMap<String, Object>();
-            empParams.put("label_description", "Se muestran todos los reportes obtenidos en los siguientes filtros.");
+            empParams.put("label_description", "Tus acciones demuestran de lo que está hecho tu corazón.");
             empParams.put("contribution_records", "fhgjgjhgj");
-            empParams.put("label_title", "REPORTE DE APORTES OBTENIDOS");
+            empParams.put("label_title", "APORTES OBTENIDOS");
             empParams.put("label_dates", "F.Inicio: " +
                     formatter.format(contributionRecordFilter.getBeginDate()) +
                     " - F.Fin " +formatter.format(contributionRecordFilter.getEndDate()));
@@ -262,9 +290,9 @@ public class ContributionRecordService {
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 
             Map<String, Object> empParams = new HashMap<String, Object>();
-            empParams.put("label_description", "Se muestran todos los reportes obtenidos en los siguientes filtros.");
+            empParams.put("label_description", "'Tus acciones demuestran de lo que está hecho tu corazón.'");
             empParams.put("contribution_records", "fhgjgjhgj");
-            empParams.put("label_title", "REPORTE DE APORTES OBTENIDOS");
+            empParams.put("label_title", "APORTES OBTENIDOS");
             empParams.put("label_dates", "F.Inicio: " +
                     formatter.format(contributionRecordFilter.getBeginDate()) +
                     " - F.Fin " +formatter.format(contributionRecordFilter.getEndDate()));
@@ -481,6 +509,7 @@ public class ContributionRecordService {
         resultParams.put("total", (long) total);
         resultParams.put("totalExtra", (long) totalExtra);
         resultParams.put("totalSpent", (long) totalSpent);
+        resultParams.put("totalSummed", (long) total + totalExtra - totalSpent);
         if (contributor!= null){
             LocalDate startDate = LocalDate.ofInstant(contributor.getActiveContribution().getConstantContribution().getContributionStartDate().toInstant(), ZoneId.systemDefault());
             LocalDate endDate = LocalDate.ofInstant(contributor.getActiveContribution().getConstantContribution().getContributionEndDate().toInstant(), ZoneId.systemDefault());
