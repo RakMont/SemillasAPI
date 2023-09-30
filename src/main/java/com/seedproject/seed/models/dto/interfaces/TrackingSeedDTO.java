@@ -1,4 +1,4 @@
-package com.seedproject.seed.models.dto;
+package com.seedproject.seed.models.dto.interfaces;
 
 import com.seedproject.seed.models.enums.ContributionType;
 import com.seedproject.seed.models.enums.Status;

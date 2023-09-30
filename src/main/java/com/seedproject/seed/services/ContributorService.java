@@ -5,6 +5,7 @@ import com.seedproject.seed.models.dao.ConstantApplicantHolder;
 import com.seedproject.seed.models.dao.EnterpriseApplicantHolderDao;
 import com.seedproject.seed.models.dao.UniqueApplicantHolderDao;
 import com.seedproject.seed.models.dto.*;
+import com.seedproject.seed.models.dto.interfaces.ContributionDTO;
 import com.seedproject.seed.models.dto.interfaces.SeedDTO;
 import com.seedproject.seed.models.entities.*;
 import com.seedproject.seed.models.enums.*;

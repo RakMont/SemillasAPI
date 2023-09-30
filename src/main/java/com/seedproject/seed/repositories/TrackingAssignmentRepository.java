@@ -1,6 +1,6 @@
 package com.seedproject.seed.repositories;
 
-import com.seedproject.seed.models.dto.TrackingSeedDTO;
+import com.seedproject.seed.models.dto.interfaces.TrackingSeedDTO;
 import com.seedproject.seed.models.entities.TrackingAssignment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

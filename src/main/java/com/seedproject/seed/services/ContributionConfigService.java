@@ -1,6 +1,7 @@
 package com.seedproject.seed.services;
 
 import com.seedproject.seed.models.dto.*;
+import com.seedproject.seed.models.dto.interfaces.ContributionDTO;
 import com.seedproject.seed.models.entities.ConstantContribution;
 import com.seedproject.seed.models.entities.ContributionConfig;
 import com.seedproject.seed.models.entities.EnterpriseContribution;

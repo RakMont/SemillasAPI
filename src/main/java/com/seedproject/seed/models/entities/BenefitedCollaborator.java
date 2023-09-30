@@ -7,8 +7,9 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 
+/*
 @Entity
-@Table(name = "benefited_collaborator")
+@Table(name = "benefited_seed")
 @Getter
 @Setter
 public class BenefitedCollaborator {
@@ -18,7 +19,7 @@ public class BenefitedCollaborator {
     private Long benefited_collaborator_id;
 
     @Column(name = "selected_date")
-    private Date selected_date;
+    private Date selectedDate;
 
     @Column(name = "observation")
     private String observation;
@@ -36,3 +37,5 @@ public class BenefitedCollaborator {
     @JoinColumn(name = "register_volunteer_id", referencedColumnName = "volunter_id")
     private Volunter registerVolunteer;
 }
+
+*/

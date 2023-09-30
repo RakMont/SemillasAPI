@@ -1,7 +1,8 @@
 package com.seedproject.seed.models.enums;
 
 public enum TrackingStatus {
-    PENDING,
-    SENT,
-    DELIVERED
+    SOUVENIR_PENDING,
+    SOUVENIR_SENT,
+    SOUVENIR_DELIVERED,
+    SOUVENIR_CANCELED
 }

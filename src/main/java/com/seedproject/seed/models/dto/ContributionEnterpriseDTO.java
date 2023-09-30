@@ -1,5 +1,6 @@
 package com.seedproject.seed.models.dto;
 
+import com.seedproject.seed.models.dto.interfaces.ContributionDTO;
 import com.seedproject.seed.models.entities.EnterpriseContribution;
 import com.seedproject.seed.models.enums.PaymentMethod;
 import com.seedproject.seed.models.enums.SendNewsType;

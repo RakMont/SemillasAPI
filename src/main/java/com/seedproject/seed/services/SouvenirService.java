@@ -41,7 +41,7 @@ public class SouvenirService {
         Contributor contributor = contributorRepository.getById(Long.parseLong(souvenirTrackingDao.getContributorId()));
         Volunter volunter = volunterRepository.getById(Long.parseLong(souvenirTrackingDao.getVolunteerInChargeId()));
         BenefitedCollaborator benefitedCollaborator = new BenefitedCollaborator();
-        benefitedCollaborator.setSelected_date(souvenirTrackingDao.getSelected_date());
+        benefitedCollaborator.setSelectedDate(souvenirTrackingDao.getSelected_date());
         benefitedCollaborator.setObservation(souvenirTrackingDao.getObservation());
         benefitedCollaborator.setCity(souvenirTrackingDao.getCity());
         benefitedCollaborator.setContributor(contributor);
@@ -59,7 +59,7 @@ public class SouvenirService {
     public ResponseEntity<RequestResponseMessage> createSouvenirTracking(SouvenirTrackingDao souvenirTrackingDao){
         souvenirTrackingDao.setBenefitedCollaboratorId(encripttionService.decrypt(souvenirTrackingDao.getBenefitedCollaboratorId()));
         souvenirTrackingDao.setVolunteerInChargeId(encripttionService.decrypt(souvenirTrackingDao.getVolunteerInChargeId()));
-        SouvenirTracking souvenirTracking = new SouvenirTracking();
+        SeedSouvenirTracking seedSouvenirTracking = new SeedSouvenirTracking();
         Volunter volunter = volunterRepository.getById(Long.parseLong(souvenirTrackingDao.getVolunteerInChargeId()));
         BenefitedCollaborator benefitedCollaborator = benefitedCollaboratorRepository.getById(Long.parseLong(souvenirTrackingDao.getBenefitedCollaboratorId()));
         if (!souvenirTrackingDao.getSouvenirTrackingComments().isEmpty()){
@@ -78,14 +78,14 @@ public class SouvenirService {
                     souvenirTrackingComments.add(commentRecord);
                 }
             });
-            souvenirTracking.setSouvenirTrackingComments(souvenirTrackingComments);
+            seedSouvenirTracking.setSouvenirTrackingComments(souvenirTrackingComments);
         }
-        souvenirTracking.setSpentAmount(souvenirTrackingDao.getSpentAmount());
-        souvenirTracking.setSouvenir_send_date(souvenirTrackingDao.getSouvenir_send_date());
-        souvenirTracking.setTrackingStatus(souvenirTrackingDao.getTrackingStatus());
-        souvenirTracking.setBenefitedCollaborator(benefitedCollaborator);
+        seedSouvenirTracking.setSpentAmount(souvenirTrackingDao.getSpentAmount());
+        seedSouvenirTracking.setSouvenirSendDate(souvenirTrackingDao.getSouvenir_send_date());
+        seedSouvenirTracking.setTrackingStatus(souvenirTrackingDao.getTrackingStatus());
+        seedSouvenirTracking.setBenefitedCollaborator(benefitedCollaborator);
         try {
-            souvenirTrackingRepository.save(souvenirTracking);
+            souvenirTrackingRepository.save(seedSouvenirTracking);
             return new ResponseEntity<>(new RequestResponseMessage(
                     "La creado registro", ResponseStatus.SUCCESS), HttpStatus.CREATED);
         } catch (Exception e){
@@ -188,7 +188,7 @@ public class SouvenirService {
                             Arrays.asList(
                                     new CellContent("text",
                                             null,null,false,
-                                            null,null,formatter.format(benefitedCollaborator.getSelected_date()) ,
+                                            null,null,formatter.format(benefitedCollaborator.getSelectedDate()) ,
                                             null)
                             )
                     )

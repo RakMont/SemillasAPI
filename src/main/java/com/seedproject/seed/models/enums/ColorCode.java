@@ -26,7 +26,11 @@ public enum ColorCode {
     CONSTANT_CONTRIBUTION("#8d99b5"),
     ENTERPRISE_CONTRIBUTION("#b6c3ac"),
     PAYMENT_METHODS("#6b9074"),
-    EDIT_PASSWORD("#f18a5c");
+    EDIT_PASSWORD("#f18a5c"),
+    SOUVENIR_PENDING("#ffd966"),
+    SOUVENIR_SENT("#75a84e"),
+    SOUVENIR_DELIVERED("#9fc5e8"),
+    SOUVENIR_CANCELED("");
     public String value;
     private ColorCode(String value){
         this.value=value;

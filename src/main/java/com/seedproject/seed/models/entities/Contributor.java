@@ -80,4 +80,7 @@ public class Contributor implements Serializable {
         }
         return contributionConfig;
     }
+    public String getSeedFullName(){
+        return this.getUser().getName() + " " + getUser().getLastname();
+    }
 }

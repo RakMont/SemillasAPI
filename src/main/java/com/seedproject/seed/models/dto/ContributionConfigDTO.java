@@ -1,6 +1,6 @@
 package com.seedproject.seed.models.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.seedproject.seed.models.dto.interfaces.ContributionDTO;
 import com.seedproject.seed.models.entities.ContributionConfig;
 import com.seedproject.seed.models.enums.ContributionType;
 import lombok.Getter;
