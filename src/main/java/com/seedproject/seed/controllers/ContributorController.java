@@ -75,7 +75,7 @@ public class ContributorController {
     }
 
 
-    @GetMapping(path = {"/activeseeds"})
+    @GetMapping(path = {"/comboActiveSeeds"})
     public List<ComboSeed> findActiveSeeds(){
         return contributorService.findActiveSeeds();
     }

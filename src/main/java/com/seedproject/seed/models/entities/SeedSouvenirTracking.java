@@ -59,7 +59,7 @@ public class SeedSouvenirTracking {
     @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(name = "souvenir_tracking_comment",
-            joinColumns = @JoinColumn(name = "souvenir_tracking_id", referencedColumnName = "souvenir_tracking_id"),
+            joinColumns = @JoinColumn(name = "souvenir_tracking_id", referencedColumnName = "seed_souvenir_tracking_id"),
             inverseJoinColumns = @JoinColumn(name = "comment_record_id"))
     private List<CommentRecord> souvenirTrackingComments = new ArrayList<>();
 }

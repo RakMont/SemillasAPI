@@ -698,11 +698,7 @@ public class ContributorService {
         for (Contributor contributor:contributors){
             activecontr.add(new ComboSeed(
                     encripttionService.encrypt( contributor.getContributor_id().toString())
-                    ,contributor.getUser().getName(),contributor.getUser().getLastname(),
-                    contributor.getUser().getName()+ ' ' + contributor.getUser().getLastname(),
-                    contributor.getUser().getEmail(),
-                    contributor.getUser().getPhone(),
-                    contributor.getUser().getDni()));
+                    ,contributor));
         }
         return activecontr;
     }

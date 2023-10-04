@@ -19,9 +19,9 @@ public class SeedSouvenirTrackingDTO {
     private String chosenCity;
     private String observation;
     private String benefitedContributorId;
-    private String benefitedContributorLabel;
+    private ComboSeed benefitedContributorLabel;
     private String volunteerInChargeId;
-    private String volunteerInChargeLabel;
+    private ComboVolunteer volunteerInChargeLabel;
 
     public SeedSouvenirTrackingDTO() {
     }
@@ -37,8 +37,8 @@ public class SeedSouvenirTrackingDTO {
         this.chosenCity = seedSouvenirTracking.getChosenCity();
         this.observation = seedSouvenirTracking.getObservation();
         this.benefitedContributorId = seedSouvenirTracking.getBenefitedContributor().getContributor_id().toString();
-        this.benefitedContributorLabel = seedSouvenirTracking.getBenefitedContributor().getSeedFullName();
+        //this.benefitedContributorLabel = seedSouvenirTracking.getBenefitedContributor().getSeedFullName();
         this.volunteerInChargeId = seedSouvenirTracking.getVolunteerInCharge().getVolunterId().toString();
-        this.volunteerInChargeLabel = seedSouvenirTracking.getVolunteerInCharge().getFullName();
+        //this.volunteerInChargeLabel = seedSouvenirTracking.getVolunteerInCharge().getFullName();
     }
 }

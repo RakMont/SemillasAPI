@@ -1,10 +1,11 @@
 package com.seedproject.seed.services;
 
-import com.seedproject.seed.models.dao.SouvenirTrackingDao;
+import com.seedproject.seed.models.dao.SeedSouvenirTrackingDao;
 import com.seedproject.seed.models.dto.*;
 import com.seedproject.seed.models.entities.*;
 import com.seedproject.seed.models.enums.ColorCode;
 import com.seedproject.seed.models.enums.ResponseStatus;
+import com.seedproject.seed.models.enums.TrackingStatus;
 import com.seedproject.seed.models.filters.SouvenirTrackingFilter;
 import com.seedproject.seed.repositories.*;
 import org.springframework.http.HttpStatus;
@@ -12,21 +13,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
+import java.security.Principal;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class SouvenirService {
-
-    @Inject
-    BenefitedCollaboratorRepository benefitedCollaboratorRepository;
-    @Inject
-    SouvenirTrackingRepository souvenirTrackingRepository;
     @Inject
     EncripttionService encripttionService;
+    @Inject
+    SouvenirTrackingRepository seedSouvenirTrackingRepository;
     @Inject
     ContributorRepository contributorRepository;
     @Inject
@@ -34,29 +30,7 @@ public class SouvenirService {
     @Inject
     CommentRecordRepository commentRecordRepository;
 
-    public ResponseEntity<RequestResponseMessage> createBenefitedCollaborator(SouvenirTrackingDao souvenirTrackingDao){
-        souvenirTrackingDao.setContributorId(encripttionService.decrypt(souvenirTrackingDao.getContributorId()));
-        souvenirTrackingDao.setVolunteerInChargeId(encripttionService.decrypt(souvenirTrackingDao.getVolunteerInChargeId()));
-
-        Contributor contributor = contributorRepository.getById(Long.parseLong(souvenirTrackingDao.getContributorId()));
-        Volunter volunter = volunterRepository.getById(Long.parseLong(souvenirTrackingDao.getVolunteerInChargeId()));
-        BenefitedCollaborator benefitedCollaborator = new BenefitedCollaborator();
-        benefitedCollaborator.setSelectedDate(souvenirTrackingDao.getSelected_date());
-        benefitedCollaborator.setObservation(souvenirTrackingDao.getObservation());
-        benefitedCollaborator.setCity(souvenirTrackingDao.getCity());
-        benefitedCollaborator.setContributor(contributor);
-        benefitedCollaborator.setRegisterVolunteer(volunter);
-        try {
-            benefitedCollaboratorRepository.save(benefitedCollaborator);
-            return new ResponseEntity<>(new RequestResponseMessage(
-                    "La semilla fue seleccionada como beneficiada", ResponseStatus.SUCCESS),HttpStatus.CREATED);
-        } catch (Exception exception){
-            return new ResponseEntity<>(new RequestResponseMessage(
-                    "Ocurrio un error intentelo mas tarde", ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
-        }
-    }
-
-    public ResponseEntity<RequestResponseMessage> createSouvenirTracking(SouvenirTrackingDao souvenirTrackingDao){
+   /* public ResponseEntity<RequestResponseMessage> createSouvenirTracking(SouvenirTrackingDao souvenirTrackingDao){
         souvenirTrackingDao.setBenefitedCollaboratorId(encripttionService.decrypt(souvenirTrackingDao.getBenefitedCollaboratorId()));
         souvenirTrackingDao.setVolunteerInChargeId(encripttionService.decrypt(souvenirTrackingDao.getVolunteerInChargeId()));
         SeedSouvenirTracking seedSouvenirTracking = new SeedSouvenirTracking();
@@ -92,60 +66,24 @@ public class SouvenirService {
             return new ResponseEntity<>(new RequestResponseMessage(
                     "Ocurrio un error intentelo mas tarde", ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
         }
-    }
+    }*/
 
-    public ResponseEntity<RequestResponseMessage> deleteBenefitedCollaboratorById(String id){
-        id = encripttionService.decrypt(id);
-        try {
-            benefitedCollaboratorRepository.deleteById(Long.parseLong(id));
-            return new ResponseEntity<>(new RequestResponseMessage(
-                    "La semilla fue eliminada de la lista de beneficiados", ResponseStatus.SUCCESS), HttpStatus.CREATED);
-        } catch (Exception exception){
-            return new ResponseEntity<>(new RequestResponseMessage(
-                    "Ocurrio un error intentelo mas tarde", ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
+    public Table findAllSouvenirsTracking(SouvenirTrackingFilter souvenirTrackingFilter){
+        try{
+            List<SeedSouvenirTracking> seedSouvenirTrackingList = seedSouvenirTrackingRepository.findAll();
+            seedSouvenirTrackingList.removeIf(seedSouvenirTracking -> !seedSouvenirTracking.getRegister_exist());
+            seedSouvenirTrackingList.removeIf(seedSouvenirTracking -> !seedSouvenirTracking.getTrackingStatus().equals(souvenirTrackingFilter.getTrackingStatus()));
+            return this.getSouvenirTrackingStatus(seedSouvenirTrackingList);
+        }catch (Exception exception){
+            throw new RuntimeException(exception.getMessage());
         }
     }
 
-    public ResponseEntity<RequestResponseMessage> deleteSouvenirTrackingById(String id){
-        id = encripttionService.decrypt(id);
-        try {
-            souvenirTrackingRepository.deleteById(Long.parseLong(id));
-            return new ResponseEntity<>(new RequestResponseMessage(
-                    "La el registro de seguimiento se eliminó", ResponseStatus.SUCCESS), HttpStatus.CREATED);
-        } catch (Exception exception){
-            return new ResponseEntity<>(new RequestResponseMessage(
-                    "Ocurrió un error intentelo mas tarde", ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
-        }
-    }
-
-
-    public Table getAllSouvenirTracking(SouvenirTrackingFilter souvenirTrackingFilter){
-        try {
-            List<BenefitedCollaborator> benefitedCollaborators = benefitedCollaboratorRepository.findAll();
-            //benefitedCollaborators.removeIf(ta -> ta.getStatus() == null || !ta.getStatus().equals(Status.ACTIVE));
-            return this.getBenefitedSeedsInFormat(benefitedCollaborators);
-        } catch (Exception exception){
-            exception.printStackTrace();
-            return null;
-        }
-    }
-
-    public Table getAllBenefitedSeeds(SouvenirTrackingFilter souvenirTrackingFilter){
-        try {
-            List<BenefitedCollaborator> benefitedCollaborators = benefitedCollaboratorRepository.findAll();
-            //benefitedCollaborators.removeIf(ta -> ta.getStatus() == null || !ta.getStatus().equals(Status.ACTIVE));
-            return this.getBenefitedSeedsInFormat(benefitedCollaborators);
-        } catch (Exception exception){
-            exception.printStackTrace();
-            return null;
-        }
-    }
-
-    public Table getBenefitedSeedsInFormat(List<BenefitedCollaborator> benefitedCollaborators){
+    private Table getSouvenirTrackingStatus(List<SeedSouvenirTracking> seedSouvenirTrackingList) {
         List<TableRow> resultList = new ArrayList<TableRow>();
         int index=1;
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-        for (BenefitedCollaborator benefitedCollaborator: benefitedCollaborators){
+        for (SeedSouvenirTracking seedSouvenirTracking: seedSouvenirTrackingList){
             List<Cell> cells = new ArrayList<Cell>();
             cells.add(new Cell(
                     new CellHeader("No",0,"Integer",false,null),
@@ -157,59 +95,84 @@ public class SouvenirService {
                     )
             ));
             cells.add(new Cell(
-                    new CellHeader("Semilla beneficiada",0,"String",true,null),
+                    new CellHeader("Semilla beneficiada",0,"String",false,null),
                     new CellProperty(null,false,null,null),
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("text",
                                             null,null,false,
                                             null,null,
-                                            benefitedCollaborator.getContributor().getUser().getName() + ' '+benefitedCollaborator.getContributor().getUser().getLastname(),
+                                            seedSouvenirTracking.getBenefitedContributor().getSeedFullName(),
                                             null)
                             )
                     )
             ));
             cells.add(new Cell(
-                    new CellHeader("Ciudad",0,"String",true,null),
+                    new CellHeader("Ciudad envío",0,"String",true,null),
                     new CellProperty(null,false,null,null),
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("text",
                                             null,null,false,
-                                            null,null, benefitedCollaborator.getCity(),
+                                            null,null, seedSouvenirTracking.getChosenCity(),
                                             null)
                             )
                     )
             ));
             cells.add(new Cell(
-                    new CellHeader("Fecha de selección",0,"String",true,null),
+                    new CellHeader("Responsable a cargo",0,"String",true,null),
                     new CellProperty(null,false,null,null),
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("text",
                                             null,null,false,
-                                            null,null,formatter.format(benefitedCollaborator.getSelectedDate()) ,
+                                            null,null, seedSouvenirTracking.getVolunteerInCharge().getFullName(),
                                             null)
                             )
                     )
             ));
             cells.add(new Cell(
-                    new CellHeader("Responsable de registro",0,"String",true,null),
+                    new CellHeader("Estado de envío",0,"String",false,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList( seedSouvenirTracking.getTrackingStatus().equals(TrackingStatus.SOUVENIR_DELIVERED) ?
+                                            new CellContent("chipContent",
+                                                    null, ColorCode.SOUVENIR_DELIVERED.value,false,
+                                                    null,null, "Souvenir Entregado",
+                                                    null
+                                            )
+                                            :  seedSouvenirTracking.getTrackingStatus().equals(TrackingStatus.SOUVENIR_PENDING) ?
+                                            new CellContent(
+                                                    "chipContent",
+                                                    null, ColorCode.SOUVENIR_PENDING.value,false,
+                                                    null,null, "Pendiente de envío",
+                                                    null
+                                            ) :new CellContent(
+                                            "chipContent",
+                                            null, ColorCode.SOUVENIR_SENT.value,false,
+                                            null,null, "Souvenir Enviado",
+                                            null
+                                    )
+                            )
+                    )
+            ));
+            cells.add(new Cell(
+                    new CellHeader("Fecha envío",0,"String",false,null),
                     new CellProperty(null,false,null,null),
                     new ArrayList<CellContent>(
                             Arrays.asList(
                                     new CellContent("text",
                                             null,null,false,
-                                            null,null,
-                                            benefitedCollaborator.getRegisterVolunteer().getUser().getName() + ' '+benefitedCollaborator.getRegisterVolunteer().getUser().getLastname(),
+                                            null,null, formatter.format(seedSouvenirTracking.getSouvenirSendDate()),
                                             null)
                             )
                     )
             ));
+
             cells.add(new Cell(
                     new CellHeader("Opciones",0,"String",false,null),
                     new CellProperty(null,false,null,null),
-                    new ArrayList<CellContent>(this.getActions(benefitedCollaborator))
+                    new ArrayList<CellContent>(this.getSeedActions(seedSouvenirTracking))
             ));
             resultList.add(new TableRow(cells));
             index++;
@@ -217,36 +180,118 @@ public class SouvenirService {
         return new Table(resultList);
     }
 
-    private List<CellContent> getActions(BenefitedCollaborator benefitedCollaborator){
+    private List<CellContent> getSeedActions(SeedSouvenirTracking seedSouvenirTracking) {
         List<CellContent> contents = new ArrayList<>();
-                contents.add(new CellContent("iconAccion",
-                        "edit", ColorCode.EDIT.value, true,
-                        "editVolunter","Editar", null,
-                        new ArrayList<CellParam>(Arrays.asList(
-                                new CellParam("benefitedCollaboratorId",
-                                        encripttionService.encrypt(benefitedCollaborator.getBenefited_collaborator_id().toString()))))));
-                contents.add(new CellContent("iconAccion",
-                        "delete",ColorCode.DELETE.value, true,
-                        "delete","Desactivar", null,
-                        new ArrayList<CellParam>(Arrays.asList(
-                                new CellParam("benefitedCollaboratorId",
-                                        encripttionService.encrypt(benefitedCollaborator.getBenefited_collaborator_id().toString()))))));
+        contents.add(
+                new CellContent("iconAccion", "description",
+                        ColorCode.VIEW_CONTR.value, true,
+                        "ViewSouvenirTracking","Ver Detalle", null,
+                        new ArrayList<CellParam>(Arrays.asList(new CellParam("seedSouvenirTrackingId",
+                                encripttionService.encrypt(seedSouvenirTracking.getSeedSouvenirTrackingId().toString()))))));
+
+        contents.add(
+                new CellContent("iconAccion", "edit",
+                        ColorCode.EDIT.value, true,
+                        "EditSouvenirTracking","Editar", null,
+                        new ArrayList<CellParam>(Arrays.asList(new CellParam("seedSouvenirTrackingId",
+                                encripttionService.encrypt(seedSouvenirTracking.getSeedSouvenirTrackingId().toString()))))));
+        contents.add(
+                new CellContent("iconAccion", "delete",
+                        ColorCode.STATE_REJECTED.value, true,
+                        "DeleteSouvenirTracking","Eliminar", null,
+                        new ArrayList<CellParam>(Arrays.asList(new CellParam("seedSouvenirTrackingId",
+                                encripttionService.encrypt(seedSouvenirTracking.getSeedSouvenirTrackingId().toString()))))));
+
+
 
         return contents;
     }
 
-    public List<ComboSeed> findBenefitedSeeds(){
-        List<BenefitedCollaborator> contributors = benefitedCollaboratorRepository.findAll();
-        List<ComboSeed> activecontr= new ArrayList<>();
-        for (BenefitedCollaborator contributor:contributors){
-            activecontr.add(new ComboSeed(
-                    encripttionService.encrypt( contributor.getBenefited_collaborator_id().toString())
-                    ,contributor.getContributor().getUser().getName(),contributor.getContributor().getUser().getLastname(),
-                    contributor.getContributor().getUser().getName()+ ' ' + contributor.getContributor().getUser().getLastname(),
-                    contributor.getContributor().getUser().getEmail(),
-                    contributor.getContributor().getUser().getPhone(),
-                    contributor.getContributor().getUser().getDni()));
+    public ResponseEntity<RequestResponseMessage> createSeedSouvenirTracking(Principal principal, SeedSouvenirTrackingDao seedSouvenirTrackingDao) {
+        try{
+            Optional<Contributor> contributor = contributorRepository.findById(Long.parseLong(encripttionService.decrypt(seedSouvenirTrackingDao.getBenefitedContributorId())));
+            Optional<Volunter> volunteerInCharge = volunterRepository.findById(Long.parseLong(encripttionService.decrypt(seedSouvenirTrackingDao.getVolunteerInChargeId())));
+            SeedSouvenirTracking seedSouvenirTracking = new SeedSouvenirTracking();
+            //seedSouvenirTracking.setSelectedDate(seedSouvenirTrackingDao.getSelectedDate());
+            seedSouvenirTracking.setSelectedDate(new Date());
+            seedSouvenirTracking.setSouvenirSendDate(seedSouvenirTrackingDao.getSouvenirSendDate());
+            seedSouvenirTracking.setTrackingStatus(seedSouvenirTrackingDao.getTrackingStatus());
+            seedSouvenirTracking.setSpentAmount(seedSouvenirTrackingDao.getSpentAmount());
+            seedSouvenirTracking.setChosenCity(seedSouvenirTrackingDao.getChosenCity());
+            seedSouvenirTracking.setObservation(seedSouvenirTrackingDao.getObservation());
+            seedSouvenirTracking.setRegister_exist(true);
+            seedSouvenirTracking.setBenefitedContributor(contributor.get());
+            seedSouvenirTracking.setVolunteerInCharge(volunteerInCharge.get());
+            seedSouvenirTrackingRepository.save(seedSouvenirTracking);
+            return new ResponseEntity<>(new RequestResponseMessage(
+                    "Los datos se guardaron correctamente", ResponseStatus.SUCCESS),HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new RequestResponseMessage(
+                    "Error registrando los datos, por favor intentelo de nuevo",
+                    ResponseStatus.ERROR), HttpStatus.BAD_REQUEST);
+            //throw new RuntimeException(e);
+
         }
-        return activecontr;
+    }
+
+    public ResponseEntity<RequestResponseMessage> updateSeedSouvenirTracking(Principal principal, SeedSouvenirTrackingDao seedSouvenirTrackingDao) {
+        try{
+            Optional<Contributor> contributor = contributorRepository.findById(Long.parseLong(encripttionService.decrypt(seedSouvenirTrackingDao.getBenefitedContributorId())));
+            Optional<Volunter> volunteerInCharge = volunterRepository.findById(Long.parseLong(encripttionService.decrypt(seedSouvenirTrackingDao.getVolunteerInChargeId())));
+            SeedSouvenirTracking seedSouvenirTracking = new SeedSouvenirTracking();
+            seedSouvenirTracking.setSeedSouvenirTrackingId(Long.parseLong(encripttionService.decrypt(seedSouvenirTrackingDao.getSeedSouvenirTrackingId())));
+            seedSouvenirTracking.setSelectedDate(seedSouvenirTrackingDao.getSelectedDate());
+            seedSouvenirTracking.setSouvenirSendDate(seedSouvenirTrackingDao.getSouvenirSendDate());
+            seedSouvenirTracking.setTrackingStatus(seedSouvenirTrackingDao.getTrackingStatus());
+            seedSouvenirTracking.setSpentAmount(seedSouvenirTrackingDao.getSpentAmount());
+            seedSouvenirTracking.setChosenCity(seedSouvenirTrackingDao.getChosenCity());
+            seedSouvenirTracking.setObservation(seedSouvenirTrackingDao.getObservation());
+            seedSouvenirTracking.setRegister_exist(true);
+            seedSouvenirTracking.setBenefitedContributor(contributor.get());
+            seedSouvenirTracking.setVolunteerInCharge(volunteerInCharge.get());
+            seedSouvenirTrackingRepository.save(seedSouvenirTracking);
+            return new ResponseEntity<>(new RequestResponseMessage(
+                    "Los datos se guardaron correctamente", ResponseStatus.SUCCESS),HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new RequestResponseMessage(
+                    "Error registrando los datos, por favor intentelo de nuevo",
+                    ResponseStatus.ERROR), HttpStatus.BAD_REQUEST);
+            //throw new RuntimeException(e);
+
+        }
+    }
+
+    public ResponseEntity<RequestResponseMessage> deleteSeedSouvenirTracking(String id) {
+        try{
+            Optional<SeedSouvenirTracking> seedSouvenirTracking = seedSouvenirTrackingRepository.findById(Long.parseLong(encripttionService.decrypt(id)));
+            seedSouvenirTracking.get().setRegister_exist(false);
+            seedSouvenirTrackingRepository.save(seedSouvenirTracking.get());
+            return new ResponseEntity<>(new RequestResponseMessage(
+                    "Se elimino Correctamente", ResponseStatus.SUCCESS),HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new RequestResponseMessage(
+                    "Error eliminando los datos, por favor intentelo de nuevo",
+                    ResponseStatus.ERROR), HttpStatus.BAD_REQUEST);
+            //throw new RuntimeException(e);
+
+        }
+    }
+
+    public SeedSouvenirTrackingDTO getSeedSouvenirTracking(String id) {
+        try{
+            Optional<SeedSouvenirTracking> seedSouvenirTracking = seedSouvenirTrackingRepository.findById(Long.parseLong(encripttionService.decrypt(id)));
+            //seedSouvenirTracking.get().setRegister_exist(false);
+            //seedSouvenirTrackingRepository.save(seedSouvenirTracking.get());
+            SeedSouvenirTrackingDTO seedSouvenirTrackingDTO = new SeedSouvenirTrackingDTO(seedSouvenirTracking.get());
+            seedSouvenirTrackingDTO.setSeedSouvenirTrackingId(encripttionService.encrypt(seedSouvenirTrackingDTO.getSeedSouvenirTrackingId()));
+            seedSouvenirTrackingDTO.setBenefitedContributorId(encripttionService.encrypt(seedSouvenirTrackingDTO.getBenefitedContributorId()));
+            seedSouvenirTrackingDTO.setVolunteerInChargeId(encripttionService.encrypt(seedSouvenirTrackingDTO.getVolunteerInChargeId()));
+            seedSouvenirTrackingDTO.setBenefitedContributorLabel(new ComboSeed(seedSouvenirTrackingDTO.getBenefitedContributorId(), seedSouvenirTracking.get().getBenefitedContributor()));
+            seedSouvenirTrackingDTO.setVolunteerInChargeLabel(new ComboVolunteer(seedSouvenirTrackingDTO.getVolunteerInChargeId(), seedSouvenirTracking.get().getVolunteerInCharge()));
+            return seedSouvenirTrackingDTO;
+        } catch (Exception e) {
+
+            throw new RuntimeException(e);
+        }
     }
 }

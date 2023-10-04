@@ -64,11 +64,7 @@ public class VolunterService {
         for (Volunter volunteer:volunteers){
             comboVolunteers.add(new ComboVolunteer(
                     encripttionService.encrypt( volunteer.getVolunterId().toString())
-                    ,volunteer.getUser().getName(),volunteer.getUser().getLastname(),
-                    volunteer.getUser().getName()+ ' ' + volunteer.getUser().getLastname(),
-                    volunteer.getUser().getEmail(),
-                    volunteer.getUser().getPhone(),
-                    volunteer.getUser().getDni()));
+                    ,volunteer));
         }
         return comboVolunteers;
     }

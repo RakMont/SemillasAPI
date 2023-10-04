@@ -1,63 +1,57 @@
 package com.seedproject.seed.controllers;
 
-import com.seedproject.seed.models.dao.SouvenirTrackingDao;
-import com.seedproject.seed.models.dto.ComboSeed;
+import com.seedproject.seed.models.dao.SeedSouvenirTrackingDao;
 import com.seedproject.seed.models.dto.RequestResponseMessage;
+import com.seedproject.seed.models.dto.SeedSouvenirTrackingDTO;
 import com.seedproject.seed.models.dto.Table;
 import com.seedproject.seed.models.filters.SouvenirTrackingFilter;
 import com.seedproject.seed.services.SouvenirService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
-import java.util.List;
+import java.security.Principal;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping(value = "/seeds/souvenir")
+@RequestMapping(value = "/seeds/souvenirs")
 public class SouvenirController {
 
     @Inject
-    SouvenirService souvenirService;
-
-    @PostMapping(value = "/createBenefitedSeed", consumes = "application/json", produces = "application/json")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public ResponseEntity<RequestResponseMessage> createBenefitedCollaborator(@RequestBody SouvenirTrackingDao souvenirTrackingDao) {
-        return souvenirService.createBenefitedCollaborator(souvenirTrackingDao);
-    }
-
-    @PostMapping(value = "/deleteBenefitedSeedById")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<RequestResponseMessage> deleteBenefitedCollaboratorById(@RequestBody String id) {
-        return souvenirService.deleteBenefitedCollaboratorById(id);
-    }
-
-    @PostMapping(value = "/deleteSouvenirTrackById")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<RequestResponseMessage> deleteSouvenirTrackById(@RequestBody String id) {
-        return souvenirService.deleteSouvenirTrackingById(id);
-    }
-
+    SouvenirService seedSouvenirTrackingService;
+    /*
     @PostMapping(value = "/createSouvenirTracking", consumes = "application/json", produces = "application/json")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public ResponseEntity<RequestResponseMessage> createSouvenirTracking(@RequestBody SouvenirTrackingDao souvenirTrackingDao) {
         return souvenirService.createSouvenirTracking(souvenirTrackingDao);
     }
+    */
+    /////////////////////////////////////////////////////////////////////////////////////
 
-    @GetMapping(path = {"/getAllBenefitedSeeds"})
-    public Table getAllBenefitedSeeds(@Valid SouvenirTrackingFilter souvenirTrackingFilter){
-        return souvenirService.getAllBenefitedSeeds(souvenirTrackingFilter);
+    @GetMapping(path = {"/getAll"})
+    public Table getAll(@Valid SouvenirTrackingFilter souvenirTrackingFilter){
+        return seedSouvenirTrackingService.findAllSouvenirsTracking(souvenirTrackingFilter);
     }
 
-    @GetMapping(path = {"/getAllSouvenirTracking"})
-    public Table getAllSouvenirTracking(@Valid SouvenirTrackingFilter souvenirTrackingFilter){
-        return souvenirService.getAllSouvenirTracking(souvenirTrackingFilter);
+    @PostMapping(value = "/createSeedSouvenirTracking", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<RequestResponseMessage> createSeedSouvenirTracking(Principal principal, @RequestBody SeedSouvenirTrackingDao seedSouvenirTrackingDao) {
+        return seedSouvenirTrackingService.createSeedSouvenirTracking(principal, seedSouvenirTrackingDao);
     }
 
-    @GetMapping(path = {"/activeBenefitedSeeds"})
-    public List<ComboSeed> findActiveSeeds(){
-        return souvenirService.findBenefitedSeeds();
+    @PostMapping(value = "/updateSeedSouvenirTracking", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<RequestResponseMessage> updateSeedSouvenirTracking(Principal principal, @RequestBody SeedSouvenirTrackingDao seedSouvenirTrackingDao) {
+        return seedSouvenirTrackingService.updateSeedSouvenirTracking(principal, seedSouvenirTrackingDao);
     }
+
+    @PostMapping(value = "/deleteSeedSouvenirTracking")
+    public ResponseEntity<RequestResponseMessage> deleteSeedSouvenirTracking(@RequestBody String id) {
+        return seedSouvenirTrackingService.deleteSeedSouvenirTracking(id);
+    }
+
+    @GetMapping(path = {"/getSeedSouvenirTracking"})
+    public SeedSouvenirTrackingDTO getSeedSouvenirTracking(@RequestParam(required = true) String id){
+        return seedSouvenirTrackingService.getSeedSouvenirTracking(id);
+    }
+
 }
