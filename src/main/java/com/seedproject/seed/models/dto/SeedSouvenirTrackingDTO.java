@@ -5,7 +5,9 @@ import com.seedproject.seed.models.enums.TrackingStatus;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -22,6 +24,7 @@ public class SeedSouvenirTrackingDTO {
     private ComboSeed benefitedContributorLabel;
     private String volunteerInChargeId;
     private ComboVolunteer volunteerInChargeLabel;
+    List<CommentRecordDTO> souvenirTrackingComments = new ArrayList<>();
 
     public SeedSouvenirTrackingDTO() {
     }
@@ -31,8 +34,8 @@ public class SeedSouvenirTrackingDTO {
         this.souvenirSendDate = seedSouvenirTracking.getSouvenirSendDate();
         this.trackingStatus = seedSouvenirTracking.getTrackingStatus();
         this.trackingStatusLabel = seedSouvenirTracking.getTrackingStatus().equals(TrackingStatus.SOUVENIR_SENT) ?
-        "Enviado" : seedSouvenirTracking.getTrackingStatus().equals(TrackingStatus.SOUVENIR_PENDING) ? "Pendiente"
-        : "Entregado";
+        "Souvenir Enviado" : seedSouvenirTracking.getTrackingStatus().equals(TrackingStatus.SOUVENIR_PENDING) ? "Pendiente de envío"
+        : "Souvenir Entregado";
         this.spentAmount = seedSouvenirTracking.getSpentAmount();
         this.chosenCity = seedSouvenirTracking.getChosenCity();
         this.observation = seedSouvenirTracking.getObservation();

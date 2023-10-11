@@ -249,6 +249,12 @@ public class SouvenirService {
             seedSouvenirTracking.setRegister_exist(true);
             seedSouvenirTracking.setBenefitedContributor(contributor.get());
             seedSouvenirTracking.setVolunteerInCharge(volunteerInCharge.get());
+
+            seedSouvenirTrackingDao.getSouvenirTrackingComments().forEach(commentRecordDTO -> {
+                if (commentRecordDTO.getCommentId()!= null )commentRecordDTO.setCommentId(encripttionService.decrypt(commentRecordDTO.getCommentId()));
+                seedSouvenirTracking.getSouvenirTrackingComments().add(commentRecordDTO.getCommentRecord(commentRecordDTO, volunteerInCharge.get()));
+            });
+
             seedSouvenirTrackingRepository.save(seedSouvenirTracking);
             return new ResponseEntity<>(new RequestResponseMessage(
                     "Los datos se guardaron correctamente", ResponseStatus.SUCCESS),HttpStatus.CREATED);
@@ -256,8 +262,6 @@ public class SouvenirService {
             return new ResponseEntity<>(new RequestResponseMessage(
                     "Error registrando los datos, por favor intentelo de nuevo",
                     ResponseStatus.ERROR), HttpStatus.BAD_REQUEST);
-            //throw new RuntimeException(e);
-
         }
     }
 
@@ -288,6 +292,10 @@ public class SouvenirService {
             seedSouvenirTrackingDTO.setVolunteerInChargeId(encripttionService.encrypt(seedSouvenirTrackingDTO.getVolunteerInChargeId()));
             seedSouvenirTrackingDTO.setBenefitedContributorLabel(new ComboSeed(seedSouvenirTrackingDTO.getBenefitedContributorId(), seedSouvenirTracking.get().getBenefitedContributor()));
             seedSouvenirTrackingDTO.setVolunteerInChargeLabel(new ComboVolunteer(seedSouvenirTrackingDTO.getVolunteerInChargeId(), seedSouvenirTracking.get().getVolunteerInCharge()));
+            seedSouvenirTracking.get().getSouvenirTrackingComments().forEach(commentRecord -> {
+                seedSouvenirTrackingDTO.getSouvenirTrackingComments().add(
+                        new CommentRecordDTO(encripttionService.encrypt(commentRecord.getComment_record_id().toString()),commentRecord));
+            });
             return seedSouvenirTrackingDTO;
         } catch (Exception e) {
 

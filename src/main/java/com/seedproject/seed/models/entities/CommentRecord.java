@@ -18,7 +18,7 @@ public class CommentRecord{
     private Long comment_record_id;
 
     @NotNull
-    @Column
+    @Column(name = "comment")
     private String comment;
 
     @Column(name = "comment_date")
