@@ -87,4 +87,7 @@ public class Volunter implements Serializable, UserDetails {
         return status.equals(Status.ACTIVE);
     }
 
+    public String getFullName(){
+        return this.getUser().getName() + " " + getUser().getLastname();
+    }
 }

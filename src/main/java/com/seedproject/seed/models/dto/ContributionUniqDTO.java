@@ -1,5 +1,6 @@
 package com.seedproject.seed.models.dto;
 
+import com.seedproject.seed.models.dto.interfaces.ContributionDTO;
 import com.seedproject.seed.models.entities.UniqueContribution;
 import com.seedproject.seed.models.enums.PaymentMethod;
 import com.seedproject.seed.models.enums.SendNewsType;
@@ -10,7 +11,7 @@ import java.util.Date;
 
 @Getter
 @Setter
-public class ContributionUniqDTO implements ContributionDTO{
+public class ContributionUniqDTO implements ContributionDTO {
     public Long contribution_id;
     public Long contributionAmount;
     public PaymentMethod paymentMethod;

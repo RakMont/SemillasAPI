@@ -5,6 +5,7 @@ import com.seedproject.seed.models.dao.ConstantApplicantHolder;
 import com.seedproject.seed.models.dao.EnterpriseApplicantHolderDao;
 import com.seedproject.seed.models.dao.UniqueApplicantHolderDao;
 import com.seedproject.seed.models.dto.*;
+import com.seedproject.seed.models.dto.interfaces.ContributionDTO;
 import com.seedproject.seed.models.dto.interfaces.SeedDTO;
 import com.seedproject.seed.models.entities.*;
 import com.seedproject.seed.models.enums.*;
@@ -697,11 +698,7 @@ public class ContributorService {
         for (Contributor contributor:contributors){
             activecontr.add(new ComboSeed(
                     encripttionService.encrypt( contributor.getContributor_id().toString())
-                    ,contributor.getUser().getName(),contributor.getUser().getLastname(),
-                    contributor.getUser().getName()+ ' ' + contributor.getUser().getLastname(),
-                    contributor.getUser().getEmail(),
-                    contributor.getUser().getPhone(),
-                    contributor.getUser().getDni()));
+                    ,contributor));
         }
         return activecontr;
     }

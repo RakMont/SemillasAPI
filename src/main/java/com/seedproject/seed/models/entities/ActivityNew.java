@@ -1,12 +1,14 @@
 package com.seedproject.seed.models.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.seedproject.seed.models.enums.TranslateLen;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -25,8 +27,15 @@ public class ActivityNew {
     @Column(name = "description", length=1000)
     private String description;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "len")
-    private String len;
+    private TranslateLen len;
+
+    @Column(name = "image_link")
+    private String imageLink;
+
+    @Column(name = "register_date")
+    private Date registerDate;
 
     @NotNull(message = "The volunteer must not be null")
     @OneToOne(cascade = CascadeType.ALL)

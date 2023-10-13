@@ -1,5 +1,6 @@
 package com.seedproject.seed.models.filters;
 
+import com.seedproject.seed.models.enums.TrackingStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,4 +12,5 @@ public class SouvenirTrackingFilter {
     private Date beginSelectedDate;
 
     private Date endSelectedDate;
+    private TrackingStatus trackingStatus;
 }
