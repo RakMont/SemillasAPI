@@ -36,11 +36,14 @@ public class ActivityNew {
 
     @Column(name = "register_date")
     private Date registerDate;
+    @Column(name = "isTranslate")
+    private Boolean isTranslate;
 
     @NotNull(message = "The volunteer must not be null")
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne()
     @JoinColumn(name = "reg_volunteer_id", referencedColumnName = "volunter_id")
     private Volunter regVolunteer;
+
 
     @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
