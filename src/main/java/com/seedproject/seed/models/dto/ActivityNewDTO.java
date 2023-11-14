@@ -19,7 +19,7 @@ public class ActivityNewDTO {
     private Date registerDate;
     //private String regVolunteerId;
     private String regVolunteerName;
-    private List<ActivityNewDTO> activityTranslates= new ArrayList<>();
+    private List<ActivityNewDTO> translateList = new ArrayList<>();
 
     public ActivityNewDTO() {
     }

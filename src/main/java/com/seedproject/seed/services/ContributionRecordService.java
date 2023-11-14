@@ -135,7 +135,7 @@ public class ContributionRecordService {
         line1.setValid_tr(result.get("totalSummed").toString());
         contributionRecordReportDTOS.add(line1);
         /*-----------------------------------------------------------------*/
-        ContributionRecordReportDTO line2= new ContributionRecordReportDTO();
+        /*ContributionRecordReportDTO line2= new ContributionRecordReportDTO();
         line2.setNro("");
         line2.setPayment_date("Total niños alimentados: ");
         line2.setPayment_amount(result.get("total")/35);
@@ -143,7 +143,7 @@ public class ContributionRecordService {
         //line2.setSpent_amount(result.get("totalSpent"));
         //line2.setReceipt_code("Total sumado:");
         line2.setValid_tr(String.valueOf(result.get("totalSummed")/35));
-        contributionRecordReportDTOS.add(line2);
+        contributionRecordReportDTOS.add(line2);*/
         /*-----------------------------------------------------------------*/
         ContributionRecordReportDTO line3= new ContributionRecordReportDTO();
         line3.setNro("");
@@ -695,7 +695,7 @@ public class ContributionRecordService {
 
         Map<String, Long> result = this.getSummarize(contributionRecords, contributor);
         resultList.add(this.getFooter(result, false));
-        resultList.add(this.getBenefitedChildren(result, false));
+        //resultList.add(this.getBenefitedChildren(result, false));
         resultList.add(this.getExpectedContributions(result));
         return new Table(resultList);
     }

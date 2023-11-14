@@ -15,8 +15,10 @@ import org.springframework.stereotype.Service;
 import javax.inject.Inject;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ActivityNewService {
@@ -33,6 +35,8 @@ public class ActivityNewService {
             ActivityNew activityNew = activityNewDTO.getActivity(activityNewDTO);
             Volunter volunteer = (Volunter) this.userDetailsService.loadUserByUsername(principal.getName());
             activityNew.setRegVolunteer(volunteer);
+            activityNew.setRegisterDate(new Date());
+            activityNew.setIsTranslate(false);
             activityNewRepository.save(activityNew);
             return new ResponseEntity<>(new RequestResponseMessage(
                     "La actividad fue creada con éxito", ResponseStatus.SUCCESS), HttpStatus.CREATED);
@@ -49,11 +53,15 @@ public class ActivityNewService {
             ActivityNew activityNew = activityNewDTO.getActivity(activityNewDTO);
             Volunter volunteer = (Volunter) this.userDetailsService.loadUserByUsername(principal.getName());
             activityNew.setRegVolunteer(volunteer);
-            activityNewDTO.getActivityTranslates().forEach(activityNewDTO1 -> {
+            activityNewDTO.getTranslateList().forEach(activityNewDTO1 -> {
                 activityNewDTO1.setActivityId(
                         activityNewDTO1.getActivityId() != null ? encripttionService.decrypt(activityNewDTO1.getActivityId()): null);
-                activityNew.getActivityNewsList().add(activityNewDTO1.getActivity(activityNewDTO1));
+                ActivityNew helperActivity = activityNewDTO1.getActivity(activityNewDTO1);
+                helperActivity.setRegVolunteer(volunteer);
+                helperActivity.setIsTranslate(true);
+                activityNew.getActivityNewsList().add(helperActivity);
             });
+            activityNew.setIsTranslate(false);
             activityNewRepository.save(activityNew);
             return new ResponseEntity<>(new RequestResponseMessage(
                     "La actividad fue actualizada con éxito", ResponseStatus.SUCCESS), HttpStatus.CREATED);
@@ -68,9 +76,11 @@ public class ActivityNewService {
        try{
            List<ActivityNewDTO> activityNewDTOList = new ArrayList<>();
            List<ActivityNew> activityNews = this.activityNewRepository.findAll();
+           activityNews = activityNews.stream().filter( activityNew -> !activityNew.getIsTranslate()).collect(Collectors.toList());
            activityNews.forEach(ac->{
                activityNewDTOList.add(new ActivityNewDTO(encripttionService.encrypt(ac.getActivityId().toString()), ac));
            });
+
            return activityNewDTOList;
 
        }catch (Exception exception){
@@ -84,7 +94,7 @@ public class ActivityNewService {
             Optional<ActivityNew> activityNew = this.activityNewRepository.findById(Long.parseLong(encripttionService.decrypt(id)));
             ActivityNewDTO activityNewDTO = new ActivityNewDTO(this.encripttionService.encrypt(activityNew.get().getActivityId().toString()), activityNew.get());
             activityNew.get().getActivityNewsList().forEach(ac->{
-                activityNewDTO.getActivityTranslates().add(new ActivityNewDTO(encripttionService.encrypt(ac.getActivityId().toString()), ac));
+                activityNewDTO.getTranslateList().add(new ActivityNewDTO(encripttionService.encrypt(ac.getActivityId().toString()), ac));
             });
             return activityNewDTO;
         }catch (Exception exception){
@@ -96,7 +106,6 @@ public class ActivityNewService {
         id = encripttionService.decrypt(id);
         try {
             this.activityNewRepository.deleteById(Long.parseLong(id));
-            //volunterRepository.deleteById(Long.parseLong(id));
             return new ResponseEntity<>(new RequestResponseMessage(
                     "La actividad fue eliminada", ResponseStatus.SUCCESS),HttpStatus.CREATED);
         } catch (Exception exception){
