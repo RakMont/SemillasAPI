@@ -36,7 +36,7 @@ public interface ContributionRecordRepository extends JpaRepository<Contribution
             "order by cr.payment_date", nativeQuery = true)
     List<ContributionReportDTO> findContributionsBySeed(@Param("seedId")Long seedId);
 
-    @Query(value="select cr.contribution_record_id ,concat(su.name, ' ', su.lastname) as seed_name,cconf.contribution_key, \n" +
+    @Query(value="select cr.contribution_record_id ,cr.register_volunter_id as volunteer_id, concat(su.name, ' ', su.lastname) as seed_name,cconf.contribution_key, \n" +
             "            cr.payment_date,cr.contribution_month, cr.expected_payment_date, cr.payment_method, cr.contribution_ammount as payment_amount,\n" +
             "            cr.extra_income_ammount as extra_amount, exex.extra_expense_amount as spent_amount,\n" +
             "            cr.receipt_code, cr.valid_transaction\n" +

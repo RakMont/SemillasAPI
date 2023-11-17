@@ -325,17 +325,26 @@ public class ContributionRecordService {
     }
 
     public Table getAllDonations(ContributionRecordFilter contributionRecordFilter){
-        List<ContributionReportDTO> contributionReportDTOS =
-                contributionRecordRepository.findContributionRecord(contributionRecordFilter.getBeginDate(),contributionRecordFilter.getEndDate());
+       try {
+           List<ContributionReportDTO> contributionReportDTOS =
+                   contributionRecordRepository.findContributionRecord(contributionRecordFilter.getBeginDate(),contributionRecordFilter.getEndDate());
 
-        if(!(contributionRecordFilter.getContributionType() == null)) contributionReportDTOS.removeIf(element ->
-               !element.getContribution_key().equals(contributionRecordFilter.getContributionType()));
+           if (contributionRecordFilter.getVolunter_id() != null && !contributionRecordFilter.getVolunter_id().isEmpty()){
+               Long id = Long.parseLong(encripttionService.decrypt(contributionRecordFilter.getVolunter_id()));
+               contributionReportDTOS.removeIf(element ->
+                       !element.getVolunteer_id().equals(id));
+           }
+           if(!(contributionRecordFilter.getContributionType() == null)) contributionReportDTOS.removeIf(element ->
+                   !element.getContribution_key().equals(contributionRecordFilter.getContributionType()));
 
 
-        if(!(contributionRecordFilter.getPaymentMethod() == null)) contributionReportDTOS.removeIf(element ->
-                !element.getPayment_method().equals(contributionRecordFilter.getPaymentMethod()));
+           if(!(contributionRecordFilter.getPaymentMethod() == null)) contributionReportDTOS.removeIf(element ->
+                   !element.getPayment_method().equals(contributionRecordFilter.getPaymentMethod()));
 
-        return this.getAllContributionsFormat(contributionReportDTOS);
+           return this.getAllContributionsFormat(contributionReportDTOS);
+       }catch (Exception exception){
+           return null;
+       }
     }
 
     public Table getAllContributionsFormat(List<ContributionReportDTO> contributionRecords){
