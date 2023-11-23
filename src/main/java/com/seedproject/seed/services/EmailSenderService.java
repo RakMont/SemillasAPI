@@ -1,38 +1,43 @@
 package com.seedproject.seed.services;
 
 import com.seedproject.seed.models.dao.SendReminderDao;
+import com.seedproject.seed.utils.ReminderTask;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Service;
 
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.concurrent.ScheduledFuture;
 
 
 @Service
-public class EmailSenderService {
+public class EmailSenderService{
     @Autowired
     private JavaMailSender mailSender;
 
-    public void sendSimpleEmail(String toEmail,
-                                String body,
-                                String subject) {
-        SimpleMailMessage message = new SimpleMailMessage();
+    private ReminderTask reminderTask;
 
-        message.setFrom("spring.email.from@gmail.com");
-        message.setTo(toEmail);
-        message.setText(body);
-        message.setSubject(subject);
+    @Autowired
+    private TaskScheduler taskScheduler;
 
-        mailSender.send(message);
-        System.out.println("Mail Send...");
-    }
+    Map<String, ScheduledFuture<?>> jobsMap = new HashMap<>();
+
+    @Value("${spring.mail.username}")
+    private String fromEmail;
+
 
     public void sendEmailWithAttachment(String toEmail,
                                         String body,
@@ -76,7 +81,7 @@ public class EmailSenderService {
         mimeMessageHelper.setSubject(sendReminderDao.getEmailSubject());
 
         mimeMessageHelper.setText("<html><body>" + sendReminderDao.getEmailBody() + "</html></body>", true);
-       // mimeMessage.setContent(sendReminderDao.getEmailBody(), "text/html");
+        // mimeMessage.setContent(sendReminderDao.getEmailBody(), "text/html");
         /*FileSystemResource fileSystem
                 = new FileSystemResource(new File(attachment));
 
@@ -85,5 +90,40 @@ public class EmailSenderService {
 */
         mailSender.send(mimeMessage);
         System.out.println("Mail Send...");
+    }
+
+
+    public void send_email_inline_image(String destinyEmail){
+        try {
+
+            String fullname = "Cielo Sangueza";
+            String subject = "Prueba Message";
+            String content = "Contenido";
+
+
+            MimeMessage message  = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+            String mailSubject = fullname + "has sent a message";
+            String mailContent = "<p><b> Sender Name: </b> " + fullname + "</p>";
+            mailContent +="<p><b> Sender E-mail: </b> " + destinyEmail + "</p>";
+            mailContent +="<p><b> Sender Subject: </b> " + subject + "</p>";
+            mailContent +="<p><b> Sender Content: </b> " + content + "</p>";
+            mailContent +="<hr> <img src='cid:semillaslogo'> /> " ;
+
+            helper.setFrom(fromEmail, " Shopme contact");
+            helper.setTo(destinyEmail);
+            helper.setSubject(mailSubject);
+            helper.setText(mailContent, true);
+
+            ClassPathResource resource = new ClassPathResource("/statics/semillaslogo.png");
+            helper.addInline("semillaslogo", resource);
+
+            mailSender.send(message);
+
+        }catch (Exception exception){
+            throw new RuntimeException(exception.getMessage());
+        }
+
     }
 }

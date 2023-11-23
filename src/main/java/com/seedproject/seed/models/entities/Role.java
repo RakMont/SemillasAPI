@@ -27,4 +27,13 @@ public class Role {
     @JsonIgnore
     @ManyToMany(mappedBy = "roles")
     private List<Volunter> volunters;
+
+    public Role() {
+    }
+
+    public Role(Long roleId, RoleName role_name, String name) {
+        this.roleId = roleId;
+        this.role_name = role_name;
+        this.name = name;
+    }
 }
