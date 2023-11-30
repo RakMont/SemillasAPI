@@ -575,12 +575,12 @@ public class VolunterService {
         }
     }
 
-    public List<String> getVolunteerEmails(){
+    public List<Volunter> getVolunteerEmails(){
         List<String> emailsList = new ArrayList<>();
         List<Volunter> list = volunterRepository.findAll();
         list.forEach(a->{
             emailsList.add(a.getUser().getEmail());
         });
-        return emailsList;
+        return list;
     }
 }

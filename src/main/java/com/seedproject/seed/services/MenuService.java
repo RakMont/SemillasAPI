@@ -42,9 +42,9 @@ public class MenuService {
             DesMenu desMenu = new DesMenu("Semillas", "wc");
             List<MenuItem> menuItemList = new ArrayList<>();
             if (hasRole(roles,RoleName.R_REGISTROS ))
-                menuItemList.add(new MenuItem("Gestionar Aplicantes", "supervised_user_circle", "admin/aplicantes"));
+                menuItemList.add(new MenuItem("Gestionar Aplicantes", "supervised_user_circle", "admin/seeds-applicant"));
             if (hasRole(roles,RoleName.R_PRINCIPAL ))
-                menuItemList.add(new MenuItem("Gestionar Semillas", "how_to_reg", "admin/semillas"));
+                menuItemList.add(new MenuItem("Gestionar Semillas", "how_to_reg", "admin/seeds"));
             if (hasRole(roles,RoleName.R_REGISTROS ))
                 menuItemList.add(new MenuItem("Registrar Semilla","person_add","/admin/new-seed"));
 
@@ -53,7 +53,7 @@ public class MenuService {
             if (hasRole(roles,RoleName.R_PRINCIPAL )){
                 DesMenu respMenu = new DesMenu("Responsables", "supervised_user_circle");
                 respMenu.setChildren(Arrays.asList(
-                        new MenuItem("Responsables", "group", "admin/ver-voluntarios"))
+                        new MenuItem("Responsables", "group", "admin/volunteers"))
                 );
                 principalMenu.add(respMenu);
             }
@@ -65,7 +65,7 @@ public class MenuService {
                 menuItemList.add(new MenuItem("Responsables de seguimiento", "supervisor_account", "/admin/tracking"));
             if (hasRole(roles,RoleName.R_SEGUIMIENTOS )) {
                 menuItemList.add(new MenuItem("Semillas asignadas", "supervised_user_circle", "/admin/tracking/volunteer-seeds"));
-                menuItemList.add(new MenuItem("Recordatorios", "contact_mail", "/admin/tracking/reminder-emails"));
+                //menuItemList.add(new MenuItem("Recordatorios", "contact_mail", "/admin/tracking/reminder-emails"));
 
             }
             menuItemList.add(new MenuItem("Aportes recibidos", "layers", "/admin/tracking/donations"));

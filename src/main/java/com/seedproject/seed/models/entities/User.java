@@ -37,4 +37,8 @@ public class User implements Serializable {
 
     @OneToOne(mappedBy = "user")
     private Volunter volunter;
+
+    public String getFullName() {
+        return name + " " + lastname;
+    }
 }

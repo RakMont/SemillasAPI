@@ -9,6 +9,7 @@ import java.util.Date;
 public interface ContributionReportDTO {
     Long getContribution_record_id();
     String getSeed_name();
+    String getReg_volunteer_name();
     Long getVolunteer_id();
     ContributionType getContribution_key();
     Date getPayment_date();

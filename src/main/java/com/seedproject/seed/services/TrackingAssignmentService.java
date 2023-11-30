@@ -160,7 +160,9 @@ public class TrackingAssignmentService {
                                     new CellContent("chipContent",
                                             null,
                                            trackingSeed.getContribution_key().equals(ContributionType.APORTE_CONSTANTE)
-                                                    ? ColorCode.CONSTANT_CONTRIBUTION.value : ColorCode.UNIQUE_CONTRIBUTION.value, false,
+                                                    ? ColorCode.CONSTANT_CONTRIBUTION.value : trackingSeed.getContribution_key().equals(ContributionType.APORTE_UNICO) ?
+                                                   ColorCode.UNIQUE_CONTRIBUTION.value
+                                            : ColorCode.ENTERPRISE_CONTRIBUTION.value, false,
                                             null,null,
                                             trackingSeed.getContribution_key().toString(),
                                             null)

@@ -53,4 +53,10 @@ public interface ContributorRepository extends JpaRepository<Contributor,Long> {
             "            where co.register_exist=true and co.contributor_state=:status" +
             "            order by su.name", nativeQuery = true)
     List<SeedDTO> getSeedsAsc(@Param("status") int status);
+
+
+    @Query(value = "select co.contributor_id \n" +
+            "from contributor co\n" +
+            "where co.contributor_state=3 and co.register_exist = true", nativeQuery = true)
+    List<Long> getPendingSeeds();
 }

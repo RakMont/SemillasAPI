@@ -40,6 +40,8 @@ public class ContributorService {
     ConstantContributionRepository constantContributionRepository;
     @Inject
     EncripttionService encripttionService;
+    @Inject
+    EmailSenderService emailSenderService;
     @Autowired
     UserDetailsServiceImpl userDetailsService;
 
@@ -257,6 +259,9 @@ public class ContributorService {
        try {
            processedContributorRepository.save(processedContributor);
            contributorRepository.save(contributor);
+           if(processSeedDTO.getState() == 1){
+               this.emailSenderService.sendSeedConfirmationEmailWithInlineImage(contributor.getUser());
+           }
            return new ResponseEntity<>(new RequestResponseMessage(
                    "La semilla fue procesada", ResponseStatus.SUCCESS),HttpStatus.CREATED);
        }catch (Exception exception){
@@ -906,5 +911,17 @@ public class ContributorService {
                             ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
 
         }
+    }
+
+    public BadgeDTO getPendingSeedsNumber() {
+       try {
+           List<Long> contributorList = contributorRepository.getPendingSeeds();
+           BadgeDTO badgeDTO = new BadgeDTO();
+           badgeDTO.setPendingSeedsNumber((long) contributorList.size());
+
+           return  badgeDTO;
+       }catch (Exception exception){
+           throw new RuntimeException(exception.getMessage());
+       }
     }
 }

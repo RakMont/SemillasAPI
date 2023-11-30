@@ -480,6 +480,19 @@ public class ContributionRecordService {
                     )
             ));
             cells.add(new Cell(
+                    new CellHeader("Resp.Registro",0,"String",false,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",
+                                            null,null,false,
+                                            null,null,
+                                            contributionRecord.getReg_volunteer_name(),
+                                            null)
+                            )
+                    )
+            ));
+            cells.add(new Cell(
                     new CellHeader("Opciones",0,"String",false,null),
                     new CellProperty(null,false,null,null),
                     new ArrayList<CellContent>(
@@ -1110,6 +1123,21 @@ public class ContributionRecordService {
                         )
                 )
         ));
+        if(isAll){
+            cells.add(new Cell(
+                    new CellHeader("Resp.Registro",0,"String",false,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",
+                                            null,null,false,
+                                            null,null,
+                                            "",
+                                            null)
+                            )
+                    )
+            ));
+        }
         cells.add(new Cell(
                 new CellHeader("Opciones",0,"String",false,null),
                 new CellProperty("#161d2b",false,null,null),
@@ -1375,6 +1403,21 @@ public class ContributionRecordService {
                             )
                     )
             ));
+            if(isAll){
+                cells.add(new Cell(
+                        new CellHeader("Resp.Registro",0,"String",false,null),
+                        new CellProperty(null,false,null,null),
+                        new ArrayList<CellContent>(
+                                Arrays.asList(
+                                        new CellContent("text",
+                                                null,null,false,
+                                                null,null,
+                                                "",
+                                                null)
+                                )
+                        )
+                ));
+            }
             cells.add(new Cell(
                     new CellHeader("Opciones",0,"String",false,null),
                     new CellProperty("#161d2b",false,null,null),

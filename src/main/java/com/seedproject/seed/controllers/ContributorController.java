@@ -85,5 +85,10 @@ public class ContributorController {
         ContributorDTO contributor = contributorService.getSeedById(id);
         return contributor;
     }
+
+    @GetMapping(path = {"/getPendingSeedsNumber"})
+    public BadgeDTO getPendingSeedsNumber( ) {
+        return contributorService.getPendingSeedsNumber();
+    }
 }
 

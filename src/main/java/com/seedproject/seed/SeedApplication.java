@@ -37,7 +37,7 @@ public class SeedApplication implements CommandLineRunner {
 		//new Timer().scheduleAtFixedRate(this.reminderTask, 0, fONCE_PER_DAY);
 
 		System.out.println("encrypted " + this.bCryptPasswordEncoder.encode("8815992"));
-		System.out.println("encrypted " + this.bCryptPasswordEncoder.encode("denis"));
+		System.out.println("encrypted " + this.bCryptPasswordEncoder.encode("$2a$10$1NLXKUxN61quYX8ZMukTF.OsaNFpZa14JLP5GYyMeVzx1TckQywO."));
 
 		System.out.println("ids" +  this.encripttionService.encrypt("3"));
 	}

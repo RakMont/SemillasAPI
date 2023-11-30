@@ -25,23 +25,20 @@ public interface TrackingAssignmentRepository extends JpaRepository<TrackingAssi
             "            su.email,cc.contribution_config_id, cc.contribution_key, co.contributor_state ,\n" +
             "            crr.total_contribution, crr.last_payment_date\n" +
             "            from tracking_assignment ta\n" +
-            "            inner join contributor co\n" +
-            "            on co.contributor_id = ta.contributor_id\n" +
-            "            inner join seed_user su\n" +
-            "            on co.user_id = su.user_id\n" +
-            "            inner join (select con_c.contribution_key, con_c.contribution_config_id, sc.contributor_id\n" +
-            "\t\t\t\t\t\tfrom contribution_config con_c \n" +
-            "\t\t\t\t\t\tinner join seed_configuration sc\n" +
-            "\t\t\t\t\t\ton sc.contribution_config_id = con_c.contribution_config_id\n" +
-            "\t\t\t\t\t\twhere con_c.is_active = true\n" +
-            "\t\t\t\t\t   )cc\n" +
-            "\t\t\ton cc.contributor_id = co.contributor_id\n" +
-            "            left join (select cr.tracking_assignment_id,SUM (cr.contribution_ammount) as total_contribution,\n" +
+            "                       inner join contributor co\n" +
+            "                        on co.contributor_id = ta.contributor_id\n" +
+            "                       inner join seed_user su\n" +
+            "                       on co.user_id = su.user_id\n" +
+            "                       inner join (select con_c.contribution_key, con_c.contribution_config_id, sc.contributor_id\n" +
+            "            from contribution_config con_c\n" +
+            "            inner join seed_configuration sc\n" +
+            "            on sc.contribution_config_id = con_c.contribution_config_id where con_c.is_active = true )cc\n" +
+            "            on cc.contributor_id = co.contributor_id\n" +
+            "            left join (select cr.contributor_id, SUM (cr.contribution_ammount) as total_contribution,\n" +
             "            MAX (cr.payment_date) as last_payment_date\n" +
-            "            from contribution_record cr\n where cr.register_exist = true " +
-            "            group by cr.tracking_assignment_id) crr\n" +
-            "            on crr.tracking_assignment_id = ta.tracking_assignment_id\n" +
-            "            where ta.volunter_id=:volunter_id and ta.status = 'ACTIVE'\n" +
-            "            order by su.name",nativeQuery = true)
+            "            from contribution_record cr where cr.register_exist = true\n" +
+            "            group by cr.contributor_id) crr\n" +
+            "            on crr.contributor_id = ta.contributor_id\n" +
+            "            where ta.volunter_id=:volunter_id and ta.status = 'ACTIVE' order by su.name",nativeQuery = true)
     List<TrackingSeedDTO> findByTrackingContributors(@Param("volunter_id")Long contributor_id);
 }

@@ -1,6 +1,7 @@
 package com.seedproject.seed.utils;
 
 
+import com.seedproject.seed.models.entities.Volunter;
 import com.seedproject.seed.services.EmailSenderService;
 import com.seedproject.seed.services.VolunterService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,11 +35,11 @@ public class ReminderTask extends TimerTask {
                 .findFirst()
                 .getAsInt();
         try {
-            List<String> list = volunterService.getVolunteerEmails();
+            List<Volunter> list = volunterService.getVolunteerEmails();
             System.out.println("list: " +list );
 
             list.forEach(email->{
-                emailSenderService.send_email_inline_image(email);
+                emailSenderService.sendSeedConfirmationEmailWithInlineImage(email.getUser());
                 System.out.println("The duration of sending the mail will took: " +email );
 
             });
