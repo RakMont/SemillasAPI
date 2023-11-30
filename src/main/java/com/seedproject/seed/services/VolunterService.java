@@ -16,7 +16,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
-import java.awt.*;
 import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -34,7 +33,7 @@ public class VolunterService {
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
-    private EncripttionService encripttionService;
+    EncripttionService encripttionService;
 
     @Inject
     MenuService menuService;
@@ -86,10 +85,7 @@ public class VolunterService {
         volunters.forEach((volunter -> volunter.setRoles(roleRepository.getVolunterRoles(volunter.getVolunterId()))));
         volunters.removeIf(v -> !this.gotTheRol(RoleName.R_SEGUIMIENTOS,v.getRoles()));
         volunters.removeIf(v -> !v.getStatus().equals(Status.ACTIVE));
-
-        //Table resultTable = this.getVoluntersInformat(volunters, true);
-        Table resultTable = this.getTrackingVolunteersInFormat(volunters);
-        return resultTable;
+        return this.getTrackingVolunteersInFormat(volunters);
     }
     public boolean gotTheRol(RoleName roleName, List<Role> roles){
         //roles.removeIf(r -> !(r.getRole_name().equals(roleName)));
@@ -407,7 +403,7 @@ public class VolunterService {
         }
     }
 
-    public  ResponseEntity<RequestResponseMessage> exitVolunter(ExitPost exitPost){
+    public  ResponseEntity<RequestResponseMessage> exitVolunteer(ExitPost exitPost){
         exitPost.setVolunteerId(encripttionService.decrypt(exitPost.getVolunteerId()));
         Volunter volunter=volunterRepository.getById(Long.parseLong(exitPost.getVolunteerId()));
         ExitMessage exitMessage =  new ExitMessage();
@@ -453,11 +449,11 @@ public class VolunterService {
     }
 
     public Volunter getVolunterById(Long id){
-        Volunter volunter=volunterRepository.getById(id);
-        /*volunter.setStatus(Status.ACTIVO);
-        volunter.setEntry_date(new Date());
-        volunterRepository.save(volunter);*/
-        return volunter;
+       try{
+           return volunterRepository.getById(id);
+       }catch (Exception e){
+           throw new RuntimeException(e.getMessage());
+       }
     }
 
 
@@ -577,5 +573,14 @@ public class VolunterService {
             return new ResponseEntity<>(new RequestResponseMessage(
                     "Error actualizando", ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
         }
+    }
+
+    public List<Volunter> getVolunteerEmails(){
+        List<String> emailsList = new ArrayList<>();
+        List<Volunter> list = volunterRepository.findAll();
+        list.forEach(a->{
+            emailsList.add(a.getUser().getEmail());
+        });
+        return list;
     }
 }

@@ -78,7 +78,13 @@ public class ActivityNewService {
            List<ActivityNew> activityNews = this.activityNewRepository.findAll();
            activityNews = activityNews.stream().filter( activityNew -> !activityNew.getIsTranslate()).collect(Collectors.toList());
            activityNews.forEach(ac->{
-               activityNewDTOList.add(new ActivityNewDTO(encripttionService.encrypt(ac.getActivityId().toString()), ac));
+               ActivityNewDTO activityNewDTO =new ActivityNewDTO(encripttionService.encrypt(ac.getActivityId().toString()), ac);
+               ac.getActivityNewsList().forEach(translates->{
+                   activityNewDTO.getTranslateList().add(new ActivityNewDTO(encripttionService.encrypt(translates.getActivityId().toString()), translates));
+               });
+               activityNewDTOList.add(activityNewDTO);
+
+
            });
 
            return activityNewDTOList;

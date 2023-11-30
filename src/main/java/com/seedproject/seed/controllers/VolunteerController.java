@@ -19,7 +19,7 @@ import java.util.List;
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping(value = "/seeds/volunteers")
-public class VolunterController {
+public class VolunteerController {
     @Inject
     VolunterService volunterService;
 
@@ -34,14 +34,13 @@ public class VolunterController {
 
     @PutMapping(path = {"/updateVolunter"})
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<RequestResponseMessage> updateVolunter(@RequestBody Volunter volunter)throws Exception {
+    public ResponseEntity<RequestResponseMessage> updateVolunteer(@RequestBody Volunter volunter)throws Exception {
         return volunterService.updateVolunter(volunter);
     }
 
     @PostMapping(path = {"/updateVolunteerPassword"})
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<RequestResponseMessage> updateVolunteerPassword(Principal principal,
-                                                                          @RequestBody VolunteerPasswordDTO volunteerPasswordDTO)throws Exception {
+    public ResponseEntity<RequestResponseMessage> updateVolunteerPassword(Principal principal, @RequestBody VolunteerPasswordDTO volunteerPasswordDTO)throws Exception {
         return volunterService.updateVolunteerPassword(principal,volunteerPasswordDTO);
     }
 
@@ -50,24 +49,14 @@ public class VolunterController {
         return volunterService.findAllVolunteer(volunterFilter);
     }
 
-   /* @GetMapping(path = {"/exitvolunters"})
-    public Table findAllExitvolunters(@Valid VolunterFilter volunterFilter) {
-        Table voluntersDTOS = volunterService.findVoluntersByFilter(volunterFilter);
-        return voluntersDTOS;
-    }*/
-
     @GetMapping(path = {"/getRoles"})
-    public List<Role> findVolunterRoles(@RequestBody String email) {
-        List<Role> roles = new ArrayList<>();
+    public List<Role> findVolunteerRoles(@RequestBody String email) {
         Volunter volunter = volunterService.findVolunterRoles(email);
-        roles = volunter.getRoles();
-        System.out.println("roles controller " + roles.size());
-        return roles;
+        return volunter.getRoles();
     }
 
-
     @GetMapping(path = {"/getVolunter"})
-    public VolunterDTO listarId(@RequestParam(required = true) String id, Principal principal) {
+    public VolunterDTO getVolunteer(@RequestParam(required = true) String id, Principal principal) {
         return volunterService.findOneVolunteer(id, principal);
     }
 
@@ -78,8 +67,8 @@ public class VolunterController {
     }
 
     @PostMapping(value = "/exitVolunter")
-    public  ResponseEntity<RequestResponseMessage> exitVolunterById(@RequestBody ExitPost exitPost) {
-        return volunterService.exitVolunter(exitPost);
+    public  ResponseEntity<RequestResponseMessage> exitVolunteerById(@RequestBody ExitPost exitPost) {
+        return volunterService.exitVolunteer(exitPost);
     }
 
     @PostMapping(value = "/activateVolunter")

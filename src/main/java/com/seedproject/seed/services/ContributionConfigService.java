@@ -65,10 +65,14 @@ public class ContributionConfigService {
             contributionConfigDTO.setContribution(contributionDTO);
 
         }
-        else{
+        else if (contributionConfig.get().getContribution_key().equals(ContributionType.APORTE_UNICO)){
             ContributionDTO contributionDTO = new ContributionUniqDTO(contributionConfig.get().getUniqueContribution());
             contributionConfigDTO.setContribution(contributionDTO);
 
+        }
+        else {
+            ContributionDTO contributionDTO = new ContributionEnterpriseDTO(contributionConfig.get().getEnterpriseContribution());
+            contributionConfigDTO.setContribution(contributionDTO);
         }
         return contributionConfigDTO;
     }

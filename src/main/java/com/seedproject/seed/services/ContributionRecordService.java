@@ -325,17 +325,26 @@ public class ContributionRecordService {
     }
 
     public Table getAllDonations(ContributionRecordFilter contributionRecordFilter){
-        List<ContributionReportDTO> contributionReportDTOS =
-                contributionRecordRepository.findContributionRecord(contributionRecordFilter.getBeginDate(),contributionRecordFilter.getEndDate());
+       try {
+           List<ContributionReportDTO> contributionReportDTOS =
+                   contributionRecordRepository.findContributionRecord(contributionRecordFilter.getBeginDate(),contributionRecordFilter.getEndDate());
 
-        if(!(contributionRecordFilter.getContributionType() == null)) contributionReportDTOS.removeIf(element ->
-               !element.getContribution_key().equals(contributionRecordFilter.getContributionType()));
+           if (contributionRecordFilter.getVolunter_id() != null && !contributionRecordFilter.getVolunter_id().isEmpty()){
+               Long id = Long.parseLong(encripttionService.decrypt(contributionRecordFilter.getVolunter_id()));
+               contributionReportDTOS.removeIf(element ->
+                       !element.getVolunteer_id().equals(id));
+           }
+           if(!(contributionRecordFilter.getContributionType() == null)) contributionReportDTOS.removeIf(element ->
+                   !element.getContribution_key().equals(contributionRecordFilter.getContributionType()));
 
 
-        if(!(contributionRecordFilter.getPaymentMethod() == null)) contributionReportDTOS.removeIf(element ->
-                !element.getPayment_method().equals(contributionRecordFilter.getPaymentMethod()));
+           if(!(contributionRecordFilter.getPaymentMethod() == null)) contributionReportDTOS.removeIf(element ->
+                   !element.getPayment_method().equals(contributionRecordFilter.getPaymentMethod()));
 
-        return this.getAllContributionsFormat(contributionReportDTOS);
+           return this.getAllContributionsFormat(contributionReportDTOS);
+       }catch (Exception exception){
+           return null;
+       }
     }
 
     public Table getAllContributionsFormat(List<ContributionReportDTO> contributionRecords){
@@ -466,6 +475,19 @@ public class ContributionRecordService {
                                                     "Codigo QR" : contributionRecord.getPayment_method().equals(PaymentMethod.DEPOSITO_BANCARIO) ?
                                                     "Depósito Bancario" : contributionRecord.getPayment_method().equals(PaymentMethod.EFECTIVO) ?
                                                     "Efectivo" : "Transferencia",
+                                            null)
+                            )
+                    )
+            ));
+            cells.add(new Cell(
+                    new CellHeader("Resp.Registro",0,"String",false,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",
+                                            null,null,false,
+                                            null,null,
+                                            contributionRecord.getReg_volunteer_name(),
                                             null)
                             )
                     )
@@ -1101,6 +1123,21 @@ public class ContributionRecordService {
                         )
                 )
         ));
+        if(isAll){
+            cells.add(new Cell(
+                    new CellHeader("Resp.Registro",0,"String",false,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",
+                                            null,null,false,
+                                            null,null,
+                                            "",
+                                            null)
+                            )
+                    )
+            ));
+        }
         cells.add(new Cell(
                 new CellHeader("Opciones",0,"String",false,null),
                 new CellProperty("#161d2b",false,null,null),
@@ -1366,6 +1403,21 @@ public class ContributionRecordService {
                             )
                     )
             ));
+            if(isAll){
+                cells.add(new Cell(
+                        new CellHeader("Resp.Registro",0,"String",false,null),
+                        new CellProperty(null,false,null,null),
+                        new ArrayList<CellContent>(
+                                Arrays.asList(
+                                        new CellContent("text",
+                                                null,null,false,
+                                                null,null,
+                                                "",
+                                                null)
+                                )
+                        )
+                ));
+            }
             cells.add(new Cell(
                     new CellHeader("Opciones",0,"String",false,null),
                     new CellProperty("#161d2b",false,null,null),

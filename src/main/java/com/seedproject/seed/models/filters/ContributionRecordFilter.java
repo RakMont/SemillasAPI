@@ -23,4 +23,5 @@ public class ContributionRecordFilter {
     private ContributionType contributionType;
 
     private ReportType reportType;
+    private String volunter_id;
 }
