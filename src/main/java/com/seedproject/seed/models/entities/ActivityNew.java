@@ -1,6 +1,7 @@
 package com.seedproject.seed.models.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.seedproject.seed.models.enums.AchievementSection;
 import com.seedproject.seed.models.enums.TranslateLen;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,8 +25,14 @@ public class ActivityNew {
     @Column(name = "title")
     private String title;
 
-    @Column(name = "description", length=1000)
+    @Column(name = "subtitle")
+    private String subtitle;
+
+    @Column(name = "description", length=3000)
     private String description;
+
+    @Column(name = "section")
+    private AchievementSection section;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "len")
@@ -33,6 +40,9 @@ public class ActivityNew {
 
     @Column(name = "image_link")
     private String imageLink;
+
+    @Column(name = "is_visible")
+    private Boolean isVisible;
 
     @Column(name = "register_date")
     private Date registerDate;

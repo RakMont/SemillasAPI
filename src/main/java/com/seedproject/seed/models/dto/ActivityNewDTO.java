@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.seedproject.seed.models.entities.ActivityNew;
+import com.seedproject.seed.models.enums.AchievementSection;
 import com.seedproject.seed.models.enums.TranslateLen;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,6 +14,9 @@ import lombok.Setter;
 public class ActivityNewDTO {
     private String activityId;
     private String title;
+    private String subtitle;
+    private Boolean isVisible;
+    private AchievementSection section;
     private String description;
     private TranslateLen len;
     private String imageLink;
@@ -31,6 +35,9 @@ public class ActivityNewDTO {
         this.imageLink = activityNew.getImageLink();
         this.registerDate = activityNew.getRegisterDate();
         this.regVolunteerName = activityNew.getRegVolunteer().getFullName();
+        this.subtitle = activityNew.getSubtitle();
+        this.isVisible = activityNew.getIsVisible();
+        this.section = activityNew.getSection();
     }
     public ActivityNew getActivity(ActivityNewDTO activityNewDTO){
         ActivityNew res = new ActivityNew();
@@ -41,6 +48,9 @@ public class ActivityNewDTO {
         res.setLen(activityNewDTO.getLen());
         res.setImageLink(activityNewDTO.getImageLink());
         res.setRegisterDate(activityNewDTO.getRegisterDate());
+        res.setSubtitle(activityNewDTO.getSubtitle());
+        res.setSection(activityNewDTO.getSection());
+        res.setIsVisible(activityNewDTO.getIsVisible());
         return res;
     }
 }

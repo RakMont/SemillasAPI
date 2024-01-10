@@ -36,7 +36,7 @@ public class MenuService {
     }
 
 
-    List<Object> getMenuByRoles(List<Role> roles){
+    public List<Object> getMenuByRoles(List<Role> roles){
         List<Object> principalMenu = new ArrayList<>();
         if(hasRole(roles,RoleName.R_PRINCIPAL ) || hasRole(roles,RoleName.R_REGISTROS ) ){
             DesMenu desMenu = new DesMenu("Semillas", "wc");
