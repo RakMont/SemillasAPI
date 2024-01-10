@@ -1,9 +1,9 @@
 package com.seedproject.seed.services;
 
-import com.seedproject.seed.models.dto.ActivityNewDTO;
-import com.seedproject.seed.models.dto.RequestResponseMessage;
+import com.seedproject.seed.models.dto.*;
 import com.seedproject.seed.models.entities.ActivityNew;
 import com.seedproject.seed.models.entities.Volunter;
+import com.seedproject.seed.models.enums.ColorCode;
 import com.seedproject.seed.models.enums.ResponseStatus;
 import com.seedproject.seed.repositories.ActivityNewRepository;
 import com.seedproject.seed.repositories.VolunterRepository;
@@ -14,10 +14,8 @@ import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -72,28 +70,7 @@ public class ActivityNewService {
         }
     }
 
-    public List<ActivityNewDTO> getAllActivities() {
-       try{
-           List<ActivityNewDTO> activityNewDTOList = new ArrayList<>();
-           List<ActivityNew> activityNews = this.activityNewRepository.findAll();
-           activityNews = activityNews.stream().filter( activityNew -> !activityNew.getIsTranslate()).collect(Collectors.toList());
-           activityNews.forEach(ac->{
-               ActivityNewDTO activityNewDTO =new ActivityNewDTO(encripttionService.encrypt(ac.getActivityId().toString()), ac);
-               ac.getActivityNewsList().forEach(translates->{
-                   activityNewDTO.getTranslateList().add(new ActivityNewDTO(encripttionService.encrypt(translates.getActivityId().toString()), translates));
-               });
-               activityNewDTOList.add(activityNewDTO);
 
-
-           });
-
-           return activityNewDTOList;
-
-       }catch (Exception exception){
-           return null;
-       }
-
-    }
 
     public ActivityNewDTO getActivity(String id) {
         try{
@@ -119,5 +96,157 @@ public class ActivityNewService {
             return new ResponseEntity<>(new RequestResponseMessage(
                     "Error eliminando", ResponseStatus.ERROR),HttpStatus.BAD_REQUEST);
         }
+    }
+    public List<ActivityNewDTO> getAllActivities() {
+        try{
+            List<ActivityNewDTO> activityNewDTOList = new ArrayList<>();
+            List<ActivityNew> activityNews = this.activityNewRepository.findByOrderByRegisterDateAsc();
+            activityNews = activityNews.stream().filter( activityNew -> !activityNew.getIsTranslate()).collect(Collectors.toList());
+            activityNews.forEach(ac->{
+                ActivityNewDTO activityNewDTO =new ActivityNewDTO(encripttionService.encrypt(ac.getActivityId().toString()), ac);
+                ac.getActivityNewsList().forEach(translates->{
+                    activityNewDTO.getTranslateList().add(new ActivityNewDTO(encripttionService.encrypt(translates.getActivityId().toString()), translates));
+                });
+                activityNewDTOList.add(activityNewDTO);
+            });
+
+            return activityNewDTOList;
+
+        }catch (Exception exception){
+            return null;
+        }
+
+    }
+    public Table getAllActivitiesTable() {
+        try{
+            List<ActivityNewDTO> activityNewDTOList = new ArrayList<>();
+            List<ActivityNew> activityNews = this.activityNewRepository.findByOrderByRegisterDateAsc();
+            activityNews = activityNews.stream().filter( activityNew -> !activityNew.getIsTranslate()).collect(Collectors.toList());
+            activityNews.forEach(ac->{
+                ActivityNewDTO activityNewDTO =new ActivityNewDTO(encripttionService.encrypt(ac.getActivityId().toString()), ac);
+                ac.getActivityNewsList().forEach(translates->{
+                    activityNewDTO.getTranslateList().add(new ActivityNewDTO(encripttionService.encrypt(translates.getActivityId().toString()), translates));
+                });
+                activityNewDTOList.add(activityNewDTO);
+
+
+            });
+
+            return this.getAllActivitiesTableInFormat(activityNews);
+
+        }catch (Exception exception){
+            return null;
+        }
+    }
+
+    private Table getAllActivitiesTableInFormat(List<ActivityNew> activityNewDTOList){
+        List<TableRow> resultList = new ArrayList<TableRow>();
+        int index=1;
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+        for (ActivityNew activityNew: activityNewDTOList){
+            List<Cell> cells = new ArrayList<Cell>();
+            cells.add(new Cell(
+                    new CellHeader("No",0,"Integer",false,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",null,null,false,null,null,String.valueOf(index),null)
+                            )
+                    )
+            ));
+            cells.add(new Cell(
+                    new CellHeader("Título",0,"String",true,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",
+                                            null,null,false,
+                                            null,null,
+                                            activityNew.getTitle(),
+                                            null)
+                            )
+                    )
+            ));
+            cells.add(new Cell(
+                    new CellHeader("Fecha de registro",0,"String",true,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",
+                                            null,null,false,
+                                            null,null,
+                                            activityNew.getRegisterDate() !=null ?
+                                                    formatter.format(activityNew.getRegisterDate()) : " ",
+                                            null)
+                            )
+                    )
+            ));
+            cells.add(new Cell(
+                    new CellHeader("Tiene traducción",0,"String",true,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",
+                                            null,null,false,
+                                            null,null, activityNew.getActivityNewsList().isEmpty() ? "NO" : "SÍ",
+                                            null)
+                            )
+                    )
+            ));
+            cells.add(new Cell(
+                    new CellHeader("Traducción",0,"String",false,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(Arrays.asList(
+                            new CellContent("iconAccion",
+                                    "g_translate", "#1c263c", true,
+                                    "seeVolunter","Ver Info", null,
+                                    new ArrayList<CellParam>(Arrays.asList(
+                                            new CellParam("activityId", encripttionService.encrypt(activityNew.getActivityId().toString()))
+                                    )))
+                    ))
+            ));
+            cells.add(new Cell(
+                    new CellHeader("Es público",0,"String",true,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("text",
+                                            null,null,false,
+                                            null,null, activityNew.getIsVisible() ? "SÍ" : "NO",
+                                            null)
+                            )
+                    )
+            ));
+            cells.add(new Cell(
+                    new CellHeader("Opciones",0,"String",false,null),
+                    new CellProperty(null,false,null,null),
+                    new ArrayList<CellContent>(
+                            Arrays.asList(
+                                    new CellContent("iconAccion",
+                                            "edit", ColorCode.EDIT.value, true,
+                                            "editActivity","Reactivar", null,
+                                            new ArrayList<CellParam>(Arrays.asList(
+                                                    new CellParam("volunterId", encripttionService.encrypt(activityNew.getActivityId().toString()))
+                                            ))),
+                                    new CellContent("iconAccion",
+                                            "delete",ColorCode.DELETE.value, true,
+                                            "deleteActivity","Eliminar", null,
+                                            new ArrayList<CellParam>(Arrays.asList(
+                                                    new CellParam("volunterId", encripttionService.encrypt(activityNew.getActivityId().toString()))
+                                            ))),
+                                    new CellContent("iconAccion",
+                                            "visibility",ColorCode.VIEW.value, true,
+                                            "viewActivity","Ver Info", null,
+                                            new ArrayList<CellParam>(Arrays.asList(
+                                                    new CellParam("volunterId", encripttionService.encrypt(activityNew.getActivityId().toString()))
+                                            )))
+                            )
+                    )
+            ));
+            resultList.add(new TableRow(cells));
+            index++;
+        }
+
+        return new Table(resultList);
     }
 }

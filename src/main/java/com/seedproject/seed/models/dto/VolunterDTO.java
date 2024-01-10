@@ -40,6 +40,8 @@ public class VolunterDTO {
 
     private List<Role> roles;
 
+    private Object menu;
+
     public VolunterDTO(Volunter volunter) {
 
         volunterId =volunter.getVolunterId().toString();

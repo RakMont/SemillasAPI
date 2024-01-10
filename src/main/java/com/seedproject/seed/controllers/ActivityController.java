@@ -2,6 +2,7 @@ package com.seedproject.seed.controllers;
 
 import com.seedproject.seed.models.dto.ActivityNewDTO;
 import com.seedproject.seed.models.dto.RequestResponseMessage;
+import com.seedproject.seed.models.dto.Table;
 import com.seedproject.seed.services.ActivityNewService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +35,12 @@ public class ActivityController {
     public List<ActivityNewDTO> getAllActivities(){
         return activityNewService.getAllActivities();
     }
+
+    @GetMapping(path = {"/getAllActivitiesTable"})
+    public Table getAllActivitiesTable(){
+        return activityNewService.getAllActivitiesTable();
+    }
+
 
     @GetMapping(path = {"/getActivity"})
     public ActivityNewDTO getActivity(@RequestParam(required = true) String id){

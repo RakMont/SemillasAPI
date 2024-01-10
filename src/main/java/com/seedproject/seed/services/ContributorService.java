@@ -42,6 +42,8 @@ public class ContributorService {
     EncripttionService encripttionService;
     @Inject
     EmailSenderService emailSenderService;
+    @Inject
+    MenuService menuService;
     @Autowired
     UserDetailsServiceImpl userDetailsService;
 
@@ -733,6 +735,7 @@ public class ContributorService {
         VolunterDTO volunterDTO = new VolunterDTO((Volunter) this.userDetailsService.loadUserByUsername(principal.getName()));
         volunterDTO.setVolunterId(encripttionService.encrypt(volunterDTO.getVolunterId()));
         volunterDTO.setUserId(encripttionService.encrypt(volunterDTO.getUserId()));
+        volunterDTO.setMenu(menuService.getMenuByRoles(volunterDTO.getRoles()));
         return volunterDTO;
     }
 
